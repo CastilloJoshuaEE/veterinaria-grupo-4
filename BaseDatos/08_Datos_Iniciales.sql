@@ -194,7 +194,11 @@ BEGIN CATCH
     PRINT 'Error en datos de ejemplo: ' + ERROR_MESSAGE() + ' (Línea ' + CAST(ERROR_LINE() AS VARCHAR) + ')';
 END CATCH;
 GO
-
+CREATE LOGIN veterinaria_user WITH PASSWORD = '123456';
+USE DB_VidaAnimal;
+CREATE USER veterinaria_user FOR LOGIN veterinaria_user;
+ALTER ROLE db_owner ADD MEMBER veterinaria_user; 
+GO
 -- ─── Resumen final ───────────────────────────────────────────
 PRINT '──────────────────────────────────────';
 PRINT 'Resumen de objetos creados:';
