@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 
 public class DatabaseConnection {
-    // server=TU_SERVIDOR_sql_server; database=DB_VidaAnimal;
+    // server=DESKTOP-B0CFGB3_sql_server; database=DB_VidaAnimal;
     // CASTILLO: DESKTOP-B0CFGB3
 private static final String URL =
 "jdbc:sqlserver://TU_SERVIDOR:1433;databaseName=DB_VidaAnimal;encrypt=true;trustServerCertificate=true;";    
