@@ -8,6 +8,9 @@ import com.mycompany.veterinaria.grupo4.view.frmComputadora;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.mycompany.veterinaria.grupo4.view.auth.FrmPrincipal;
+import com.mycompany.veterinaria.grupo4.viewController.AppController;
 
 import javax.swing.*;
 
@@ -30,9 +33,10 @@ public class Main {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            frmComputadora ventana = new frmComputadora();
-            ventana.setVisible(true);
+            
+            FrmPrincipal frm = new FrmPrincipal();
+            AppController ctrl = new AppController(frm);
+            frm.setVisible(true);
         });
 
         Runtime.getRuntime().addShutdownHook(new Thread(context::close));

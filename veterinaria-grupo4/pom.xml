@@ -41,7 +41,27 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
+        
+        <!-- FLATLAF -->
+        <dependency>
+                <groupId>com.formdev</groupId>
+                <artifactId>flatlaf</artifactId>
+                <version>3.4.1</version> 
+        </dependency>
+        
+        <!-- SWING RAVEN -->
+        <dependency>
+            <groupId>io.github.dj-raven</groupId>
+            <artifactId>swing-pack</artifactId>
+            <version>1.0.1</version> 
+        </dependency>
+        
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>4.2</version> 
+        </dependency>
+        
     </dependencies>
 <build>
     <plugins>
