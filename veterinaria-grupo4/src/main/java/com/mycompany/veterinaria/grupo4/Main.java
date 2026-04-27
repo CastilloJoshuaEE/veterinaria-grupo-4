@@ -1,16 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4;
 
+import com.formdev.flatlaf.FlatLaf;
 import com.mycompany.veterinaria.grupo4.view.frmComputadora;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.mycompany.veterinaria.grupo4.view.auth.FrmPrincipal;
-import com.mycompany.veterinaria.grupo4.viewController.AppController;
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import com.mycompany.veterinaria.grupo4.view.FrmPrincipal;
+import com.mycompany.veterinaria.grupo4.controller.AppController;
+import java.awt.Font;
 
 import javax.swing.*;
 
@@ -18,27 +17,29 @@ import javax.swing.*;
 public class Main {
 
     public static void main(String[] args) {
-
         // FORZAR modo gráfico ANTES de Spring Boot USUARIO: JUAN contraseña: 123456
         System.setProperty("java.awt.headless", "false");
-
-        ConfigurableApplicationContext context =
-                SpringApplication.run(Main.class, args);
-
+        
+        
         SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(
-                        UIManager.getSystemLookAndFeelClassName()
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            
+            FlatRobotoFont.install();
+            FlatLaf.registerCustomDefaultsSource("com.mycompany.veterinaria.grupo4.view.theme");
+            FlatLightLaf.setup();
+        
+            UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
+        });
+    
+        ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+        
+        SwingUtilities.invokeLater(() -> {
             FrmPrincipal frm = new FrmPrincipal();
             AppController ctrl = new AppController(frm);
+            frm.setTitle("Sistema Veterinaria");
             frm.setVisible(true);
         });
-
-        Runtime.getRuntime().addShutdownHook(new Thread(context::close));
+         
+        Runtime.getRuntime().addShutdownHook(
+            new Thread(context::close)
+        );
     }
 }

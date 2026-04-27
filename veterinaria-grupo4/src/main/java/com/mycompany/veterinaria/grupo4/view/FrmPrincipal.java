@@ -1,10 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
-package com.mycompany.veterinaria.grupo4.view.auth;
 
-import javax.swing.ImageIcon;
+package com.mycompany.veterinaria.grupo4.view;
+
+import com.mycompany.veterinaria.grupo4.view.auth.Background;
+import javax.swing.JPanel;
 
 /**
  *
@@ -38,32 +36,47 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        bgPrincipal = new com.mycompany.veterinaria.grupo4.view.auth.Background();
+        bgPrincipal = new javax.swing.JPanel();
+        bgLogin = new com.mycompany.veterinaria.grupo4.view.auth.Background();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        bgPrincipal.setImage(new javax.swing.ImageIcon(getClass().getResource("/image/bg_veterinaria.png"))); // NOI18N
+        bgPrincipal.setLayout(new java.awt.BorderLayout());
+
+        bgLogin.setImage(new javax.swing.ImageIcon(getClass().getResource("/image/bg_veterinaria.png"))); // NOI18N
+        bgPrincipal.add(bgLogin, java.awt.BorderLayout.CENTER);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(bgPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, 1163, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(bgPrincipal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(bgPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(bgPrincipal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    public Background getBgPrincipal() {
-        return bgPrincipal;
+    public Background getBgLogin() {
+        return bgLogin;
     }
 
+    public JPanel getBgPrincipal() {
+        return bgPrincipal;
+    }
+    
+    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.mycompany.veterinaria.grupo4.view.auth.Background bgPrincipal;
+    private com.mycompany.veterinaria.grupo4.view.auth.Background bgLogin;
+    private javax.swing.JPanel bgPrincipal;
     // End of variables declaration//GEN-END:variables
 }
