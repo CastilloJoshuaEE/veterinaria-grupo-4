@@ -46,7 +46,7 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         register.setLayout(new MigLayout("wrap", "push[center]push", "push[]25[]10[]10[]25[]push"));
         JLabel label = new JLabel("Create Account");
         label.setFont(new Font("sansserif", 1, 30));
-        label.setForeground(new Color(7, 164, 121));
+        label.setForeground(new Color(255,178,39));
         register.add(label);
         
         txtUser = new MyTextField();
@@ -64,7 +64,7 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         txtPass.setHint("Password");
         register.add(txtPass, "w 60%");
         Button cmd = new Button();
-        cmd.setBackground(new Color(7, 164, 121));
+        cmd.setBackground(new Color(255,178,39));
         cmd.setForeground(new Color(250, 250, 250));
         cmd.setText("SIGN UP");
         register.add(cmd, "w 40%, h 40");
@@ -74,11 +74,11 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         login.setLayout(new MigLayout("wrap", "push[center]push", "push[]25[]10[]10[]25[]push"));
         JLabel label = new JLabel("Sign In");
         label.setFont(new Font("sansserif", 1, 30));
-        label.setForeground(new Color(7, 164, 121));
+        label.setForeground(new Color(255,178,39));
         login.add(label);
         
         txtEmail = new MyTextField();
-        txtEmail.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/mail.png")));
+        txtEmail.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/user.png")));
         txtEmail.setHint("Email");
         login.add(txtEmail, "w 60%");
         
@@ -95,8 +95,8 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         login.add(cmdForget);
         
         cmdLogin = new Button();
-        cmdLogin.setBackground(new Color(7, 164, 121));
-        cmdLogin.setForeground(new Color(250, 250, 250));
+        cmdLogin.setBackground(new Color(255,178,39));
+        cmdLogin.setForeground(Color.white);
         cmdLogin.setText("SIGN IN");
         login.add(cmdLogin, "w 40%, h 40");
     }

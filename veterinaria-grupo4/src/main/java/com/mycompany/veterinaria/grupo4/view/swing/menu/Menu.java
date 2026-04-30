@@ -27,13 +27,14 @@ public class Menu extends JPanel {
     private final String menuItems[][] = {
         {"~PRINCIPAL~"},
         {"Dashboard"},               // Resumen general, gráficos, citas del día
-        {"Citas Médicas"},           // Calendario interactivo y gestión de turnos
+        {"Citas Médicas", "Agendar", "Consultar"},           // Calendario interactivo y gestión de turnos
         {"~CLÍNICA~"},
         {"Atención Médica"},         // Tabla unificada: Fichas médicas e Historial
-        {"Mascotas y Clientes"},     // Tabla unificada: Directorio de pacientes y sus dueños
+        {"Mascotas"},                // Tabla unificada: Directorio de pacientes y sus dueños
+        {"Clientes","Nuevo","Ver todos"},
         {"~ADMINISTRACIÓN~"},
         {"Inventario"},              // Tabla unificada: Medicamentos e Instrumentos
-        {"Facturación"},             // Tabla unificada: Generar cobros y métodos de pago
+        {"Facturación"},             // Tabla unificada: Métodos de pago
         {"Personal Veterinario"},    // Tabla unificada: CRUD de empleados/doctores
         {"~SISTEMA~"},
         {"Configuración"},           // Ajustes del sistema y computadora
@@ -69,7 +70,7 @@ public class Menu extends JPanel {
     protected final boolean hideMenuTitleOnMinimum = true;
     protected final int menuTitleLeftInset = 5;
     protected final int menuTitleVgap = 5;
-    protected final int menuMaxWidth = 250;
+    protected final int menuMaxWidth = 200;
     protected final int menuMinWidth = 60;
     protected final int headerFullHgap = 5;
 

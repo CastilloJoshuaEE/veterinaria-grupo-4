@@ -6,6 +6,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.UIScale;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.Menu;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
+import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -25,12 +26,12 @@ import javax.swing.border.EmptyBorder;
  *
  * @author juan
  */
-public class pnlMain extends JLayeredPane {
+public class PnlMain extends JLayeredPane {
 
     /**
      * Creates new form pnlMain
      */
-    public pnlMain() {
+    public PnlMain() {
         initComponents();
         init();
     }
@@ -72,26 +73,9 @@ public class pnlMain extends JLayeredPane {
         menuButton.setIcon(new FlatSVGIcon("icon/svg/" + icon, 0.8f));
     }
 
-//    private void initMenuEvent() {
-//        menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
-//            // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
-//            if (index == 0) {
-//                Application.showForm(new FormDashboard());
-//            } else if (index == 1) {
-//                if (subIndex == 1) {
-//                    Application.showForm(new FormInbox());
-//                } else if (subIndex == 2) {
-//                    Application.showForm(new FormRead());
-//                } else {
-//                    action.cancel();
-//                }
-//            } else if (index == 9) {
-//                Application.logout();
-//            } else {
-//                action.cancel();
-//            }
-//        });
-//    }
+    public void addMenuEvent(MenuEvent event) {
+        menu.addMenuEvent(event);
+    }
 
     private void setMenuFull(boolean full) {
         String icon;
@@ -189,6 +173,20 @@ public class pnlMain extends JLayeredPane {
             }
         }
     }
+
+    public Menu getMenu() {
+        return menu;
+    }
+
+    public JPanel getPanelBody() {
+        return panelBody;
+    }
+
+    public JButton getMenuButton() {
+        return menuButton;
+    }
+    
+    
     
     /**
      * This method is called from within the constructor to initialize the form.

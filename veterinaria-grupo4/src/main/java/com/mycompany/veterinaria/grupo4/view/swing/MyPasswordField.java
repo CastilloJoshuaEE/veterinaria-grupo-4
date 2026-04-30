@@ -10,6 +10,7 @@ import java.awt.RenderingHints;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPasswordField;
+import javax.swing.UIManager;
 
 public class MyPasswordField extends JPasswordField {
 
@@ -45,33 +46,47 @@ public class MyPasswordField extends JPasswordField {
 
     public MyPasswordField() {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setOpaque(false);
         setBackground(new Color(0, 0, 0, 0));
         setForeground(Color.decode("#7A8C8D"));
         setFont(new java.awt.Font("sansserif", 0, 13));
         setSelectionColor(new Color(75, 175, 152));
+        
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) { repaint(); }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) { repaint(); }
+        });
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
+        Graphics2D g2 = (Graphics2D) g.create(); 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(new Color(230, 245, 241));
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 5, 5);
-        paintIcon(g);
-        super.paintComponent(g);
-    }
+        boolean isDark = UIManager.getBoolean("laf.dark");
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        if (getPassword().length == 0) {
-            int h = getHeight();
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            Insets ins = getInsets();
-            FontMetrics fm = g.getFontMetrics();
-            g.setColor(new Color(200, 200, 200));
-            g.drawString(hint, ins.left, h / 2 + fm.getAscent() / 2 - 2);
+        // ── Fondo ────────────────────────────────────────────────
+        g2.setColor(isDark
+            ? new Color(255, 255, 255, 18)
+            : Color.WHITE);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+        // ── Borde ────────────────────────────────────────────────
+        if (isFocusOwner()) {
+            g2.setColor(new Color(230, 140, 30, 180));
+            g2.setStroke(new java.awt.BasicStroke(1.8f));
+        } else {
+            g2.setColor(isDark
+                ? new Color(255, 255, 255, 40)
+                : new Color(0, 0, 0, 30));
+            g2.setStroke(new java.awt.BasicStroke(1.2f));
         }
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+
+        g2.dispose(); 
+        paintIcon(g); 
+        super.paintComponent(g); 
     }
 
     private void paintIcon(Graphics g) {

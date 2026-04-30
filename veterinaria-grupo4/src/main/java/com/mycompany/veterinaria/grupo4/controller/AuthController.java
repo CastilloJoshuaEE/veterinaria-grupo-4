@@ -3,11 +3,9 @@ package com.mycompany.veterinaria.grupo4.controller;
 import com.mycompany.veterinaria.grupo4.api.dto.LoginRequest;
 import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
 import com.mycompany.veterinaria.grupo4.view.auth.PnlBgLogin;
-import com.mycompany.veterinaria.grupo4.view.frmSistema;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import org.springframework.web.client.RestTemplate;
 
 /**
