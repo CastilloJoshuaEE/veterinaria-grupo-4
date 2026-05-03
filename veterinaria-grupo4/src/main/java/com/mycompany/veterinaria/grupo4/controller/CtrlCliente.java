@@ -2,11 +2,14 @@ package com.mycompany.veterinaria.grupo4.controller;
 
 import com.mycompany.veterinaria.grupo4.model.entity.Cliente;
 import com.mycompany.veterinaria.grupo4.model.entity.Estado;
+import com.mycompany.veterinaria.grupo4.view.cliente.FormRegistroCliente;
 import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
 import com.mycompany.veterinaria.grupo4.view.swing.table.Table;
+import java.awt.Frame;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -131,20 +134,68 @@ public class CtrlCliente {
 
     // ── Acciones de la tabla ─────────────────────────────────────
     private void nuevo() {
-        // TODO: abrir formulario de registro
-        System.out.println("Nuevo cliente");
+        FormRegistroCliente form = new FormRegistroCliente(
+            (Frame) SwingUtilities.getWindowAncestor(pnlCliente)
+        );
+        form.getBtnAccion().addActionListener(e -> {
+            String error = validarDatos(form);
+            if (error != null) {
+                JOptionPane.showMessageDialog(form, error, "Validación",
+                    JOptionPane.WARNING_MESSAGE);
+                return;      
+            }
+            registrar(getCliente(form));
+            form.dispose();
+        });
+        form.setVisible(true);
     }
 
     private void editar(Cliente c) {
-        // TODO: abrir formulario con datos de c
-        System.out.println("Editar: " + c.getNombre());
+        FormRegistroCliente form = new FormRegistroCliente(
+            (Frame) SwingUtilities.getWindowAncestor(pnlCliente), c
+        );
+        form.getBtnAccion().addActionListener(e -> {
+            String error = validarDatos(form);
+            if (error != null) {
+                JOptionPane.showMessageDialog(form, error, "Validación",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            actualizar(getCliente(form));
+            form.dispose();
+            
+        });
+        form.setVisible(true);
     }
 
     private void ver(Cliente c) {
         // TODO: abrir panel de detalle
         System.out.println("Ver: " + c.getNombre());
     }
+    
+    // ── Llamadas a la API  ──────────────────────────────
+private void registrar(Cliente c) {
+    try {
+        restTemplate.postForObject(apiBaseUrl + "/crear",c, Boolean.class);
+        
+        cargarTabla();
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(pnlCliente,
+            "Error al registrar: " + ex.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
 
+private void actualizar(Cliente c) {
+    try {
+        restTemplate.put(apiBaseUrl + "/actualizar", c);
+        cargarTabla();
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(pnlCliente,
+            "Error al actualizar: " + ex.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
     private void eliminar(Cliente c) {
         int confirm = JOptionPane.showConfirmDialog(pnlCliente,
             "¿Eliminar a " + c.getNombre() + " " + c.getApellido() + "?",
@@ -159,5 +210,40 @@ public class CtrlCliente {
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    public String validarDatos(FormRegistroCliente form) {
+        if (form.getTxtCedula().getText().trim().isEmpty())
+            return "Ingrese la cédula";
+        if (form.getTxtCedula().getText().trim().length() != 10)
+            return "La cédula debe tener 10 dígitos";
+        if (!form.getTxtCedula().getText().trim().matches("\\d+"))
+            return "La cédula debe contener solo números";
+        if (form.getTxtNombre().getText().trim().isEmpty())
+            return "Ingrese el nombre";
+        if (form.getTxtApellido().getText().trim().isEmpty())
+            return "Ingrese el apellido";
+        if (form.getTxtTelefono().getText().trim().isEmpty())
+            return "Ingrese el teléfono";
+        if (form.getTxtTelefono().getText().trim().length() != 10)
+            return "El teléfono debe tener 10 dígitos";
+        if (!form.getTxtTelefono().getText().trim().matches("\\d+"))
+            return "El teléfono debe contener solo números";
+        if (form.getTxtEmail().getText().trim().isEmpty())
+            return "Ingrese el email";
+        if (!form.getTxtEmail().getText().trim().matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"))
+            return "Ingrese un email válido";
+        return null; // null = todo OK
+    }
+    
+    public Cliente getCliente(FormRegistroCliente form) {
+        Cliente c = form.getClienteActual() != null ? form.getClienteActual()  : new Cliente();
+        c.setCedula(form.getTxtCedula().getText().trim());
+        c.setNombre(form.getTxtNombre().getText().trim());
+        c.setApellido(form.getTxtApellido().getText().trim());
+        c.setTelefono(form.getTxtTelefono().getText().trim());
+        c.setCorreoElectronico(form.getTxtEmail().getText().trim());
+        c.setDireccion(form.getTxtDireccion().getText().trim());
+        return c;
     }
 }

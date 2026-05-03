@@ -30,7 +30,7 @@ public class Menu extends JPanel {
         {"Citas Médicas", "Agendar", "Consultar"},           // Calendario interactivo y gestión de turnos
         {"~CLÍNICA~"},
         {"Atención Médica"},         // Tabla unificada: Fichas médicas e Historial
-        {"Mascotas"},                // Tabla unificada: Directorio de pacientes y sus dueños
+        {"Mascotas","Nuevo","Ver todos"},                // Tabla unificada: Directorio de pacientes y sus dueños
         {"Clientes","Nuevo","Ver todos"},
         {"~ADMINISTRACIÓN~"},
         {"Inventario"},              // Tabla unificada: Medicamentos e Instrumentos

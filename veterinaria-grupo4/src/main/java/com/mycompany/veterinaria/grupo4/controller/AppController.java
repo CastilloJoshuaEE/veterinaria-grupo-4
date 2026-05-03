@@ -6,6 +6,7 @@ import com.mycompany.veterinaria.grupo4.view.auth.PnlBgLogin;
 import com.mycompany.veterinaria.grupo4.view.PnlMain;
 import com.mycompany.veterinaria.grupo4.view.Dashboard;
 import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
+import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -64,9 +65,16 @@ public class AppController {
                         default -> action.cancel();
                     }
                 }
+                case 3 -> {
+                    switch (subIndex) {
+                        //case 1 -> mostrarMascotas(); cambiar a nueva mascota
+                        case 2 -> mostrarMascotas();
+                        default -> action.cancel();
+                    }
+                }
                 case 4 -> {
                     switch (subIndex) {
-                        case 1 -> mostrarClientes();
+                        //case 1 -> mostrarClientes(); Cambiar a nuevo cliente
                         case 2 -> mostrarClientes();
                         default -> action.cancel();
                     }
@@ -84,9 +92,9 @@ public class AppController {
     }
 
     private void mostrarMascotas() {
-//        PnlMascota pnl = new PnlMascota();
-//        new MascotaController(pnl); // el controller llena la tabla
-//        main.showForm(pnl);
+        PnlMascota pnl = new PnlMascota();
+        CtrlMascotas ctrl = new CtrlMascotas(pnl); // el controller llena la tabla
+        main.showForm(pnl);
     }
 
     private void mostrarCitas() {
