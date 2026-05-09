@@ -14,4 +14,5 @@ public interface IVeterinarioDAO {
     List<Veterinario> buscarPorNombre(String nombre) throws SQLException;
     List<Veterinario> buscarPorEspecialidad(String especialidad) throws SQLException;
     List<Veterinario> obtenerPorServicio(int idServicio) throws SQLException;
+    public List<Veterinario> buscar(String termino) throws SQLException;
 }
