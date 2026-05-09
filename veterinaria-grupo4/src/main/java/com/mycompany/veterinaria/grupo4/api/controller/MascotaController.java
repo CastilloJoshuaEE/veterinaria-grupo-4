@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.api.controller;
 
+import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import com.mycompany.veterinaria.grupo4.service.MascotaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/mascota")
@@ -101,12 +104,36 @@ public class MascotaController {
     }
 
     @DeleteMapping("/eliminar/{idMascota}")
-    public boolean eliminar(@PathVariable int idMascota) {
-        return mascotaService.eliminar(idMascota);
+    public void eliminar(@PathVariable int idMascota) {
+        boolean resultado = mascotaService.eliminar(idMascota);
+        if (!resultado) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                "La mascota ya posee una cita médica realizada. No se puede eliminar.");
+        }
     }
 
     @GetMapping("/foto/{idMascota}")
     public byte[] obtenerFoto(@PathVariable int idMascota) {
         return mascotaService.obtenerFoto(idMascota);
     }
+    @PostMapping("/ficha/guardar")
+public boolean guardarFichaMedica(@RequestBody FichaMedicaDTO fichaDTO) {
+    try {
+        // Asumiendo que tienes un FichaMedicaService
+        // Si no existe, usa MascotaService
+        return mascotaService.guardarFichaMedica(fichaDTO.getIdMascota(), 
+            fichaDTO.getAlergias(), 
+            fichaDTO.getEnfermedadesCronicas(), 
+            fichaDTO.getObservaciones());
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+@GetMapping("/ficha/{idMascota}")
+public FichaMedicaDTO obtenerFichaMedica(@PathVariable int idMascota) {
+    return mascotaService.obtenerFichaMedica(idMascota);
+}
+
 }

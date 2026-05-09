@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.model.impl;
 
+import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
 import com.mycompany.veterinaria.grupo4.model.dao.IMascotaDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import com.mycompany.veterinaria.grupo4.util.DatabaseConnection;
@@ -229,4 +230,42 @@ public class MascotaDAOImpl implements IMascotaDAO {
         }
         return lista;
     }
+    @Override
+public boolean actualizarFichaMedica(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) throws SQLException {
+    String sql = "{call SP_ACTUALIZAR_FICHA_MEDICA(?, ?, ?, ?)}";
+    try (Connection conn = DatabaseConnection.getConnection();
+         CallableStatement stmt = conn.prepareCall(sql)) {
+        stmt.setInt(1, idMascota);
+        stmt.setString(2, alergias);
+        stmt.setString(3, enfermedadesCronicas);
+        stmt.setString(4, observaciones);
+        
+        // El SP puede devolver un resultado
+        boolean hadResults = stmt.execute();
+        return !hadResults; // Si no hay error, retorna true
+    } catch (SQLException e) {
+        e.printStackTrace();
+        throw e;
+    }
+}
+
+@Override
+public FichaMedicaDTO obtenerFichaMedicaDTO(int idMascota) throws SQLException {
+    String sql = "{call SP_OBTENER_FICHA_MEDICA(?)}";
+    try (Connection conn = DatabaseConnection.getConnection();
+         CallableStatement stmt = conn.prepareCall(sql)) {
+        stmt.setInt(1, idMascota);
+        ResultSet rs = stmt.executeQuery();
+        
+        FichaMedicaDTO ficha = new FichaMedicaDTO();
+        ficha.setIdMascota(idMascota);
+        
+        if (rs.next()) {
+            ficha.setAlergias(rs.getString("ALERGIAS"));
+            ficha.setEnfermedadesCronicas(rs.getString("ENFERMEDADES_CRONICAS"));
+            ficha.setObservaciones(rs.getString("OBSERVACIONES"));
+        }
+        return ficha;
+    }
+}
 }

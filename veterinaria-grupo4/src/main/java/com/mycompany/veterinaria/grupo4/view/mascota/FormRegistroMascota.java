@@ -39,6 +39,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
@@ -123,7 +124,7 @@ public class FormRegistroMascota extends JDialog {
     private void init(String titulo, String labelBoton) {
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, 0));
-        setSize(450, 570);
+        setSize(480, 620);
         setLocationRelativeTo(getParent());
 
         addWindowFocusListener(new WindowFocusListener() {
@@ -189,19 +190,23 @@ public class FormRegistroMascota extends JDialog {
         header.add(btnX, BorderLayout.EAST);
         return header;
     }
-
     private JPanel buildCuerpo() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setOpaque(false);
+        // Panel principal con BorderLayout que contendrá el scroll
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setOpaque(false);
+
+        // Panel interior con BoxLayout Y_AXIS que contendrá todos los campos
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setOpaque(false);
 
         // Foto
-        panel.add(buildPanelFoto());
-        panel.add(Box.createVerticalStrut(12));
+        contentPanel.add(buildPanelFoto());
+        contentPanel.add(Box.createVerticalStrut(12));
 
         // Cédula + botón buscar
-        panel.add(buildFilaCedula());
-        panel.add(Box.createVerticalStrut(8));
+        contentPanel.add(buildFilaCedula());
+        contentPanel.add(Box.createVerticalStrut(8));
 
         // Nombre cliente (solo lectura)
         txtNombreCliente = new JTextField();
@@ -211,36 +216,52 @@ public class FormRegistroMascota extends JDialog {
         txtNombreCliente.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
         txtNombreCliente.setPreferredSize(FIELD_SIZE);
         txtNombreCliente.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        panel.add(wrap("Propietario", txtNombreCliente));
-        panel.add(Box.createVerticalStrut(8));
+        contentPanel.add(wrap("Propietario", txtNombreCliente));
+        contentPanel.add(Box.createVerticalStrut(8));
 
         // Nombre mascota (fila completa)
         txtNombre = new MyTextField();
         txtNombre.setHint("Nombre de la mascota");
         txtNombre.setPreferredSize(FIELD_SIZE);
         txtNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        panel.add(wrap("Nombre", txtNombre));
-        panel.add(Box.createVerticalStrut(8));
+        contentPanel.add(wrap("Nombre", txtNombre));
+        contentPanel.add(Box.createVerticalStrut(8));
 
         // Especie | Raza
         txtEspecie = field("Especie");
         txtRaza    = field("Raza");
-        panel.add(wrapDos("Especie", txtEspecie, "Raza", txtRaza));
-        panel.add(Box.createVerticalStrut(8));
+        contentPanel.add(wrapDos("Especie", txtEspecie, "Raza", txtRaza));
+        contentPanel.add(Box.createVerticalStrut(8));
 
         // Sexo | Fecha de nacimiento
         cmbSexo = new JComboBox<>(new String[]{"Macho", "Hembra"});
         cmbSexo.setSelectedIndex(-1);
         cmbSexo.setPreferredSize(FIELD_SIZE);
-        panel.add(wrapDos("Sexo", cmbSexo, "Fecha de nacimiento", buildFilaFecha()));
-        panel.add(Box.createVerticalStrut(8));
+        contentPanel.add(wrapDos("Sexo", cmbSexo, "Fecha de nacimiento", buildFilaFecha()));
+        contentPanel.add(Box.createVerticalStrut(8));
 
         // Peso | Color
         txtPeso  = field("Ej: 4.5");
         txtColor = field("Color de pelaje");
-        panel.add(wrapDos("Peso (kg)", txtPeso, "Color", txtColor));
+        contentPanel.add(wrapDos("Peso (kg)", txtPeso, "Color", txtColor));
 
-        return panel;
+        // Espacio extra al final para mejor scroll
+        contentPanel.add(Box.createVerticalStrut(20));
+
+        // Crear JScrollPane con el contentPanel
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        // Personalizar el scrollbar (opcional)
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        return mainPanel;
     }
 
     /** Panel de foto con borde punteado; clic abre el selector de archivo. */

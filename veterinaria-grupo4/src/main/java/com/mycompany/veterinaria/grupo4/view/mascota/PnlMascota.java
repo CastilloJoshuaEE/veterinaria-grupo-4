@@ -86,7 +86,7 @@ public class PnlMascota extends javax.swing.JPanel {
         lblFiltrarCliente.setFont(new java.awt.Font("Segoe UI", 0, 12));
         lblFiltrarCliente.setText("Filtrar por cliente:");
 
-        txtBusqueda.setText("myTextField1");
+        txtBusqueda.setText("Buscar por nombre de mascota");
         txtBusqueda.setToolTipText("Buscar por nombre de mascota");
 
         // NUEVO: Configurar el ComboBox de clientes

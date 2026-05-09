@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.model.dao;
 
+import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import java.sql.SQLException;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface IMascotaDAO {
     byte[] obtenerFoto(int idMascota) throws SQLException;
     List<Mascota> listarTodo() throws SQLException;
     List<Mascota> buscarMascotas(String termino) throws SQLException; 
+boolean actualizarFichaMedica(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) throws SQLException;
+FichaMedicaDTO obtenerFichaMedicaDTO(int idMascota) throws SQLException;
 }

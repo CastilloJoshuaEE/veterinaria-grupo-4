@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.service;
 
+import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
 import com.mycompany.veterinaria.grupo4.model.dao.IMascotaDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import com.mycompany.veterinaria.grupo4.model.impl.MascotaDAOImpl;
@@ -86,4 +87,21 @@ public class MascotaService {
             return null;
         }
     }
+    public boolean guardarFichaMedica(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) {
+    try {
+        return mascotaDAO.actualizarFichaMedica(idMascota, alergias, enfermedadesCronicas, observaciones);
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+public FichaMedicaDTO obtenerFichaMedica(int idMascota) {
+    try {
+        return mascotaDAO.obtenerFichaMedicaDTO(idMascota);
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return null;
+    }
+}
 }
