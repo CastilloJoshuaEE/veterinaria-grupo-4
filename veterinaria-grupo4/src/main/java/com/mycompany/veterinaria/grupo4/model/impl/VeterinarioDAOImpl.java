@@ -1,6 +1,7 @@
 package com.mycompany.veterinaria.grupo4.model.impl;
 
 import com.mycompany.veterinaria.grupo4.model.dao.IVeterinarioDAO;
+import com.mycompany.veterinaria.grupo4.model.entity.EspecialidadVeterinaria;
 import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.util.DatabaseConnection;
 import java.sql.*;
@@ -207,6 +208,40 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
                 v.setNombre(rs.getString("NOMBRE"));
                 v.setApellido(rs.getString("APELLIDO"));
                 lista.add(v);
+            }
+        }
+        return lista;
+    }
+    
+    @Override
+    public List<Veterinario> buscar(String termino) throws SQLException {
+        List<Veterinario> lista = new ArrayList<>();
+        String sql = "{call SP_BUSCAR_VETERINARIOS(?)}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+
+            stmt.setString(1, termino);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Veterinario v = new Veterinario();
+                    v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
+                    v.setCedula(rs.getString("CEDULA"));
+                    v.setNombre(rs.getString("NOMBRE"));
+                    v.setApellido(rs.getString("APELLIDO"));
+                    v.setTelefono(rs.getString("TELEFONO"));
+                    v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
+
+                    int idEspecialidad = rs.getInt("ID_ESPECIALIDAD");
+                    if (!rs.wasNull()) {
+                        EspecialidadVeterinaria especialidad = new EspecialidadVeterinaria();
+                        especialidad.setIdEspecialidad(idEspecialidad);
+                        especialidad.setNombreEspecialidad(rs.getString("ESPECIALIDAD"));
+                        v.setEspecialidad(especialidad); 
+                    }
+                    lista.add(v);
+                }
             }
         }
         return lista;

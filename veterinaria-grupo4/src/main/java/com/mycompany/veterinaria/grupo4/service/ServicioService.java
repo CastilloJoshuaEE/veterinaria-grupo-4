@@ -110,4 +110,13 @@ public class ServicioService {
             return false;
         }
     }
+    
+    public List<Servicio> listarPorVeterinario(int idVeterinario) {
+        try {
+            return servicioDAO.listarPorVeterinario(idVeterinario);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

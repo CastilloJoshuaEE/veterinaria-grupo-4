@@ -17,4 +17,5 @@ public interface IServicioDAO {
     List<Veterinario> obtenerVeterinariosNoAsignados(int idServicio) throws SQLException;
     boolean asignarVeterinario(int idServicio, int idVeterinario) throws SQLException;
     boolean eliminarAsignacionVeterinario(int idAsignacion) throws SQLException;
+    public List<Servicio> listarPorVeterinario(int idVeterinario) throws SQLException;
 }

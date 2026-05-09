@@ -43,7 +43,12 @@ public class VeterinarioController {
     public List<Veterinario> obtenerPorServicio(@PathVariable int idServicio) {
         return veterinarioService.obtenerPorServicio(idServicio);
     }
-
+    
+    @GetMapping("/buscar")
+    public List<Veterinario> buscarVeterinarios(@RequestParam(defaultValue = "") String termino) {
+        return veterinarioService.buscar(termino);
+    }
+    
     @PostMapping("/crear")
     public boolean crear(@RequestBody Veterinario veterinario) {
         return veterinarioService.crear(veterinario);

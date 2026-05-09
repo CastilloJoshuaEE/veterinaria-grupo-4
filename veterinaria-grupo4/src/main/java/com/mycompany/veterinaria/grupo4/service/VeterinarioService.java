@@ -91,4 +91,13 @@ public class VeterinarioService {
             return null;
         }
     }
+    
+    public List<Veterinario> buscar(String termino) {
+        try {
+            return veterinarioDAO.buscar(termino);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

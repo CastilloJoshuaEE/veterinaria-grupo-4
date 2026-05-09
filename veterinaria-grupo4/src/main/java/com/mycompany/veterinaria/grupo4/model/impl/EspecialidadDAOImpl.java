@@ -12,12 +12,12 @@ public class EspecialidadDAOImpl implements IEspecialidadDAO {
     @Override
     public List<EspecialidadVeterinaria> obtenerTodas() throws SQLException {
         List<EspecialidadVeterinaria> lista = new ArrayList<>();
-        String sql = "SELECT ID_ESPECIALIDAD, NOMBRE_ESPECIALIDAD FROM ESPECIALIDAD_VETERINARIA ORDER BY ID_ESPECIALIDAD";
-        
+        String sql = "{call SP_OBTENER_ESPECIALIDADES}"; // Usando el SP
+
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            
+             CallableStatement stmt = conn.prepareCall(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
                 EspecialidadVeterinaria e = new EspecialidadVeterinaria();
                 e.setIdEspecialidad(rs.getInt("ID_ESPECIALIDAD"));
