@@ -26,19 +26,28 @@ public class Menu extends JPanel {
 
     private final String menuItems[][] = {
         {"~PRINCIPAL~"},
-        {"Dashboard"},               // Resumen general, gráficos, citas del día
-        {"Citas Médicas", "Agendar", "Consultar"},           // Calendario interactivo y gestión de turnos
+            {"Dashboard"},               //  Resumen general, gráficos. Citas del dia
+            {"Citas Médicas", 
+                //"Agendar",             //  Nueva Cita Medica
+                "Ver todas"},            //  Citas Medicas tabla
         {"~CLÍNICA~"},
-        {"Atención Médica"},         // Tabla unificada: Fichas médicas e Historial
-        {"Mascotas","Nuevo","Ver todos"},                // Tabla unificada: Directorio de pacientes y sus dueños
-        {"Clientes","Nuevo","Ver todos"},
+            {"Atención Médica"},         //  Tabla unificada: Fichas médicas e Historial
+            {"Mascotas",
+                //"Nuevo",
+                "Ver todos"},            //  Tabla unificada: Directorio de pacientes y sus dueños
+            {"Clientes",
+                //"Nuevo",
+                "Ver todos"},
         {"~ADMINISTRACIÓN~"},
-        {"Inventario"},              // Tabla unificada: Medicamentos e Instrumentos
-        {"Facturación"},             // Tabla unificada: Métodos de pago
-        {"Personal Veterinario"},    // Tabla unificada: CRUD de empleados/doctores
+            {"Inventario",
+                "Medicamentos",          //  Tabla Medicamentos
+                "Instrumentos",          //  Tabla Instrumentos
+                "Servicios"},            //  Tabla Servicios
+            {"Facturación"},             //  Facturas
+            {"Personal Veterinario"},    //  CRUD de Medicos
         {"~SISTEMA~"},
-        {"Configuración"},           // Ajustes del sistema y computadora
-        {"Cerrar Sesión"}
+            {"Configuración"},           //  Ajustes del sistema y computadora
+            {"Cerrar Sesión"}
     };
 
     public boolean isMenuFull() {

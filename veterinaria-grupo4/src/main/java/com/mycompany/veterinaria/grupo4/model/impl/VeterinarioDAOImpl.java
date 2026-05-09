@@ -97,7 +97,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             stmt.setString(2, veterinario.getNombre());
             stmt.setString(3, veterinario.getApellido());
             stmt.setString(4, veterinario.getTelefono());
-            stmt.setInt(5, veterinario.getIdEspecialidad());
+            stmt.setInt(5, veterinario.getEspecialidad().getIdEspecialidad());
             stmt.setDouble(6, veterinario.getPagoMensual());
             stmt.setString(7, veterinario.getDireccion());
             stmt.setString(8, veterinario.getCorreoElectronico());
@@ -118,7 +118,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             stmt.setString(3, veterinario.getNombre());
             stmt.setString(4, veterinario.getApellido());
             stmt.setString(5, veterinario.getTelefono());
-            stmt.setInt(6, veterinario.getIdEspecialidad());
+            stmt.setInt(6, veterinario.getEspecialidad().getIdEspecialidad());
             stmt.setDouble(7, veterinario.getPagoMensual());
             stmt.setString(8, veterinario.getDireccion());
             stmt.setString(9, veterinario.getCorreoElectronico());
@@ -204,10 +204,8 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             while (rs.next()) {
                 Veterinario v = new Veterinario();
                 v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
                 v.setNombre(rs.getString("NOMBRE"));
                 v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
                 lista.add(v);
             }
         }

@@ -39,18 +39,18 @@ public class CitaService {
         }
     }
 
-    public int agendar(Cita cita, String idsMascotas) {
+    public int agendar(Cita cita) {
         try {
-            return citaDAO.agendar(cita, idsMascotas);
+            return citaDAO.agendar(cita);
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
         }
     }
 
-    public boolean actualizar(Cita cita, String idsMascotas) {
+    public boolean actualizar(Cita cita) {
         try {
-            return citaDAO.actualizar(cita, idsMascotas);
+            return citaDAO.actualizar(cita);
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

@@ -22,12 +22,22 @@ public class MascotaController {
     public List<Mascota> listarPorCliente(@PathVariable int idCliente) {
         return mascotaService.listarPorCliente(idCliente);
     }
+    
+    @GetMapping("/listar")
+    public List<Mascota> listarTodo() {
+        return mascotaService.listarTodo();
+    }
+
+    @GetMapping("/buscar")
+    public List<Mascota> buscarMascotas(@RequestParam(name = "termino", required = false, defaultValue = "") String termino) {
+        return mascotaService.buscarMascotas(termino);
+    }
 
     @GetMapping("/{idMascota}")
     public Mascota obtenerPorId(@PathVariable int idMascota) {
         return mascotaService.obtenerPorId(idMascota);
     }
-
+    
     @PostMapping(value = "/crear", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public int crear(
             @RequestParam("idCliente") int idCliente,

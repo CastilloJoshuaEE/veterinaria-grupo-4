@@ -130,9 +130,9 @@ public class frmCalendarioCitasMedicas extends JFrame {
             for (Cita c : citas) {
                 modelCitas.addRow(new Object[]{
                     sdf.format(c.getFechaHora()),
-                    "Cliente ID: " + c.getIdCliente(),
+                    "Cliente ID: " + c.getCliente().getIdCliente(),
                     "-",
-                    "Servicio ID: " + c.getIdServicio(),
+                    "Servicio ID: " + c.getServicio().getIdServicio(),
                     "-",
                     c.getEstado()
                 });

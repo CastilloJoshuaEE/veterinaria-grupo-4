@@ -1,13 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.model.impl;
 
 import com.mycompany.veterinaria.grupo4.model.dao.IMascotaDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import com.mycompany.veterinaria.grupo4.util.DatabaseConnection;
-import com.mycompany.veterinaria.grupo4.util.Parametro;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -133,5 +128,105 @@ public class MascotaDAOImpl implements IMascotaDAO {
             }
             return null;
         }
+    }
+    
+    @Override
+    public List<Mascota> listarTodo() throws SQLException {
+        List<Mascota> mascotas = new ArrayList<>();
+        // Usamos el SP que definimos para el listado general
+        String sql = "{call SP_OBTENER_MASCOTAS}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Mascota m = new Mascota();
+                // Datos básicos de la mascota
+                m.setIdMascota(rs.getInt("ID_MASCOTA"));
+                m.setIdCliente(rs.getInt("ID_CLIENTE"));
+                m.setNombre(rs.getString("NOMBRE"));
+                m.setEspecie(rs.getString("ESPECIE"));
+                m.setRaza(rs.getString("RAZA"));
+
+                // Manejo del char SEXO
+                String sexoStr = rs.getString("SEXO");
+                if (sexoStr != null && !sexoStr.isEmpty()) {
+                    m.setSexo(sexoStr.charAt(0));
+                }
+
+                m.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
+
+                // Manejo de Double para evitar el 0.0 si es nulo en DB
+                double peso = rs.getDouble("PESO");
+                if (!rs.wasNull()) {
+                    m.setPeso(peso);
+                }
+
+                m.setColor(rs.getString("COLOR"));
+
+                // ── CRÍTICO: La foto para tu ModelProfile ──
+                m.setFoto(rs.getBytes("FOTO")); 
+
+                m.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
+
+                mascotas.add(m);
+            }
+        }
+        return mascotas;
+    }
+    
+    @Override
+    public List<Mascota> buscarMascotas(String termino) throws SQLException {
+        List<Mascota> lista = new ArrayList<>();
+        // Llamada al nuevo SP de búsqueda dinámica
+        String sql = "{call SP_BUSCAR_MASCOTAS(?)}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+
+            // Seteamos el término de búsqueda (nombre, cédula, etc.)
+            stmt.setString(1, termino);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Mascota m = new Mascota();
+
+                    // Mapeo de datos básicos
+                    m.setIdMascota(rs.getInt("ID_MASCOTA"));
+                    m.setIdCliente(rs.getInt("ID_CLIENTE"));
+                    m.setNombre(rs.getString("NOMBRE"));
+                    m.setEspecie(rs.getString("ESPECIE"));
+                    m.setRaza(rs.getString("RAZA"));
+
+                    // Manejo del tipo char para SEXO
+                    String sexoStr = rs.getString("SEXO");
+                    if (sexoStr != null && !sexoStr.isEmpty()) {
+                        m.setSexo(sexoStr.charAt(0));
+                    }
+
+                    m.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
+
+                    // Manejo de Double para evitar errores con valores nulos
+                    double peso = rs.getDouble("PESO");
+                    if (!rs.wasNull()) {
+                        m.setPeso(peso);
+                    }
+
+                    m.setColor(rs.getString("COLOR"));
+
+                    // ── CRÍTICO: Obtenemos la FOTO para el ModelProfile ──
+                    m.setFoto(rs.getBytes("FOTO"));
+
+                    m.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
+
+                    // Opcional: Si su objeto Mascota tiene campos para el nombre del dueño
+                    // m.setNombreDueno(rs.getString("NOMBRE_CLIENTE"));
+
+                    lista.add(m);
+                }
+            }
+        }
+        return lista;
     }
 }

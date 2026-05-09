@@ -35,12 +35,12 @@ public class TableCitaEstado extends JLabel{
         if (estadoCita != null) {
             Graphics2D g2 = (Graphics2D) grphcs;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            GradientPaint g;
+            Color g;
             g = switch (estadoCita) {
-                case PENDIENTE -> new GradientPaint(0, 0, new Color(255, 167, 38), 0, getHeight(), new Color(167, 94, 236));
-                case REALIZADA -> new GradientPaint(0, 0, new Color(102, 187, 106), 0, getHeight(), new Color(123, 123, 245));
-                case CANCELADA -> new GradientPaint(0, 0, new Color(255, 138, 128), 0, getHeight(), new Color(211, 184, 61));
-                default -> new GradientPaint(0, 0, new Color(241, 208, 62), 0, getHeight(), new Color(211, 184, 61));
+                case PENDIENTE -> new Color(255, 193, 7);
+                case REALIZADA -> new Color(76, 175, 80);
+                case CANCELADA -> new Color(244, 67, 54);
+                default -> new Color(33, 150, 243);
             };
             g2.setPaint(g);
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 1, 1);
