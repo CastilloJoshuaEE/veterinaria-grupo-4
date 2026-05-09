@@ -81,11 +81,6 @@
         </dependency>
         
         <dependency>
-            <groupId>com.raven</groupId>
-            <artifactId>swing-toast-notifications</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
             <version>RELEASE260</version>
