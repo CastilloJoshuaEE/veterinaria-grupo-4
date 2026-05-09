@@ -28,6 +28,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -197,52 +199,64 @@ public class FormRegistroCita extends JDialog {
     }
  
     private JPanel buildCuerpo(List<Servicio> servicios) {
-        JPanel panel = new JPanel(new GridLayout(0, 1, 0, 10));
-        panel.setOpaque(false);
- 
-        panel.add(buildFilaCedula());
- 
-        txtNombreCliente = new JTextField();
-        txtNombreCliente.setEditable(false);
-        txtNombreCliente.setFont(new Font("SansSerif", Font.ITALIC, 13));
-        txtNombreCliente.setForeground(new Color(80, 160, 80));
-        txtNombreCliente.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
-        txtNombreCliente.setPreferredSize(new Dimension(0, 36));
-        panel.add(wrap("Nombre del cliente", txtNombreCliente));
- 
-        cmbServicio = new JComboBox<>(servicios.toArray(new Servicio[0]));
-        cmbServicio.setSelectedIndex(-1);
-        cmbServicio.setRenderer(nombreRenderer(v ->
-            v instanceof Servicio s ? s.getNombreServicio() : ""));
-        panel.add(wrap("Servicio", cmbServicio));
- 
-        cmbVeterinario = new JComboBox<>();
-        cmbVeterinario.setSelectedIndex(-1);
-        cmbVeterinario.setRenderer(nombreRenderer(v ->
-            v instanceof Veterinario vet ? vet.getNombre() + " " + vet.getApellido() : ""));
-        panel.add(wrap("Veterinario", cmbVeterinario));
- 
-        cmbMascota = new JComboBox<>();
-        cmbMascota.setSelectedIndex(-1);
-        cmbMascota.setRenderer(nombreRenderer(v ->
-            v instanceof Mascota m ? m.getNombre() : ""));
-        panel.add(wrap("Mascota", cmbMascota));
- 
-        panel.add(buildSelectorFecha());
- 
-        spnHora = new JSpinner(new SpinnerDateModel());
-        spnHora.setEditor(new JSpinner.DateEditor(spnHora, "HH:mm"));
-        spnHora.setPreferredSize(new Dimension(0, 36));
-        spnHora.setValue(new Date());
-        panel.add(wrap("Hora", spnHora));
- 
-        txtObservaciones = new MyTextField();
-        txtObservaciones.setHint("Observaciones (opcional)");
-        txtObservaciones.setPreferredSize(new Dimension(0, 36));
-        panel.add(wrap("Observaciones", txtObservaciones));
- 
-        return panel;
-    }
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));  // Cambiar a BoxLayout
+    panel.setOpaque(false);
+
+    panel.add(buildFilaCedula());
+    panel.add(Box.createVerticalStrut(8));
+    
+    txtNombreCliente = new JTextField();
+    txtNombreCliente.setEditable(false);
+    txtNombreCliente.setFont(new Font("SansSerif", Font.ITALIC, 13));
+    txtNombreCliente.setForeground(new Color(80, 160, 80));
+    txtNombreCliente.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+    txtNombreCliente.setPreferredSize(new Dimension(0, 36));
+    txtNombreCliente.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+    panel.add(wrap("Nombre del cliente", txtNombreCliente));
+    panel.add(Box.createVerticalStrut(8));
+
+    cmbServicio = new JComboBox<>(servicios.toArray(new Servicio[0]));
+    cmbServicio.setSelectedIndex(-1);
+    cmbServicio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+    cmbServicio.setRenderer(nombreRenderer(v -> v instanceof Servicio s ? s.getNombreServicio() : ""));
+    panel.add(wrap("Servicio", cmbServicio));
+    panel.add(Box.createVerticalStrut(8));
+
+    cmbVeterinario = new JComboBox<>();
+    cmbVeterinario.setSelectedIndex(-1);
+    cmbVeterinario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+    cmbVeterinario.setRenderer(nombreRenderer(v -> v instanceof Veterinario vet ? vet.getNombre() + " " + vet.getApellido() : ""));
+    panel.add(wrap("Veterinario", cmbVeterinario));
+    panel.add(Box.createVerticalStrut(8));
+
+    cmbMascota = new JComboBox<>();
+    cmbMascota.setSelectedIndex(-1);
+    cmbMascota.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+    cmbMascota.setRenderer(nombreRenderer(v -> v instanceof Mascota m ? m.getNombre() : ""));
+    panel.add(wrap("Mascota", cmbMascota));
+    panel.add(Box.createVerticalStrut(8));
+
+    panel.add(buildSelectorFecha());
+    panel.add(Box.createVerticalStrut(8));
+
+    spnHora = new JSpinner(new SpinnerDateModel());
+    spnHora.setEditor(new JSpinner.DateEditor(spnHora, "HH:mm"));
+    spnHora.setPreferredSize(new Dimension(0, 36));
+    spnHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+    spnHora.setValue(new Date());
+    panel.add(wrap("Hora", spnHora));
+    panel.add(Box.createVerticalStrut(8));
+
+    // EL CAMPO OBSERVACIONES - Asegurar que se vea
+    txtObservaciones = new MyTextField();
+    txtObservaciones.setHint("Observaciones (opcional)");
+    txtObservaciones.setPreferredSize(new Dimension(0, 60));  // Más alto
+    txtObservaciones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+    panel.add(wrap("Observaciones", txtObservaciones));
+
+    return panel;
+}
  
     private JPanel buildFilaCedula() {
         JPanel outer = new JPanel(new BorderLayout(0, 4));

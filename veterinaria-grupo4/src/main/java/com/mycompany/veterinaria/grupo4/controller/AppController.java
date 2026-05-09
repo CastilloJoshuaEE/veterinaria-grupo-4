@@ -1,4 +1,3 @@
-
 package com.mycompany.veterinaria.grupo4.controller;
 
 import com.mycompany.veterinaria.grupo4.view.FrmPrincipal;
@@ -11,6 +10,7 @@ import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.awt.BorderLayout;
 
 /**
  *
@@ -20,7 +20,6 @@ public class AppController {
     //Vistas
     private FrmPrincipal frm;
     private PnlBgLogin bgLogin;
-    private JPanel bgPnlLogin;
     private PnlMain main;
     private PnlCliente pnlCliente;
     private PnlCita pnlCita;
@@ -31,20 +30,38 @@ public class AppController {
 
     public AppController(FrmPrincipal frm) {
         this.frm = frm;
-        bgPnlLogin = frm.getBgLogin().getPnlVentana();
         cargarLogin();
     }
     
     private void cargarLogin(){
-        if(bgLogin == null){
-            bgLogin = new PnlBgLogin();
-            authcontroller = new AuthController(this,bgLogin);
-        }
-        bgPnlLogin.removeAll();
-        bgPnlLogin.add(bgLogin);
-        bgPnlLogin.revalidate();      
-        bgPnlLogin.repaint(); 
+        // Crear nuevo login
+        bgLogin = new PnlBgLogin();
+        authcontroller = new AuthController(this, bgLogin);
+        
+        // Obtener el panel principal y limpiarlo completamente
+        JPanel bgPrincipal = frm.getBgPrincipal();
+        bgPrincipal.removeAll();
+        bgPrincipal.setLayout(new BorderLayout());
+        
+        // Crear un nuevo Background con su pnlVentana para contener el login
+        com.mycompany.veterinaria.grupo4.view.auth.Background bgLoginContainer = frm.getBgLogin();
+        JPanel pnlVentana = bgLoginContainer.getPnlVentana();
+        pnlVentana.removeAll();
+        pnlVentana.setLayout(new BorderLayout());
+        pnlVentana.add(bgLogin, BorderLayout.CENTER);
+        pnlVentana.revalidate();
+        pnlVentana.repaint();
+        
+        // Agregar el contenedor al panel principal
+        bgPrincipal.add(bgLoginContainer, BorderLayout.CENTER);
+        bgPrincipal.revalidate();      
+        bgPrincipal.repaint();
+        
+        // Asegurar que el frame principal se actualice
+        frm.revalidate();
+        frm.repaint();
     } 
+    
     public void cargarPnlDefault(){
         if(main == null){
             main = new PnlMain();
@@ -52,7 +69,8 @@ public class AppController {
         }
         JPanel bg = frm.getBgPrincipal();
         bg.removeAll();
-        bg.add(main, java.awt.BorderLayout.CENTER);
+        bg.setLayout(new BorderLayout());
+        bg.add(main, BorderLayout.CENTER);
         bg.revalidate();      
         bg.repaint(); 
     }
@@ -72,14 +90,12 @@ public class AppController {
                 case 3 -> {
                     switch (subIndex) {
                         case 1 -> mostrarMascotas(); 
-                        //case 2 -> mostrarMascotas();
                         default -> action.cancel();
                     }
                 }
                 case 4 -> {
                     switch (subIndex) {
                         case 1 -> mostrarClientes(); 
-                        //case 2 -> mostrarClientes();
                         default -> action.cancel();
                     }
                 }
@@ -87,7 +103,6 @@ public class AppController {
                 default -> action.cancel();
             }
         });
-        
     }
     
     // ── Métodos de navegación ────────────────────────────────────
@@ -97,12 +112,12 @@ public class AppController {
 
     private void mostrarMascotas() {
         if (pnlMascota == null) pnlMascota = new PnlMascota();
-        CtrlMascotas ctrl = new CtrlMascotas(pnlMascota); // el controller llena la tabla
+        CtrlMascotas ctrl = new CtrlMascotas(pnlMascota);
         main.showForm(pnlMascota);
     }
 
     private void mostrarCitas() {
-        if (pnlCita == null)pnlCita = new PnlCita();
+        if (pnlCita == null) pnlCita = new PnlCita();
         CtrlCitas ctrl = new CtrlCitas(pnlCita);
         main.showForm(pnlCita);
     }
@@ -117,7 +132,15 @@ public class AppController {
         int confirm = JOptionPane.showConfirmDialog(frm,
             "¿Cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
+            // Limpiar referencias de los paneles
             main = null;
+            pnlCliente = null;
+            pnlCita = null;
+            pnlMascota = null;
+            bgLogin = null;
+            authcontroller = null;
+            
+            // Recargar el login
             cargarLogin();
         }
     }

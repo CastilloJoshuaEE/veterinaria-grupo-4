@@ -46,6 +46,7 @@ public class CtrlMascotas {
         this.pnlMascota = pnlMascota;
         this.tblMascota = pnlMascota.getTblMascota();
         initTabla();
+        cargarClientes();
         cargarTabla();
         addListeners();
     }
@@ -73,8 +74,43 @@ public class CtrlMascotas {
     private void addListeners() {
         pnlMascota.getBtnBuscar().addActionListener(e -> buscar());
         pnlMascota.getBtnNuevo().addActionListener(e -> nuevo());
+        pnlMascota.getCmbClientes().addActionListener(e -> cargarMascotasPorCliente());
     }
- 
+  private void cargarClientes() {
+        try {
+            List<Cliente> clientes = restTemplate.exchange(
+                apiBaseUrl + "/cliente/listar",
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Cliente>>() {}
+            ).getBody();
+            if (clientes != null) {
+                pnlMascota.getCmbClientes().removeAllItems();
+                pnlMascota.getCmbClientes().addItem(new Cliente(0, "", "", "", ""));
+                for (Cliente c : clientes) {
+                    pnlMascota.getCmbClientes().addItem(c);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(pnlMascota, "Error al cargar clientes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+  private void cargarMascotasPorCliente() {
+        Cliente clienteSeleccionado = (Cliente) pnlMascota.getCmbClientes().getSelectedItem();
+        if (clienteSeleccionado != null && clienteSeleccionado.getIdCliente() > 0) {
+            try {
+                List<Mascota> lista = restTemplate.exchange(
+                    apiBaseUrl + "/mascota/listar/" + clienteSeleccionado.getIdCliente(),
+                    HttpMethod.GET, null,
+                    new ParameterizedTypeReference<List<Mascota>>() {}
+                ).getBody();
+                llenarTabla(lista);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(pnlMascota, "Error al cargar mascotas del cliente: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            cargarTabla(); // Si no hay cliente seleccionado, carga todas
+        }
+    }
     // ─── Tabla ────────────────────────────────────────────────────────────────
  
     private void cargarTabla() {
@@ -165,18 +201,42 @@ public class CtrlMascotas {
      * @param form instancia activa del formulario
      */
     private void conectarForm(FormRegistroMascota form) {
-        form.getBtnBuscarCliente().addActionListener(e -> buscarClientePorCedula(form));
-        form.getTxtCedula().addActionListener(e -> buscarClientePorCedula(form));
+        form.getBtnBuscarCliente().addActionListener(e -> {
+            String cedula = form.getTxtCedula().getText().trim();
+            if (cedula.isEmpty()) {
+                JOptionPane.showMessageDialog(form, "Ingrese la cédula del cliente.", "Búsqueda", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                // URL: /cliente/cedula/{cedula}
+                Cliente cliente = restTemplate.getForObject(apiBaseUrl + "/cliente/cedula/" + cedula, Cliente.class);
+                form.setClienteSeleccionado(cliente);
+            } catch (Exception ex) {
+                form.setClienteSeleccionado(null);
+                JOptionPane.showMessageDialog(form, "Cliente no encontrado o error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        form.getTxtCedula().addActionListener(e -> {
+            String cedula = form.getTxtCedula().getText().trim();
+            if (!cedula.isEmpty()) {
+                try {
+                    Cliente cliente = restTemplate.getForObject(apiBaseUrl + "/cliente/cedula/" + cedula, Cliente.class);
+                    form.setClienteSeleccionado(cliente);
+                } catch (Exception ex) {
+                    form.setClienteSeleccionado(null);
+                    JOptionPane.showMessageDialog(form, "Cliente no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
  
         form.getBtnAccion().addActionListener(e -> {
             String err = validarDatos(form);
             if (err != null) {
-                JOptionPane.showMessageDialog(form, err,
-                    "Validación", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(form, err, "Validación", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if (form.isModoEdicion()) actualizar(form);
-            else                      registrar(form);
+            else registrar(form);
         });
     }
  
@@ -342,16 +402,31 @@ public class CtrlMascotas {
  
     private void eliminar(Mascota m) {
         int confirm = JOptionPane.showConfirmDialog(pnlMascota,
-            "¿Eliminar a " + m.getNombre() + "?",
-            "Confirmar", JOptionPane.YES_NO_OPTION);
+            "¿Está seguro de eliminar a " + m.getNombre() + "? Se eliminará también su ficha médica.\n" +
+            "Si la mascota ya tiene antecedentes clínicos (citas), no podrá ser eliminada.",
+            "Confirmar", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) return;
+        
         try {
             restTemplate.delete(apiBaseUrl + "/mascota/eliminar/" + m.getIdMascota());
-            cargarTabla();
+            JOptionPane.showMessageDialog(pnlMascota, "Mascota eliminada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            cargarTabla(); // Recargar la tabla
+            // Si hay un cliente seleccionado, recargar sus mascotas
+            if (pnlMascota.getCmbClientes().getSelectedItem() != null) {
+                cargarMascotasPorCliente();
+            }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(pnlMascota,
-                "Error al eliminar: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
+            // Manejo del error si la mascota tiene antecedentes
+            if (e.getMessage().contains("la mascota ya posee una cita médica")) {
+                JOptionPane.showMessageDialog(pnlMascota,
+                    "No se puede eliminar la mascota porque ya posee un antecedente clínico en esta veterinaria.\n" +
+                    "Se recomienda mantener su registro para conservar la integridad de los datos.",
+                    "Eliminación no permitida", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(pnlMascota,
+                    "Error al eliminar: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
  

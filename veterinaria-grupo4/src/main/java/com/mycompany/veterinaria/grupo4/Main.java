@@ -17,7 +17,7 @@ import javax.swing.*;
 public class Main {
 
     public static void main(String[] args) {
-        // FORZAR modo gráfico ANTES de Spring Boot USUARIO: JUAN contraseña: 123456
+        // FORZAR modo gráfico ANTES de Spring Boot USUARIO: JUAN contraseña: 1234segura1
         System.setProperty("java.awt.headless", "false");
         
         

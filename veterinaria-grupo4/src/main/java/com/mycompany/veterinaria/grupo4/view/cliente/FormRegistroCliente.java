@@ -13,11 +13,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
@@ -25,7 +28,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author juan
  */
-public class FormRegistroCliente extends JDialog{
+public class FormRegistroCliente extends JDialog {
     private MyTextField txtCedula;
     private MyTextField txtNombre;
     private MyTextField txtApellido;
@@ -144,6 +147,24 @@ public class FormRegistroCliente extends JDialog{
 
         // Sombra al root
         getRootPane().putClientProperty("JRootPane.shadow", Boolean.TRUE);
+        
+        // ── WindowFocusListener para cerrar cuando pierde el foco ──
+        addWindowFocusListener(new WindowFocusListener() {
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                // No es necesario hacer nada aquí
+            }
+            
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                // Solo cerrar si la nueva ventana que gana el foco NO es un JOptionPane o un hijo de este diálogo.
+                // Esto evita cerrar el diálogo cuando se abre un mensaje de error o confirmación.
+                if (e.getOppositeWindow() != null && !(e.getOppositeWindow() instanceof javax.swing.JDialog)) {
+                    // Pequeña pausa para asegurar que no se está interactuando con el formulario
+                    SwingUtilities.invokeLater(() -> dispose());
+                }
+            }
+        });
     }
 
     // ── Helper: crea label + campo y lo agrega al panel ─────────
