@@ -69,4 +69,9 @@ public class ServicioController {
     public boolean eliminarAsignacionVeterinario(@PathVariable int idAsignacion) {
         return servicioService.eliminarAsignacionVeterinario(idAsignacion);
     }
+    
+    @GetMapping("/veterinario/{idVeterinario}")
+    public List<Servicio> listarPorVeterinario(@PathVariable int idVeterinario) {
+        return servicioService.listarPorVeterinario(idVeterinario);
+    }
 }

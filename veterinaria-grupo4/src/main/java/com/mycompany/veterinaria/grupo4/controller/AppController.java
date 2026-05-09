@@ -7,6 +7,7 @@ import com.mycompany.veterinaria.grupo4.view.Dashboard;
 import com.mycompany.veterinaria.grupo4.view.cita.PnlCita;
 import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
 import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
+import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,6 +25,7 @@ public class AppController {
     private PnlCliente pnlCliente;
     private PnlCita pnlCita;
     private PnlMascota pnlMascota;
+    private PnlVeterinario pnlVeterinario;
     
     //Controladores
     private AuthController authcontroller;
@@ -99,6 +101,7 @@ public class AppController {
                         default -> action.cancel();
                     }
                 }
+                case 7 -> mostrarPersonalVeterinario();
                 case 9 -> cerrarSesion();
                 default -> action.cancel();
             }
@@ -126,6 +129,12 @@ public class AppController {
         if (pnlCliente == null) pnlCliente = new PnlCliente();
         CtrlCliente ctrlCliente = new CtrlCliente(pnlCliente);
         main.showForm(pnlCliente);
+    }
+    
+    private void mostrarPersonalVeterinario() {
+        if (pnlVeterinario == null) pnlVeterinario = new PnlVeterinario();
+        CtrlVeterinario ctrlVeterinario = new CtrlVeterinario(pnlVeterinario);
+        main.showForm(pnlVeterinario);
     }
 
     private void cerrarSesion() {

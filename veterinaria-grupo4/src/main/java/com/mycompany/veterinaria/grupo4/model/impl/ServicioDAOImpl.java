@@ -215,4 +215,27 @@ public class ServicioDAOImpl implements IServicioDAO {
             return rs.next() && rs.getInt("FILAS_AFECTADAS") > 0;
         }
     }
+    
+    @Override
+    public List<Servicio> listarPorVeterinario(int idVeterinario) throws SQLException {
+        List<Servicio> lista = new ArrayList<>();
+        String sql = "{call SP_OBTENER_SERVICIOS_POR_VETERINARIO(?)}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+
+            stmt.setInt(1, idVeterinario);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Servicio s = new Servicio();
+                // Mapeamos los campos del SP
+                s.setIdServicio(rs.getInt("ID_SERVICIO"));
+                s.setNombreServicio(rs.getString("NOMBRE_SERVICIO"));
+                // El ID_SERVICIO_VETERINARIO es útil si necesitas gestionar la relación
+                lista.add(s);
+            }
+        }
+        return lista;
+    }
 }
