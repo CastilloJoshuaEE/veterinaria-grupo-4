@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.model.dao;
 
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
@@ -15,4 +11,6 @@ public interface IMascotaDAO {
     boolean actualizar(Mascota mascota) throws SQLException;
     boolean eliminar(int idMascota) throws SQLException;
     byte[] obtenerFoto(int idMascota) throws SQLException;
+    List<Mascota> listarTodo() throws SQLException;
+    List<Mascota> buscarMascotas(String termino) throws SQLException; 
 }

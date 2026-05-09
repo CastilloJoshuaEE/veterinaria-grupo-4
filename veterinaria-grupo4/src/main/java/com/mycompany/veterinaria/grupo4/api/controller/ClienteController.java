@@ -35,7 +35,6 @@ public class ClienteController {
         return clienteService.obtenerPorCedula(cedula);
     }
     
-    // ENDPOINT CORREGIDO - Buscar por nombre
     @GetMapping("/buscar/nombre")
     public List<Cliente> buscarPorNombre(@RequestParam("nombre") String nombre) {
         return clienteService.buscarPorNombre(nombre);

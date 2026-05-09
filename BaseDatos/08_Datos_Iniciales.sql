@@ -137,42 +137,36 @@ GO
 BEGIN TRY
     BEGIN TRANSACTION;
 
-    DECLARE @ID_CLIENTE INT, @ID_MASCOTA INT, @ID_CITA INT,
+    DECLARE @ID_CLIENTE INT, @ID_MASCOTA INT, @ID_CITA INT, 
             @ID_ATENCION INT, @ID_METODO_PAGO INT, @ID_FACTURA INT;
 
     SELECT @ID_CLIENTE = ID_CLIENTE FROM CLIENTE WHERE CEDULA = '1234567890';
-    IF @ID_CLIENTE IS NULL
-    BEGIN
-        RAISERROR('Cliente de prueba no encontrado', 16, 1);
-        ROLLBACK TRANSACTION; RETURN;
-    END
-
-    -- Mascota
+    
+    -- 1. Mascota
     INSERT INTO MASCOTA (ID_CLIENTE, NOMBRE, ESPECIE, RAZA, SEXO, FECHA_NACIMIENTO, PESO, COLOR)
     VALUES (@ID_CLIENTE, 'Max', 'Perro', 'Labrador', 'M', '2020-09-22', 25.5, 'Marrón');
     SET @ID_MASCOTA = SCOPE_IDENTITY();
 
-    -- Cita de vacunación
-    INSERT INTO CITA (ID_CLIENTE, ID_SERVICIO, FECHA_HORA, OBSERVACIONES)
-    VALUES (@ID_CLIENTE, 3, '2023-09-22T10:00:00', 'Vacunación anual');
+    -- 2. Cita (Ahora con Mascota y Veterinario incluidos desde el inicio)
+    -- Usamos el veterinario 10 (Daniela Pérez) para vacunación (Servicio 3)
+    INSERT INTO CITA (ID_CLIENTE, ID_MASCOTA, ID_SERVICIO, ID_VETERINARIO, FECHA_HORA, OBSERVACIONES, ESTADO)
+    VALUES (@ID_CLIENTE, @ID_MASCOTA, 3, 10, GETDATE(), 'Vacunación anual', 'PENDIENTE');
     SET @ID_CITA = SCOPE_IDENTITY();
 
-    INSERT INTO MASCOTA_CITA (ID_CITA, ID_MASCOTA) VALUES (@ID_CITA, @ID_MASCOTA);
+    -- 3. Vacuna (Usamos el SP que ya calcula la fecha próxima)
+    EXEC SP_REGISTRAR_VACUNA_APLICADA 
+        @ID_MASCOTA = @ID_MASCOTA, 
+        @NOMBRE = 'Rabia', 
+        @DESCRIPCION = 'Protección contra el virus de la rabia', 
+        @PERIODO_MESES = 12, 
+        @FECHA_APLICACION = '2023-09-20';
 
-    -- Vacuna
-    EXEC SP_REGISTRAR_VACUNA_APLICADA
-        @ID_MASCOTA = @ID_MASCOTA, @NOMBRE = 'Rabia',
-        @DESCRIPCION = 'Protección contra el virus de la rabia',
-        @PERIODO_MESES = 12, @FECHA_APLICACION = '2023-09-20';
-
-    -- Atención médica
-    INSERT INTO ATENCION_MEDICA
-        (ID_CITA, ID_MASCOTA, ID_VETERINARIO, DIAGNOSTICO, TRATAMIENTO, OBSERVACIONES)
-    VALUES (@ID_CITA, @ID_MASCOTA, 10, 'Vacunación anual',
-            'Vacuna antirrábica aplicada', 'Mascota en buen estado');
+    -- 4. Atención médica (Solo campos necesarios, el Trigger pondrá la Cita en 'REALIZADA')
+    INSERT INTO ATENCION_MEDICA (ID_CITA, FECHA, DIAGNOSTICO, TRATAMIENTO, OBSERVACIONES)
+    VALUES (@ID_CITA, GETDATE(), 'Vacunación anual', 'Vacuna antirrábica aplicada', 'Mascota en buen estado');
     SET @ID_ATENCION = SCOPE_IDENTITY();
 
-    -- Factura
+    -- 5. Facturación
     INSERT INTO METODO_PAGO (METODO, VALOR_TOTAL) VALUES ('EFECTIVO', 11.20);
     SET @ID_METODO_PAGO = SCOPE_IDENTITY();
 
@@ -180,19 +174,24 @@ BEGIN TRY
     VALUES (@ID_CLIENTE, 10.00, 1.20, 11.20, 'PAGADA', @ID_METODO_PAGO);
     SET @ID_FACTURA = SCOPE_IDENTITY();
 
-    INSERT INTO DETALLE_FACTURA
-        (ID_FACTURA, ID_SERVICIO, CANTIDAD, PRECIO_UNITARIO, DESCUENTO, TOTAL, ID_ATENCION_MEDICA, ID_MASCOTA)
-    VALUES (@ID_FACTURA, 3, 1, 10.00, 0.00, 10.00, @ID_ATENCION, @ID_MASCOTA);
-
-    UPDATE CITA SET ESTADO = 'COMPLETADA' WHERE ID_CITA = @ID_CITA;
+    -- 6. Detalle Factura (Sin ID_MASCOTA redundante)
+    INSERT INTO DETALLE_FACTURA (ID_FACTURA, ID_SERVICIO, CANTIDAD, PRECIO_UNITARIO, DESCUENTO, TOTAL, ID_ATENCION_MEDICA)
+    VALUES (@ID_FACTURA, 3, 1, 10.00, 0.00, 10.00, @ID_ATENCION);
 
     COMMIT TRANSACTION;
-    PRINT 'Datos de ejemplo insertados correctamente.';
+    PRINT 'Datos de ejemplo insertados correctamente siguiendo el modelo POO.';
 END TRY
 BEGIN CATCH
     IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
     PRINT 'Error en datos de ejemplo: ' + ERROR_MESSAGE() + ' (Línea ' + CAST(ERROR_LINE() AS VARCHAR) + ')';
 END CATCH;
+GO
+
+-- ─── Crear usuario de base de datos y asignar permisos ─────────
+IF EXISTS (SELECT * FROM sys.server_principals WHERE name = 'veterinaria_user')
+BEGIN
+    DROP LOGIN veterinaria_user;
+END
 GO
 CREATE LOGIN veterinaria_user WITH PASSWORD = '123456';
 USE DB_VidaAnimal;

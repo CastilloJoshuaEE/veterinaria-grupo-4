@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.service;
 
 import com.mycompany.veterinaria.grupo4.model.dao.IMascotaDAO;
@@ -22,6 +18,27 @@ public class MascotaService {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+    
+    public List<Mascota> listarTodo() {
+        try {
+            return mascotaDAO.listarTodo();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public List<Mascota> buscarMascotas(String termino) {
+        try {
+            if (termino == null || termino.trim().isEmpty()) {
+                return mascotaDAO.listarTodo();
+            }
+            return mascotaDAO.buscarMascotas(termino);
+        } catch (SQLException e) {
+            System.err.println("Error en la búsqueda de mascotas: " + e.getMessage());
+            return null; 
         }
     }
 

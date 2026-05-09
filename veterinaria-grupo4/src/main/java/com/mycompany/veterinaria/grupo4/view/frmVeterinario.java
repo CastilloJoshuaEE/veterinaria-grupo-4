@@ -186,7 +186,7 @@ public class frmVeterinario extends JFrame {
                     v.getNombre(),
                     v.getApellido(),
                     v.getTelefono(),
-                    obtenerNombreEspecialidad(v.getIdEspecialidad()),
+                    obtenerNombreEspecialidad(v.getEspecialidad().getIdEspecialidad()),
                     v.getPagoMensual()
                 });
             }
@@ -227,7 +227,7 @@ public class frmVeterinario extends JFrame {
         v.setTelefono(txtTelefono.getText().trim());
         v.setCorreoElectronico(txtEmail.getText().trim());
         v.setDireccion(txtDireccion.getText().trim());
-        v.setIdEspecialidad(cmbEspecialidad.getSelectedIndex() + 1);
+        v.getEspecialidad().setIdEspecialidad(cmbEspecialidad.getSelectedIndex() + 1);
         try {
             v.setPagoMensual(Double.parseDouble(txtPagoMensual.getText().trim()));
         } catch (NumberFormatException e) {
@@ -297,7 +297,7 @@ public class frmVeterinario extends JFrame {
                     v.getNombre(),
                     v.getApellido(),
                     v.getTelefono(),
-                    obtenerNombreEspecialidad(v.getIdEspecialidad()),
+                    obtenerNombreEspecialidad(v.getEspecialidad().getIdEspecialidad()),
                     v.getPagoMensual()
                 });
             }

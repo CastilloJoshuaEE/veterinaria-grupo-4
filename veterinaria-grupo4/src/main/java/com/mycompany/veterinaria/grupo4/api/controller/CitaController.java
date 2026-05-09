@@ -53,12 +53,12 @@ public class CitaController {
 
     @PostMapping("/agendar")
     public int agendar(@RequestBody CitaRequest request) {
-        return citaService.agendar(request.getCita(), request.getIdsMascotas());
+        return citaService.agendar(request.getCita());
     }
 
     @PutMapping("/actualizar")
     public boolean actualizar(@RequestBody CitaRequest request) {
-        return citaService.actualizar(request.getCita(), request.getIdsMascotas());
+        return citaService.actualizar(request.getCita());
     }
 
     @PutMapping("/cancelar/{idCita}")
@@ -83,7 +83,5 @@ public class CitaController {
 
         public Cita getCita() { return cita; }
         public void setCita(Cita cita) { this.cita = cita; }
-        public String getIdsMascotas() { return idsMascotas; }
-        public void setIdsMascotas(String idsMascotas) { this.idsMascotas = idsMascotas; }
     }
 }

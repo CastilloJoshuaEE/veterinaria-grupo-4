@@ -2,7 +2,6 @@ package com.mycompany.veterinaria.grupo4.view;
 
 import com.mycompany.veterinaria.grupo4.view.frmCliente;
 import com.mycompany.veterinaria.grupo4.view.frmMascota;
-import com.mycompany.veterinaria.grupo4.view.frmCita;
 import com.mycompany.veterinaria.grupo4.view.frmVeterinario;
 import com.mycompany.veterinaria.grupo4.view.frmServicio;
 import com.mycompany.veterinaria.grupo4.view.frmAtencionMedica;
@@ -179,9 +178,9 @@ public class frmSistema extends JFrame {
             case "frmmascota":
                 form = new frmMascota();
                 break;
-            case "frmcita":
-                form = new frmCita(nombreUsuario, idUsuario);
-                break;
+//            case "frmcita":
+//                form = new frmCita(nombreUsuario, idUsuario);
+//                break;
             case "frmveterinario":
                 form = new frmVeterinario(isDarkMode);
                 break;

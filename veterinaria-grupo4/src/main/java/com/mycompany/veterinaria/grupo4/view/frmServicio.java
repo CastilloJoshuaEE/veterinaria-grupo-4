@@ -185,7 +185,7 @@ public class frmServicio extends JFrame {
                 modelAsignados.addRow(new Object[]{
                     v.getIdVeterinario(),
                     v.getNombre() + " " + v.getApellido(),
-                    obtenerNombreEspecialidad(v.getIdEspecialidad())
+                    obtenerNombreEspecialidad(v.getEspecialidad().getIdEspecialidad())
                 });
             }
         }
@@ -199,7 +199,7 @@ public class frmServicio extends JFrame {
                 modelDisponibles.addRow(new Object[]{
                     v.getIdVeterinario(),
                     v.getNombre() + " " + v.getApellido(),
-                    obtenerNombreEspecialidad(v.getIdEspecialidad())
+                    obtenerNombreEspecialidad(v.getEspecialidad().getIdEspecialidad())
                 });
             }
         }

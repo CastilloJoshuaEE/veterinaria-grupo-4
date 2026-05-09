@@ -353,7 +353,7 @@ public class frmAtencionMedica extends JFrame {
             idCitaSeleccionada = cita.getIdCita();
             modelMascotas.setRowCount(0);
             
-            List<Mascota> mascotas = mascotaService.listarPorCliente(cita.getIdCliente());
+            List<Mascota> mascotas = mascotaService.listarPorCliente(cita.getCliente().getIdCliente());
             if (mascotas != null) {
                 for (Mascota m : mascotas) {
                     modelMascotas.addRow(new Object[]{
