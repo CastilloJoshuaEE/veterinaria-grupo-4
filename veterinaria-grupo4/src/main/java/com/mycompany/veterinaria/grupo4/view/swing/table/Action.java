@@ -30,6 +30,7 @@ public class Action extends javax.swing.JPanel {
         btnEdit = new com.mycompany.veterinaria.grupo4.view.swing.Button();
         btnMedicalRecord = new com.mycompany.veterinaria.grupo4.view.swing.Button();
         btnDelete = new com.mycompany.veterinaria.grupo4.view.swing.Button();
+        btnHistorial = new com.mycompany.veterinaria.grupo4.view.swing.Button();
 
         btnView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/eye.png"))); // NOI18N
         btnView.setPreferredSize(new java.awt.Dimension(28, 28));
@@ -43,6 +44,9 @@ public class Action extends javax.swing.JPanel {
         btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/delete.png"))); // NOI18N
         btnDelete.setPreferredSize(new java.awt.Dimension(28, 28));
 
+        btnHistorial.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/pet-report.png"))); // NOI18N
+        btnHistorial.setPreferredSize(new java.awt.Dimension(28, 28));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -52,29 +56,24 @@ public class Action extends javax.swing.JPanel {
                 .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                .addComponent(btnMedicalRecord, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(84, Short.MAX_VALUE)
-                    .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(67, 67, 67)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
+                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnHistorial, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
+                .addComponent(btnMedicalRecord, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnHistorial, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnView, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnMedicalRecord, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -92,6 +91,9 @@ public class Action extends javax.swing.JPanel {
     public Button getBtnMedicalRecord() {
         return btnMedicalRecord;
     }
+    public Button getBtnHistorial() { 
+       return btnHistorial; 
+    }
     public void setModelAction(ModelAction model) {
         btnEdit.addActionListener(e -> {
             if (model.getOnEdit() != null) model.getOnEdit().run();
@@ -105,6 +107,7 @@ public class Action extends javax.swing.JPanel {
         btnMedicalRecord.addActionListener(e -> {
             if (model.getOnMedicalRecord() != null) model.getOnMedicalRecord().run();
         });
+        btnHistorial.addActionListener(e -> { if (model.getOnHistorial() != null) model.getOnHistorial().run(); });
     }
     
     @Override
@@ -117,6 +120,7 @@ public class Action extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.mycompany.veterinaria.grupo4.view.swing.Button btnDelete;
     private com.mycompany.veterinaria.grupo4.view.swing.Button btnEdit;
+    private com.mycompany.veterinaria.grupo4.view.swing.Button btnHistorial;
     private com.mycompany.veterinaria.grupo4.view.swing.Button btnMedicalRecord;
     private com.mycompany.veterinaria.grupo4.view.swing.Button btnView;
     // End of variables declaration//GEN-END:variables

@@ -9,6 +9,7 @@ import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
 import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
+import com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -26,7 +27,7 @@ public class AppController {
     private PnlCita pnlCita;
     private PnlMascota pnlMascota;
     private PnlVeterinario pnlVeterinario;
-    
+    private PnlHistorialMedico pnlHistorialMedico;
     //Controladores
     private AuthController authcontroller;
 
@@ -92,6 +93,7 @@ public class AppController {
                 case 3 -> {
                     switch (subIndex) {
                         case 1 -> mostrarMascotas(); 
+                        case 2 -> mostrarHistorialMedico();
                         default -> action.cancel();
                     }
                 }
@@ -135,6 +137,14 @@ public class AppController {
         if (pnlVeterinario == null) pnlVeterinario = new PnlVeterinario();
         CtrlVeterinario ctrlVeterinario = new CtrlVeterinario(pnlVeterinario);
         main.showForm(pnlVeterinario);
+    }
+    private void mostrarHistorialMedico() {
+        if (pnlHistorialMedico == null) {
+            pnlHistorialMedico = new PnlHistorialMedico();
+        }
+        // Crear el controlador del historial
+        CtrlHistorialMedico ctrlHistorial = new CtrlHistorialMedico(pnlHistorialMedico);
+        main.showForm(pnlHistorialMedico);
     }
 
     private void cerrarSesion() {
