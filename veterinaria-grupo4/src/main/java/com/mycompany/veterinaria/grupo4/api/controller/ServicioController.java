@@ -74,4 +74,15 @@ public class ServicioController {
     public List<Servicio> listarPorVeterinario(@PathVariable int idVeterinario) {
         return servicioService.listarPorVeterinario(idVeterinario);
     }
+    @GetMapping("/buscar")
+    public List<Servicio> buscarServicios(@RequestParam(defaultValue = "") String termino) {
+        if (termino == null || termino.trim().isEmpty()) {
+            return servicioService.listarTodos();
+        }
+        return servicioService.buscarPorNombre(termino);
+    }
+    @DeleteMapping("/eliminar-asignacion/{idVeterinario}/{idServicio}")
+    public boolean eliminarAsignacionPorIds(@PathVariable int idVeterinario, @PathVariable int idServicio) {
+        return servicioService.eliminarAsignacionPorIds(idVeterinario, idServicio);
+    }
 }

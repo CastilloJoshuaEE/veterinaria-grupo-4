@@ -18,4 +18,6 @@ public interface IServicioDAO {
     boolean asignarVeterinario(int idServicio, int idVeterinario) throws SQLException;
     boolean eliminarAsignacionVeterinario(int idAsignacion) throws SQLException;
     public List<Servicio> listarPorVeterinario(int idVeterinario) throws SQLException;
+    public List<Servicio> buscarPorNombre(String nombre) throws SQLException;
+    public boolean eliminarAsignacionPorIds(int idVeterinario, int idServicio) throws SQLException;
 }

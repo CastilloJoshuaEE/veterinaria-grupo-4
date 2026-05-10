@@ -15,25 +15,34 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
         List<Veterinario> lista = new ArrayList<>();
         String sql = "{call SP_OBTENER_VETERINARIOS}";
         
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql);
-             ResultSet rs = stmt.executeQuery()) {
+         try (Connection conn = DatabaseConnection.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        
+        while (rs.next()) {
+            Veterinario v = new Veterinario();
+            v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
+            v.setCedula(rs.getString("CEDULA"));
+            v.setNombre(rs.getString("NOMBRE"));
+            v.setApellido(rs.getString("APELLIDO"));
+            v.setTelefono(rs.getString("TELEFONO"));
+            v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
+            v.setDireccion(rs.getString("DIRECCION"));
+            v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
+            v.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
             
-            while (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
-                v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
-                v.setDireccion(rs.getString("DIRECCION"));
-                v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-                v.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-                lista.add(v);
+            // Setear especialidad
+            int idEspecialidad = rs.getInt("ID_ESPECIALIDAD");
+            if (!rs.wasNull() && idEspecialidad > 0) {
+                EspecialidadVeterinaria esp = new EspecialidadVeterinaria();
+                esp.setIdEspecialidad(idEspecialidad);
+                esp.setNombreEspecialidad(rs.getString("NOMBRE_ESPECIALIDAD"));
+                v.setEspecialidad(esp);
             }
+            lista.add(v);
         }
-        return lista;
+    }
+    return lista;
     }
 
     @Override
