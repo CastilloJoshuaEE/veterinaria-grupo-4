@@ -10,6 +10,7 @@ import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
 import com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico;
+import com.mycompany.veterinaria.grupo4.view.servicio.PnlServicio;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -28,6 +29,8 @@ public class AppController {
     private PnlMascota pnlMascota;
     private PnlVeterinario pnlVeterinario;
     private PnlHistorialMedico pnlHistorialMedico;
+    private PnlServicio pnlServicio;
+    
     //Controladores
     private AuthController authcontroller;
 
@@ -103,6 +106,12 @@ public class AppController {
                         default -> action.cancel();
                     }
                 }
+                case 5 -> {
+                    switch (subIndex) {
+                        case 3 -> mostrarServicios();  // Servicios en índice 5, subIndex 3
+                        default -> action.cancel();
+                    }
+                }
                 case 7 -> mostrarPersonalVeterinario();
                 case 9 -> cerrarSesion();
                 default -> action.cancel();
@@ -146,7 +155,11 @@ public class AppController {
         CtrlHistorialMedico ctrlHistorial = new CtrlHistorialMedico(pnlHistorialMedico);
         main.showForm(pnlHistorialMedico);
     }
-
+    private void mostrarServicios() {
+        if (pnlServicio == null) pnlServicio = new PnlServicio();
+        CtrlServicio ctrl = new CtrlServicio(pnlServicio);
+        main.showForm(pnlServicio);
+    }
     private void cerrarSesion() {
         int confirm = JOptionPane.showConfirmDialog(frm,
             "¿Cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
