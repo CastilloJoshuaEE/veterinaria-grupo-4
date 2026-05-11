@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.view;
 
+import com.mycompany.veterinaria.grupo4.view.factura.frmMetodoPago;
 import com.mycompany.veterinaria.grupo4.model.entity.*;
 import com.mycompany.veterinaria.grupo4.service.*;
 
@@ -456,13 +457,14 @@ public class frmAtencionMedica extends JFrame {
                 historialService.registrar(idMascotaSeleccionada, idCitaSeleccionada, idAtencion);
                 
                 // Generar factura
+                /*
                 frmMetodoPago frmPago = new frmMetodoPago(calcularTotal());
                 frmPago.setVisible(true);
                 if (frmPago.isConfirmed()) {
                     facturaService.generarFacturaAtencion(idAtencion, frmPago.getMetodoPago(),
                         frmPago.getCuentaOrigen(), frmPago.getCuentaDestino());
                 }
-                
+                */
                 JOptionPane.showMessageDialog(this, "Atención médica guardada", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 limpiarFormulario();
                 cargarMascotasPendientes();

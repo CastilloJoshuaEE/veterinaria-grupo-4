@@ -1,4 +1,4 @@
-package com.mycompany.veterinaria.grupo4.view;
+package com.mycompany.veterinaria.grupo4.view.factura;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,15 +12,12 @@ public class frmMetodoPago extends JDialog {
     
     private JComboBox<String> cmbMetodoPago;
     private JTextField txtCuentaOrigen, txtCuentaDestino;
-    private JLabel lblTotal;
-    private JButton btnAceptar, btnCancelar;
     
-    public frmMetodoPago(double totalAPagar) {
+    public frmMetodoPago(Window parent, double totalAPagar) {
+        super(parent, "Seleccionar Método de Pago", ModalityType.APPLICATION_MODAL);
         this.totalAPagar = totalAPagar;
-        setTitle("Seleccionar Método de Pago");
-        setModal(true);
         setSize(450, 300);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(parent);
         initComponents();
     }
     
@@ -33,30 +30,28 @@ public class frmMetodoPago extends JDialog {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
-        // Título de empresa
         JLabel lblEmpresa = new JLabel("Vida Animal S.A.");
         lblEmpresa.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(lblEmpresa, gbc);
         
-        // Dirección
         JLabel lblDireccion = new JLabel("Av. America");
         gbc.gridy = 1;
         mainPanel.add(lblDireccion, gbc);
         
         gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
         
-        // Total
         int row = 2;
         gbc.gridx = 0; gbc.gridy = row;
         mainPanel.add(new JLabel("Total a Pagar:"), gbc);
         gbc.gridx = 1;
-        lblTotal = new JLabel(String.format("$%.2f", totalAPagar));
+        JLabel lblTotal = new JLabel(String.format("$%.2f", totalAPagar));
         lblTotal.setFont(new Font("Arial", Font.BOLD, 14));
         mainPanel.add(lblTotal, gbc);
         
-        // Método de pago
         row++;
         gbc.gridx = 0; gbc.gridy = row;
         mainPanel.add(new JLabel("Método de Pago:"), gbc);
@@ -64,7 +59,6 @@ public class frmMetodoPago extends JDialog {
         cmbMetodoPago = new JComboBox<>(new String[]{"EFECTIVO", "TRANSFERENCIA BANCARIA"});
         mainPanel.add(cmbMetodoPago, gbc);
         
-        // Cuenta origen
         row++;
         gbc.gridx = 0; gbc.gridy = row;
         JLabel lblCuentaOrigen = new JLabel("Cuenta Origen:");
@@ -75,7 +69,6 @@ public class frmMetodoPago extends JDialog {
         txtCuentaOrigen.setEnabled(false);
         mainPanel.add(txtCuentaOrigen, gbc);
         
-        // Cuenta destino
         row++;
         gbc.gridx = 0; gbc.gridy = row;
         JLabel lblCuentaDestino = new JLabel("Cuenta Destino:");
@@ -87,7 +80,6 @@ public class frmMetodoPago extends JDialog {
         txtCuentaDestino.setEditable(false);
         mainPanel.add(txtCuentaDestino, gbc);
         
-        // Entidad bancaria
         row++;
         gbc.gridx = 0; gbc.gridy = row;
         gbc.gridwidth = 2;
@@ -98,19 +90,19 @@ public class frmMetodoPago extends JDialog {
         
         add(mainPanel, BorderLayout.CENTER);
         
-        // Botones
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        btnAceptar = new JButton("Aceptar");
-        btnCancelar = new JButton("Cancelar");
+        JButton btnAceptar = new JButton("Aceptar");
+        JButton btnCancelar = new JButton("Cancelar");
         buttonPanel.add(btnAceptar);
         buttonPanel.add(btnCancelar);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        // Eventos
         cmbMetodoPago.addActionListener(e -> {
             boolean esTransferencia = "TRANSFERENCIA BANCARIA".equals(cmbMetodoPago.getSelectedItem());
             txtCuentaOrigen.setEnabled(esTransferencia);
             lblCuentaOrigen.setEnabled(esTransferencia);
+            lblCuentaDestino.setEnabled(esTransferencia);
+            txtCuentaDestino.setEnabled(esTransferencia);
         });
         
         btnAceptar.addActionListener(e -> aceptar());

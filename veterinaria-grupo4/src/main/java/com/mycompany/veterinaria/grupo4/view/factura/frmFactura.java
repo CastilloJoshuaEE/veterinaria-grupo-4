@@ -1,4 +1,4 @@
-package com.mycompany.veterinaria.grupo4.view;
+package com.mycompany.veterinaria.grupo4.view.factura;
 
 import com.mycompany.veterinaria.grupo4.model.entity.Factura;
 import com.mycompany.veterinaria.grupo4.service.FacturaService;
@@ -8,21 +8,20 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class frmFactura extends JFrame {
-    private FacturaService facturaService = new FacturaService();
+public class frmFactura extends JDialog {
+    private FacturaService facturaService;
     private String cedulaCliente;
     
     private JTable tblFacturas;
     private DefaultTableModel modelFacturas;
     private JButton btnDetalleFactura, btnCerrar;
-    private JLabel lblTitulo;
     
-    public frmFactura(String cedulaCliente) {
+    public frmFactura(Window parent, String cedulaCliente) {
+        super(parent, "Facturas del Cliente: " + cedulaCliente, ModalityType.APPLICATION_MODAL);
         this.cedulaCliente = cedulaCliente;
-        setTitle("Facturas del Cliente: " + cedulaCliente);
-        setSize(900, 500);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
+        this.facturaService = new FacturaService();
+        setSize(1000, 500);
+        setLocationRelativeTo(parent);
         initComponents();
         cargarFacturas();
     }
@@ -30,17 +29,13 @@ public class frmFactura extends JFrame {
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
         
-        // Panel superior con título
-        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel topPanel = new JPanel();
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
-        
-        lblTitulo = new JLabel("Facturas del Cliente: " + cedulaCliente, SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel("Facturas del Cliente: " + cedulaCliente, SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 16));
-        topPanel.add(lblTitulo, BorderLayout.CENTER);
-        
+        topPanel.add(lblTitulo);
         add(topPanel, BorderLayout.NORTH);
         
-        // Tabla de facturas
         String[] columnas = {"ID Factura", "Fecha", "Subtotal", "IVA", "Total", "Estado", "Método Pago"};
         modelFacturas = new DefaultTableModel(columnas, 0);
         tblFacturas = new JTable(modelFacturas);
@@ -52,17 +47,14 @@ public class frmFactura extends JFrame {
         scrollPane.setBorder(BorderFactory.createTitledBorder("Listado de Facturas"));
         add(scrollPane, BorderLayout.CENTER);
         
-        // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout());
         btnDetalleFactura = new JButton("Ver Detalle");
         btnDetalleFactura.setEnabled(false);
         btnCerrar = new JButton("Cerrar");
-        
         buttonPanel.add(btnDetalleFactura);
         buttonPanel.add(btnCerrar);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        // Eventos
         btnDetalleFactura.addActionListener(e -> verDetalle());
         btnCerrar.addActionListener(e -> dispose());
     }
@@ -93,7 +85,7 @@ public class frmFactura extends JFrame {
         int row = tblFacturas.getSelectedRow();
         if (row >= 0) {
             int idFactura = (int) modelFacturas.getValueAt(row, 0);
-            frmDetalleFactura detalle = new frmDetalleFactura(idFactura);
+            frmDetalleFactura detalle = new frmDetalleFactura(this, idFactura);
             detalle.setVisible(true);
         }
     }

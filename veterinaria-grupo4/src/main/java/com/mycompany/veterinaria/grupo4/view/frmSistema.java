@@ -5,8 +5,8 @@ import com.mycompany.veterinaria.grupo4.view.frmMascota;
 import com.mycompany.veterinaria.grupo4.view.frmVeterinario;
 import com.mycompany.veterinaria.grupo4.view.frmServicio;
 import com.mycompany.veterinaria.grupo4.view.frmAtencionMedica;
-import com.mycompany.veterinaria.grupo4.view.frmFactura;
-import com.mycompany.veterinaria.grupo4.view.frmSeleccionarCedula;
+import com.mycompany.veterinaria.grupo4.view.factura.frmFactura;
+import com.mycompany.veterinaria.grupo4.view.factura.frmSeleccionarCedula;
 import com.mycompany.veterinaria.grupo4.view.frmReporte;
 import com.mycompany.veterinaria.grupo4.view.frmRegistrarme;
 
@@ -147,12 +147,12 @@ public class frmSistema extends JFrame {
         btnClientes.addActionListener(e -> abrirFormulario("frmCliente"));
         btnMascotas.addActionListener(e -> abrirFormulario("frmMascota"));
         btnCitas.addActionListener(e -> abrirFormulario("frmCita"));
-        btnFacturas.addActionListener(e -> seleccionarClienteYMostrarFactura());
+//        btnFacturas.addActionListener(e -> seleccionarClienteYMostrarFactura());
 
         clientesItem.addActionListener(e -> abrirFormulario("frmCliente"));
         listarMascotasItem.addActionListener(e -> abrirFormulario("frmMascota"));
         citasItem.addActionListener(e -> abrirFormulario("frmCita"));
-        facturasItem.addActionListener(e -> seleccionarClienteYMostrarFactura());
+  //      facturasItem.addActionListener(e -> seleccionarClienteYMostrarFactura());
         veterinariosItem.addActionListener(e -> abrirFormulario("frmVeterinario"));
         serviciosItem.addActionListener(e -> abrirFormulario("frmServicio"));
         atencionMedicaItem.addActionListener(e -> abrirFormulario("frmAtencionMedica"));
@@ -212,7 +212,7 @@ public class frmSistema extends JFrame {
             form.setVisible(true);
         }
     }
-    
+    /*
     private void seleccionarClienteYMostrarFactura() {
         frmSeleccionarCedula dialog = new frmSeleccionarCedula();
         dialog.setVisible(true);
@@ -231,7 +231,7 @@ public class frmSistema extends JFrame {
             }
         }
     }
-    
+    */
     private void mostrarHome() {
         for (Window window : Window.getWindows()) {
             if (window instanceof JFrame && window != this && window.isVisible()) {
@@ -264,8 +264,9 @@ public class frmSistema extends JFrame {
                 abrirFormulario("frmCita");
                 break;
             case "facturas":
-                seleccionarClienteYMostrarFactura();
+                //seleccionarClienteYMostrarFactura();
                 break;
+                
             default:
                 JOptionPane.showMessageDialog(this, "No se encontró su búsqueda. Intente con: clientes, mascotas, citas, facturas", 
                     "Búsqueda sin resultados", JOptionPane.INFORMATION_MESSAGE);

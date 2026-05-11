@@ -1,5 +1,4 @@
 package com.mycompany.veterinaria.grupo4.controller;
-
 import com.mycompany.veterinaria.grupo4.util.NotificationManager;
 import com.mycompany.veterinaria.grupo4.util.SessionManager;
 import com.mycompany.veterinaria.grupo4.view.FrmPrincipal;
@@ -8,6 +7,8 @@ import com.mycompany.veterinaria.grupo4.view.PnlMain;
 import com.mycompany.veterinaria.grupo4.view.Dashboard;
 import com.mycompany.veterinaria.grupo4.view.cita.PnlCita;
 import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
+import com.mycompany.veterinaria.grupo4.view.factura.frmFactura;
+import com.mycompany.veterinaria.grupo4.view.factura.frmSeleccionarCedula;
 import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
@@ -116,6 +117,7 @@ public class AppController {
                         default -> action.cancel();
                     }
                 }
+                case 6 -> mostrarFacturacion(); 
                 case 7 -> mostrarPersonalVeterinario();
                 case 8 -> mostrarReporteRecordatorios();
                 case 9 -> cerrarSesion();
@@ -170,6 +172,15 @@ public class AppController {
             pnlRecordatorioReporte = new PnlRecordatorioReporte();
         }
         main.showForm(pnlRecordatorioReporte);
+    }
+    private void mostrarFacturacion() {
+        frmSeleccionarCedula dialog = new frmSeleccionarCedula(frm);
+        dialog.setVisible(true);
+        if (dialog.isConfirmed()) {
+            String cedula = dialog.getCedulaSeleccionada();
+            frmFactura facturaDialog = new frmFactura(frm, cedula);
+            facturaDialog.setVisible(true);
+        }
     }
     private void cerrarSesion() {
         int confirm = JOptionPane.showConfirmDialog(frm,
