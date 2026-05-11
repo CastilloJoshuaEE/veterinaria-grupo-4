@@ -110,4 +110,16 @@ public class CitaService {
             return false;
         }
     }
+        /**
+     * Obtiene todas las citas con estado PENDIENTE
+     * @return Lista de citas pendientes
+     */
+    public List<Cita> listarPendientes() {
+        try {
+            return citaDAO.obtenerPendientes();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

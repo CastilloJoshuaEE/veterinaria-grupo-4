@@ -10,6 +10,7 @@ import com.mycompany.veterinaria.grupo4.model.impl.UsuarioDAOImpl;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -45,6 +46,18 @@ public class AuthService {
     public Usuario obtenerUsuario(String usuario) {
         try {
             return usuarioDAO.obtenerUsuario(usuario);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+     * Obtiene todos los usuarios registrados en el sistema
+     * @return Lista de usuarios
+     */
+    public List<Usuario> obtenerTodosUsuarios() {
+        try {
+            return usuarioDAO.obtenerTodos();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

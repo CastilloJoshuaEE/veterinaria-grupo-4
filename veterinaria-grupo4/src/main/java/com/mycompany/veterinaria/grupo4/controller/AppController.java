@@ -1,5 +1,7 @@
 package com.mycompany.veterinaria.grupo4.controller;
 
+import com.mycompany.veterinaria.grupo4.util.NotificationManager;
+import com.mycompany.veterinaria.grupo4.util.SessionManager;
 import com.mycompany.veterinaria.grupo4.view.FrmPrincipal;
 import com.mycompany.veterinaria.grupo4.view.auth.PnlBgLogin;
 import com.mycompany.veterinaria.grupo4.view.PnlMain;
@@ -10,6 +12,7 @@ import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.menu.MenuAction;
 import com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico;
+import com.mycompany.veterinaria.grupo4.view.recordatorio.PnlRecordatorioReporte;
 import com.mycompany.veterinaria.grupo4.view.servicio.PnlServicio;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -30,7 +33,8 @@ public class AppController {
     private PnlVeterinario pnlVeterinario;
     private PnlHistorialMedico pnlHistorialMedico;
     private PnlServicio pnlServicio;
-    
+    private PnlRecordatorioReporte pnlRecordatorioReporte;
+
     //Controladores
     private AuthController authcontroller;
 
@@ -113,6 +117,7 @@ public class AppController {
                     }
                 }
                 case 7 -> mostrarPersonalVeterinario();
+                case 8 -> mostrarReporteRecordatorios();
                 case 9 -> cerrarSesion();
                 default -> action.cancel();
             }
@@ -160,18 +165,29 @@ public class AppController {
         CtrlServicio ctrl = new CtrlServicio(pnlServicio);
         main.showForm(pnlServicio);
     }
+    private void mostrarReporteRecordatorios() {
+        if (pnlRecordatorioReporte == null) {
+            pnlRecordatorioReporte = new PnlRecordatorioReporte();
+        }
+        main.showForm(pnlRecordatorioReporte);
+    }
     private void cerrarSesion() {
         int confirm = JOptionPane.showConfirmDialog(frm,
             "¿Cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             // Limpiar referencias de los paneles
-            main = null;
-            pnlCliente = null;
-            pnlCita = null;
-            pnlMascota = null;
-            bgLogin = null;
-            authcontroller = null;
-            
+            NotificationManager.getInstance().stop();
+            SessionManager.getInstance().logout();
+        main = null;
+        pnlCliente = null;
+        pnlCita = null;
+        pnlMascota = null;
+        pnlVeterinario = null;
+        pnlHistorialMedico = null;
+        pnlServicio = null;
+        pnlRecordatorioReporte = null; 
+        bgLogin = null;
+        authcontroller = null;
             // Recargar el login
             cargarLogin();
         }

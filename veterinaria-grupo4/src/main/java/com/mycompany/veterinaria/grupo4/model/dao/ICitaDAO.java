@@ -17,4 +17,5 @@ public interface ICitaDAO {
     List<Cita> obtenerPorServicioYVeterinario(int idServicio, int idVeterinario, String estado) throws SQLException;
     boolean actualizarEstado(int idCita, String estado) throws SQLException;
     boolean eliminar(int idCita) throws SQLException;
+    List<Cita> obtenerPendientes() throws SQLException; 
 }
