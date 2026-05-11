@@ -402,33 +402,37 @@ GO
 CREATE OR ALTER PROCEDURE SP_OBTENER_CITAS_PENDIENTES
 AS
 BEGIN
-    SET NOCOUNT ON;
-    
-    SELECT 
-        C.ID_CITA, 
-        C.ID_CLIENTE, 
-        CL.NOMBRE + ' ' + CL.APELLIDO AS NOMBRE_CLIENTE,
-        C.ID_MASCOTA, 
-        M.NOMBRE AS NOMBRE_MASCOTA,
-        M.ESPECIE,
-        M.RAZA,
-        M.SEXO,
-        C.ID_SERVICIO, 
-        S.NOMBRE_SERVICIO,
-        C.ID_VETERINARIO, 
-        V.NOMBRE AS NOMBRE_VETERINARIO, 
-        V.APELLIDO AS APELLIDO_VETERINARIO,
-        C.FECHA_HORA, 
-        C.ESTADO,          -- ← ESTA COLUMNA ES CRÍTICA
-        C.OBSERVACIONES, 
-        C.FECHA_REGISTRO,
-        CL.CEDULA AS CEDULA_CLIENTE,
-        CL.TELEFONO AS TELEFONO_CLIENTE,
-        CL.CORREO_ELECTRONICO AS CORREO_CLIENTE
+    SELECT C.ID_CITA,
+           C.ESTADO,                                           
+           C.FECHA_HORA,
+           C.OBSERVACIONES,
+           C.FECHA_REGISTRO,                                   
+
+           -- Cliente
+           CL.ID_CLIENTE,                                      
+           CONCAT(CL.NOMBRE, ' ', CL.APELLIDO) AS NOMBRE_CLIENTE, 
+           CL.CEDULA AS CEDULA_CLIENTE,
+
+           -- Mascota
+           M.ID_MASCOTA,                                       
+           M.NOMBRE AS NOMBRE_MASCOTA,
+
+           -- Servicio
+           S.ID_SERVICIO,                                      
+           S.NOMBRE_SERVICIO,
+
+           -- Veterinario
+           V.ID_VETERINARIO,
+           V.NOMBRE  AS NOMBRE_VETERINARIO,
+           V.APELLIDO AS APELLIDO_VETERINARIO,
+
+           CONCAT(S.NOMBRE_SERVICIO, ' - ',
+                  FORMAT(C.FECHA_HORA, 'dd/MM/yyyy HH:mm'),
+                  ' - ', M.NOMBRE, ' (Dr. ', V.APELLIDO, ')') AS DISPLAY_TEXT
     FROM CITA C
     INNER JOIN CLIENTE     CL ON C.ID_CLIENTE     = CL.ID_CLIENTE
     INNER JOIN MASCOTA     M  ON C.ID_MASCOTA     = M.ID_MASCOTA
-    INNER JOIN SERVICIO    S  ON C.ID_SERVICIO    = S.ID_SERVICIO
+    INNER JOIN SERVICIO     S  ON C.ID_SERVICIO    = S.ID_SERVICIO
     INNER JOIN VETERINARIO V  ON C.ID_VETERINARIO = V.ID_VETERINARIO
     WHERE C.ESTADO = 'PENDIENTE'
     ORDER BY C.FECHA_HORA ASC;

@@ -24,13 +24,6 @@ public class AtencionMedicaController {
         return atencionMedicaService.obtenerPorId(idAtencionMedica);
     }
 
-    @GetMapping("/mascota-cita")
-    public List<AtencionMedica> listarPorMascotaYCita(
-            @RequestParam int idMascota,
-            @RequestParam int idCita) {
-        return atencionMedicaService.listarPorMascotaYCita(idMascota, idCita);
-    }
-
     @PostMapping("/crear")
     public int crear(@RequestBody AtencionMedica atencion) {
         return atencionMedicaService.guardar(atencion);

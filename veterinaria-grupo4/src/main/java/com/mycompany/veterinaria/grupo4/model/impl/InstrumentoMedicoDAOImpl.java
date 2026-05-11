@@ -24,7 +24,6 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
                 i.setNombre(rs.getString("NOMBRE"));
                 i.setDescripcion(rs.getString("DESCRIPCION"));
                 i.setCostoUso(rs.getDouble("COSTO_USO"));
-                i.setEstado(rs.getBoolean("ESTADO"));
                 lista.add(i);
             }
         }
@@ -77,7 +76,6 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
             
             while (rs.next()) {
                 InstrumentoMedico i = new InstrumentoMedico();
-                i.setIdInstrumento(rs.getInt("ID_INSTRUMENTO"));
                 i.setNombre(rs.getString("NOMBRE"));
                 i.setCostoUso(rs.getDouble("COSTO_USO"));
                 lista.add(i);
