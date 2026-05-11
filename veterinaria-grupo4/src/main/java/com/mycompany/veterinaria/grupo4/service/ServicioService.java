@@ -119,4 +119,20 @@ public class ServicioService {
             return null;
         }
     }
+    public List<Servicio> buscarPorNombre(String nombre) {
+        try {
+            return servicioDAO.buscarPorNombre(nombre);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public boolean eliminarAsignacionPorIds(int idVeterinario, int idServicio) {
+        try {
+            return servicioDAO.eliminarAsignacionPorIds(idVeterinario, idServicio);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

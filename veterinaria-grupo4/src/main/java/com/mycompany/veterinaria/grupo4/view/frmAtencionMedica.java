@@ -272,7 +272,7 @@ public class frmAtencionMedica extends JFrame {
         btnGuardar.addActionListener(e -> guardarAtencion());
         btnNuevo.addActionListener(e -> limpiarFormulario());
         btnCancelar.addActionListener(e -> dispose());
-        btnHistorial.addActionListener(e -> verHistorial());
+//        btnHistorial.addActionListener(e -> verHistorial());
     }
     
     private void cargarDatosIniciales() {
@@ -503,7 +503,7 @@ public class frmAtencionMedica extends JFrame {
         spnFecha.setValue(new Date());
         pnlVacuna.setVisible(false);
     }
-    
+    /*
     private void verHistorial() {
         if (idMascotaSeleccionada > 0) {
             frmHistorialMedico historial = new frmHistorialMedico();
@@ -512,4 +512,5 @@ public class frmAtencionMedica extends JFrame {
             JOptionPane.showMessageDialog(this, "Seleccione una mascota", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    */
 }

@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.service;
 
+import com.mycompany.veterinaria.grupo4.config.RecordatorioConfig;
 import com.mycompany.veterinaria.grupo4.model.dao.IRecordatorioDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.Recordatorio;
 import com.mycompany.veterinaria.grupo4.model.impl.RecordatorioDAOImpl;
@@ -88,6 +89,31 @@ public class RecordatorioService {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+    public List<RecordatorioConfig> obtenerTodasConfiguraciones() {
+        try {
+            return recordatorioDAO.obtenerTodasConfiguraciones();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean actualizarConfiguracion(RecordatorioConfig config) {
+        try {
+            return recordatorioDAO.actualizarConfiguracion(config);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public int crearConfiguracion(RecordatorioConfig config) {
+        try {
+            return recordatorioDAO.crearConfiguracion(config);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
         }
     }
 }

@@ -89,4 +89,8 @@ public class CitaController {
         public Cita getCita() { return cita; }
         public void setCita(Cita cita) { this.cita = cita; }
     }
+    @GetMapping("/pendientes")
+    public List<Cita> obtenerCitasPendientes() {
+        return citaService.listarPendientes(); // Necesitas este método en el service
+    }
 }

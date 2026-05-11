@@ -198,6 +198,34 @@ USE DB_VidaAnimal;
 CREATE USER veterinaria_user FOR LOGIN veterinaria_user;
 ALTER ROLE db_owner ADD MEMBER veterinaria_user; 
 GO
+-- Nueva vacuna aplicada --
+DECLARE @ID_MASCOTA INT;
+SELECT @ID_MASCOTA = ID_MASCOTA FROM MASCOTA WHERE NOMBRE = 'Max';
+
+IF @ID_MASCOTA IS NULL
+    SELECT @ID_MASCOTA = MIN(ID_MASCOTA) FROM MASCOTA;
+
+PRINT CONCAT('ID de la mascota: ', @ID_MASCOTA);
+GO
+-- INSERTAR VACUNA CON FECHA PRÓXIMA A VENCER
+DECLARE @ID_MASCOTA INT;
+SELECT @ID_MASCOTA = ID_MASCOTA FROM MASCOTA WHERE NOMBRE = 'Max';
+
+IF @ID_MASCOTA IS NULL
+    SELECT @ID_MASCOTA = MIN(ID_MASCOTA) FROM MASCOTA;
+
+INSERT INTO VACUNA_APLICADA (ID_MASCOTA, NOMBRE, DESCRIPCION, PERIODO_MESES, FECHA_APLICACION, FECHA_PROXIMA)
+VALUES (
+    @ID_MASCOTA,
+    'Vacuna Séxtuple Canina',
+    'Protección contra moquillo, hepatitis, leptospirosis, parvovirus, parainfluenza',
+    12,
+    DATEADD(DAY, -350, GETDATE()),   -- Hace ~350 días
+    DATEADD(DAY, 15, GETDATE())      -- En 15 días (PRÓXIMA A VENCER)
+);
+
+PRINT 'Vacuna insertada correctamente.';
+GO
 -- ─── Resumen final ───────────────────────────────────────────
 PRINT '──────────────────────────────────────';
 PRINT 'Resumen de objetos creados:';
