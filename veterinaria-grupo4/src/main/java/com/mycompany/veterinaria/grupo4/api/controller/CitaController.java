@@ -76,10 +76,6 @@ public class CitaController {
         return citaService.eliminar(idCita);
     }
     
-    @GetMapping("/pendientes")
-    public List<Cita> listarPendientes() {
-        return citaService.listarPendientes();
-    }
 
     // Clase auxiliar para recibir datos
     public static class CitaRequest {
