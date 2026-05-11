@@ -1,12 +1,9 @@
-package com.mycompany.veterinaria.grupo4.view;
+package com.mycompany.veterinaria.grupo4.view.factura;
 
-import com.mycompany.veterinaria.grupo4.model.dao.IClienteDAO;
-import com.mycompany.veterinaria.grupo4.model.impl.ClienteDAOImpl;
 import com.mycompany.veterinaria.grupo4.model.entity.Cliente;
-
+import com.mycompany.veterinaria.grupo4.service.ClienteService;
 import javax.swing.*;
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.List;
 
 public class frmSeleccionarCedula extends JDialog {
@@ -16,13 +13,13 @@ public class frmSeleccionarCedula extends JDialog {
     private String cedulaSeleccionada;
     private boolean confirmed = false;
     
-    private IClienteDAO clienteDAO = new ClienteDAOImpl();
+    private ClienteService clienteService;
     
-    public frmSeleccionarCedula() {
-        setTitle("Seleccionar Cliente");
-        setModal(true);
-        setSize(400, 300);
-        setLocationRelativeTo(null);
+    public frmSeleccionarCedula(Window parent) {
+        super(parent, "Seleccionar Cliente", ModalityType.APPLICATION_MODAL);
+        clienteService = new ClienteService();
+        setSize(500, 250);
+        setLocationRelativeTo(parent);
         initComponents();
         cargarCedulas();
     }
@@ -37,28 +34,28 @@ public class frmSeleccionarCedula extends JDialog {
         add(new JLabel("Cédula del cliente:"), gbc);
         gbc.gridx = 1;
         cmbCedulas = new JComboBox<>();
-        cmbCedulas.setPreferredSize(new Dimension(200, 25));
+        cmbCedulas.setPreferredSize(new Dimension(250, 25));
         cmbCedulas.addActionListener(e -> cargarDatosCliente());
         add(cmbCedulas, gbc);
         
         gbc.gridx = 0; gbc.gridy = 1;
         add(new JLabel("Nombre completo:"), gbc);
         gbc.gridx = 1;
-        txtNombre = new JTextField();
+        txtNombre = new JTextField(20);
         txtNombre.setEditable(false);
         add(txtNombre, gbc);
         
         gbc.gridx = 0; gbc.gridy = 2;
         add(new JLabel("Teléfono:"), gbc);
         gbc.gridx = 1;
-        txtTelefono = new JTextField();
+        txtTelefono = new JTextField(15);
         txtTelefono.setEditable(false);
         add(txtTelefono, gbc);
         
         gbc.gridx = 0; gbc.gridy = 3;
         add(new JLabel("Email:"), gbc);
         gbc.gridx = 1;
-        txtEmail = new JTextField();
+        txtEmail = new JTextField(20);
         txtEmail.setEditable(false);
         add(txtEmail, gbc);
         
@@ -77,29 +74,22 @@ public class frmSeleccionarCedula extends JDialog {
     }
     
     private void cargarCedulas() {
-        try {
-            List<Cliente> clientes = clienteDAO.obtenerTodos();
+        List<Cliente> clientes = clienteService.listarTodos();
+        if (clientes != null) {
             for (Cliente c : clientes) {
                 cmbCedulas.addItem(c.getCedula());
             }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar cédulas: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
     private void cargarDatosCliente() {
         String cedula = (String) cmbCedulas.getSelectedItem();
         if (cedula != null) {
-            try {
-                Cliente cliente = clienteDAO.obtenerPorCedula(cedula);
-                if (cliente != null) {
-                    txtNombre.setText(cliente.getNombre() + " " + cliente.getApellido());
-                    txtTelefono.setText(cliente.getTelefono());
-                    txtEmail.setText(cliente.getCorreoElectronico());
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+            Cliente cliente = clienteService.obtenerPorCedula(cedula);
+            if (cliente != null) {
+                txtNombre.setText(cliente.getNombre() + " " + cliente.getApellido());
+                txtTelefono.setText(cliente.getTelefono());
+                txtEmail.setText(cliente.getCorreoElectronico());
             }
         }
     }
@@ -120,11 +110,6 @@ public class frmSeleccionarCedula extends JDialog {
         dispose();
     }
     
-    public boolean isConfirmed() {
-        return confirmed;
-    }
-    
-    public String getCedulaSeleccionada() {
-        return cedulaSeleccionada;
-    }
+    public boolean isConfirmed() { return confirmed; }
+    public String getCedulaSeleccionada() { return cedulaSeleccionada; }
 }

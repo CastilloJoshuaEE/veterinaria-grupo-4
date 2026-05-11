@@ -39,7 +39,7 @@ public class ClienteService {
         }
     }
     
-    // NUEVO MÉTODO
+    
     public List<Cliente> buscarPorNombre(String nombre) {
         try {
             return clienteDAO.buscarPorNombre(nombre);

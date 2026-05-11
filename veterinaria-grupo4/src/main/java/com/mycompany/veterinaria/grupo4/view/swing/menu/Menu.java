@@ -46,8 +46,8 @@ public class Menu extends JPanel {
                 "Medicamentos",          //  Tabla Medicamentos
                 "Instrumentos",          //  Tabla Instrumentos
                 "Servicios"},            //  Tabla Servicios
-            {"Facturación"},             //  Facturas
-            {"Personal Veterinario"},    //  CRUD de Medicos
+        {"Facturación"},             //  Facturas
+        {"Personal Veterinario"},    //  CRUD de Medicos
         {"~SISTEMA~"},
             {"Configuración"},           //  Ajustes del sistema y computadora
             {"Cerrar Sesión"}
