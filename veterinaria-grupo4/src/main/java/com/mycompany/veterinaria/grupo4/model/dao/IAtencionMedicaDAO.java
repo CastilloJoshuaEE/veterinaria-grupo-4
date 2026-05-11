@@ -9,5 +9,4 @@ public interface IAtencionMedicaDAO {
     List<AtencionMedica> obtenerTodas() throws SQLException;
     AtencionMedica obtenerPorId(int idAtencionMedica) throws SQLException;
     boolean eliminar(int idAtencionMedica) throws SQLException;
-    List<AtencionMedica> obtenerPorMascotaYCita(int idMascota, int idCita) throws SQLException;
 }

@@ -11,21 +11,21 @@ public class AtencionMedicaDAOImpl implements IAtencionMedicaDAO {
 
     @Override
     public int insertar(AtencionMedica atencion) throws SQLException {
-        String sql = "{call SP_INSERTAR_ATENCION_MEDICA(?, ?, ?, ?, ?, ?, ?)}";
-        
+        String sql = "{call SP_INSERTAR_ATENCION_MEDICA(?, ?, ?, ?)}";
+
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
-            stmt.setInt(1, atencion.getIdCita());
-            stmt.setInt(2, atencion.getIdMascota());
-            stmt.setInt(3, atencion.getIdVeterinario());
-            stmt.setTimestamp(4, new Timestamp(atencion.getFecha().getTime()));
-            stmt.setString(5, atencion.getDiagnostico());
-            stmt.setString(6, atencion.getTratamiento());
-            stmt.setString(7, atencion.getObservaciones());
-            
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("ID_ATENCION_MEDICA");
+
+            stmt.setInt(1, atencion.getIdCita());     
+            stmt.setString(2, atencion.getDiagnostico()); 
+            stmt.setString(3, atencion.getTratamiento()); 
+            stmt.setString(4, atencion.getObservaciones()); 
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Importante: El alias en el SP es ID_ATENCION_MEDICA
+                    return rs.getInt("ID_ATENCION_MEDICA");
+                }
             }
             return -1;
         }
@@ -89,29 +89,5 @@ public class AtencionMedicaDAOImpl implements IAtencionMedicaDAO {
             stmt.setInt(1, idAtencionMedica);
             return stmt.execute();
         }
-    }
-
-    @Override
-    public List<AtencionMedica> obtenerPorMascotaYCita(int idMascota, int idCita) throws SQLException {
-        List<AtencionMedica> lista = new ArrayList<>();
-        String sql = "{call SP_OBTENER_ATENCIONES_POR_MASCOTA_CITA(?, ?)}";
-        
-        try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
-            stmt.setInt(1, idMascota);
-            stmt.setInt(2, idCita);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                AtencionMedica a = new AtencionMedica();
-                a.setIdAtencionMedica(rs.getInt("ID_ATENCION_MEDICA"));
-                a.setFecha(rs.getTimestamp("FECHA"));
-                a.setDiagnostico(rs.getString("DIAGNOSTICO"));
-                a.setTratamiento(rs.getString("TRATAMIENTO"));
-                a.setObservaciones(rs.getString("OBSERVACIONES"));
-                lista.add(a);
-            }
-        }
-        return lista;
     }
 }

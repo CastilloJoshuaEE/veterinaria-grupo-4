@@ -24,8 +24,6 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
                 m.setNombre(rs.getString("NOMBRE"));
                 m.setDescripcion(rs.getString("DESCRIPCION"));
                 m.setPrecio(rs.getDouble("PRECIO"));
-                m.setStock(rs.getInt("STOCK"));
-                m.setEstado(rs.getBoolean("ESTADO"));
                 lista.add(m);
             }
         }
@@ -82,7 +80,6 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
             
             while (rs.next()) {
                 Medicamento m = new Medicamento();
-                m.setIdMedicamento(rs.getInt("ID_MEDICAMENTO"));
                 m.setNombre(rs.getString("NOMBRE"));
                 lista.add(m);
             }

@@ -46,13 +46,4 @@ public class AtencionMedicaService {
             return false;
         }
     }
-
-    public List<AtencionMedica> listarPorMascotaYCita(int idMascota, int idCita) {
-        try {
-            return atencionDAO.obtenerPorMascotaYCita(idMascota, idCita);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }
