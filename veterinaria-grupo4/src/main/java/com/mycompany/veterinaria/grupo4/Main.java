@@ -1,7 +1,6 @@
 package com.mycompany.veterinaria.grupo4;
 
 import com.formdev.flatlaf.FlatLaf;
-import com.mycompany.veterinaria.grupo4.view.frmComputadora;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
