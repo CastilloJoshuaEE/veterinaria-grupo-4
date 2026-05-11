@@ -417,49 +417,133 @@ public class CitaDAOImpl implements ICitaDAO {
     
     /**
     * Método auxiliar para transformar una fila de la BD en un objeto Cita completo.
-    * Aquí es donde "hidratamos" los objetos asociados (Cliente, Mascota, etc.)
     */
-   private Cita mapResultSetToCita(ResultSet rs) throws SQLException {
-       Cita cita = new Cita();
-       cita.setIdCita(rs.getInt("ID_CITA"));
-       cita.setFechaHora(rs.getTimestamp("FECHA_HORA"));
-       cita.setEstado(rs.getString("ESTADO"));
-       cita.setObservaciones(rs.getString("OBSERVACIONES"));
+    private Cita mapResultSetToCita(ResultSet rs) throws SQLException {
+        Cita cita = new Cita();
 
-       // Si el SP devuelve FECHA_REGISTRO, lo seteamos (evita errores si el SP no lo trae)
-       try {
-           cita.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-       } catch (SQLException e) { /* Campo no presente en este SP */ }
+        // --- CAMPOS PRINCIPALES ---
+        cita.setIdCita(rs.getInt("ID_CITA"));
+        cita.setFechaHora(rs.getTimestamp("FECHA_HORA"));
+        cita.setObservaciones(rs.getString("OBSERVACIONES"));
 
-       // --- MAPEO DE OBJETOS ASOCIADOS (POO) ---
+        //  IMPORTANTE: Manejar ESTADO con try-catch si no existe la columna
+        try {
+            cita.setEstado(rs.getString("ESTADO"));
+        } catch (SQLException e) {
+            // Si no existe la columna ESTADO, usar valor por defecto
+            cita.setEstado("PENDIENTE");
+        }
 
-       // 1. Cliente
-       Cliente cliente = new Cliente();
-       cliente.setIdCliente(rs.getInt("ID_CLIENTE"));
-       cliente.setNombre(rs.getString("NOMBRE_CLIENTE")); 
-       // Nota: Como el SP concatena nombre+apellido, lo guardamos en 'Nombre' o ajusta según tu clase Cliente
-       cita.setCliente(cliente);
+        // FECHA_REGISTRO puede no estar en todos los SP
+        try {
+            cita.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
+        } catch (SQLException e) {
+            // Campo no presente en este SP
+        }
 
-       // 2. Mascota
-       Mascota mascota = new Mascota();
-       mascota.setIdMascota(rs.getInt("ID_MASCOTA"));
-       mascota.setNombre(rs.getString("NOMBRE_MASCOTA"));
-       // Si el SP trae especie/raza (como en SP_OBTENER_CITA_COMPLETA), puedes setearlos aquí
-       cita.setMascota(mascota);
+        // --- MAPEO DE OBJETOS ASOCIADOS ---
 
-       // 3. Servicio
-       Servicio servicio = new Servicio();
-       servicio.setIdServicio(rs.getInt("ID_SERVICIO"));
-       servicio.setNombreServicio(rs.getString("NOMBRE_SERVICIO"));
-       cita.setServicio(servicio);
+        // 1. Cliente
+        Cliente cliente = new Cliente();
+        try {
+            cliente.setIdCliente(rs.getInt("ID_CLIENTE"));
+        } catch (SQLException e) {
+            cliente.setIdCliente(0);
+        }
+        try {
+            cliente.setNombre(rs.getString("NOMBRE_CLIENTE"));
+        } catch (SQLException e) {
+            cliente.setNombre("");
+        }
+        try {
+            cliente.setCedula(rs.getString("CEDULA_CLIENTE"));
+        } catch (SQLException e) {
+            // No existe la columna
+        }
+        try {
+            cliente.setTelefono(rs.getString("TELEFONO_CLIENTE"));
+        } catch (SQLException e) {
+            // No existe la columna
+        }
+        cita.setCliente(cliente);
 
-       // 4. Veterinario
-       Veterinario vete = new Veterinario();
-       vete.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-       vete.setNombre(rs.getString("NOMBRE_VETERINARIO"));
-       vete.setApellido(rs.getString("APELLIDO_VETERINARIO"));
-       cita.setVeterinario(vete);
+        // 2. Mascota
+        Mascota mascota = new Mascota();
+        try {
+            mascota.setIdMascota(rs.getInt("ID_MASCOTA"));
+        } catch (SQLException e) {
+            mascota.setIdMascota(0);
+        }
+        try {
+            mascota.setNombre(rs.getString("NOMBRE_MASCOTA"));
+        } catch (SQLException e) {
+            mascota.setNombre("");
+        }
+        try {
+            mascota.setEspecie(rs.getString("ESPECIE"));
+        } catch (SQLException e) {
+            // No existe la columna
+        }
+        try {
+            mascota.setRaza(rs.getString("RAZA"));
+        } catch (SQLException e) {
+            // No existe la columna
+        }
+        cita.setMascota(mascota);
 
-       return cita;
-   }
+        // 3. Servicio
+        Servicio servicio = new Servicio();
+        try {
+            servicio.setIdServicio(rs.getInt("ID_SERVICIO"));
+        } catch (SQLException e) {
+            servicio.setIdServicio(0);
+        }
+        try {
+            servicio.setNombreServicio(rs.getString("NOMBRE_SERVICIO"));
+        } catch (SQLException e) {
+            servicio.setNombreServicio("");
+        }
+        cita.setServicio(servicio);
+
+        // 4. Veterinario
+        Veterinario vete = new Veterinario();
+        try {
+            vete.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
+        } catch (SQLException e) {
+            vete.setIdVeterinario(0);
+        }
+        try {
+            vete.setNombre(rs.getString("NOMBRE_VETERINARIO"));
+        } catch (SQLException e) {
+            vete.setNombre("");
+        }
+        try {
+            vete.setApellido(rs.getString("APELLIDO_VETERINARIO"));
+        } catch (SQLException e) {
+            vete.setApellido("");
+        }
+        cita.setVeterinario(vete);
+
+        return cita;
+    }
+   /**
+ * Obtiene todas las citas con estado PENDIENTE
+ * @return Lista de citas pendientes
+ * @throws SQLException Si ocurre un error en la ejecución del procedimiento
+ */
+@Override
+public List<Cita> obtenerPendientes() throws SQLException {
+    List<Cita> lista = new ArrayList<>();
+    String sql = "{call SP_OBTENER_CITAS_PENDIENTES}";
+    
+    try (Connection conn = DatabaseConnection.getConnection();
+         CallableStatement stmt = conn.prepareCall(sql);
+         ResultSet rs = stmt.executeQuery()) {
+        
+        while (rs.next()) {
+            lista.add(mapResultSetToCita(rs));
+        }
+    }
+    return lista;
+}
 }

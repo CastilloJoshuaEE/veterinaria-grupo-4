@@ -2,6 +2,7 @@ package com.mycompany.veterinaria.grupo4.controller;
 
 import com.mycompany.veterinaria.grupo4.api.dto.LoginRequest;
 import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
+import com.mycompany.veterinaria.grupo4.util.SessionManager;
 import com.mycompany.veterinaria.grupo4.view.auth.PnlBgLogin;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,9 +54,8 @@ public class AuthController implements ActionListener{
             Usuario user = restTemplate.postForObject(apiBaseUrl + "/login", request, Usuario.class);
             
             if (user != null && user.getIdUsuario() > 0) {
+                SessionManager.getInstance().login(user);
                 JOptionPane.showMessageDialog(pnl, "Login exitoso", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-//                frmSistema sistema = new frmSistema(user.getNombreUsuario(), user.getIdUsuario());
-//                sistema.setVisible(true);
                 app.cargarPnlDefault();
             } else {
                 JOptionPane.showMessageDialog(pnl, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);

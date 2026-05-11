@@ -76,28 +76,28 @@ public class CtrlMascotas {
     // ─── Inicialización ───────────────────────────────────────────────────────
  
     private void initTabla() {
-    tblMascota.setModel(new DefaultTableModel(
-        new Object[][]{},
-        new String[]{"Mascota", "Especie", "Raza", "Sexo", "Peso", "Estado", "Acción"}
-    ) {
-        @Override public boolean isCellEditable(int row, int col) { return col == 6; }
-    });
+        tblMascota.setModel(new DefaultTableModel(
+            new Object[][]{},
+            new String[]{"Mascota", "Especie", "Raza", "Sexo", "Peso", "Estado", "Acción"}
+        ) {
+            @Override public boolean isCellEditable(int row, int col) { return col == 6; }
+        });
 
-    tblMascota.getColumnModel().getColumn(0).setPreferredWidth(140);
-    tblMascota.getColumnModel().getColumn(1).setPreferredWidth(80);
-    tblMascota.getColumnModel().getColumn(2).setPreferredWidth(80);
-    tblMascota.getColumnModel().getColumn(3).setPreferredWidth(60);
-    tblMascota.getColumnModel().getColumn(4).setPreferredWidth(60);
-    tblMascota.getColumnModel().getColumn(5).setPreferredWidth(90);
-    
-    // AUMENTAR el ancho de la columna de acción (columna 6)
-    // De 120 a 160 para dar espacio a los 4 botones
-    tblMascota.getColumnModel().getColumn(6).setPreferredWidth(160);
-    tblMascota.getColumnModel().getColumn(6).setMinWidth(150);   // Ancho mínimo
-    tblMascota.getColumnModel().getColumn(6).setMaxWidth(200);   // Ancho máximo
-    
-    tblMascota.fixTable(pnlMascota.getScrollPane());
-}
+        tblMascota.getColumnModel().getColumn(0).setPreferredWidth(140);
+        tblMascota.getColumnModel().getColumn(1).setPreferredWidth(80);
+        tblMascota.getColumnModel().getColumn(2).setPreferredWidth(80);
+        tblMascota.getColumnModel().getColumn(3).setPreferredWidth(60);
+        tblMascota.getColumnModel().getColumn(4).setPreferredWidth(60);
+        tblMascota.getColumnModel().getColumn(5).setPreferredWidth(90);
+
+        // AUMENTAR el ancho de la columna de acción (columna 6)
+        // Ahora con 5 botones (editar, ver, eliminar, ficha, historial)
+        tblMascota.getColumnModel().getColumn(6).setPreferredWidth(220);  // Aumentado de 160 a 220
+        tblMascota.getColumnModel().getColumn(6).setMinWidth(200);        // Mínimo aumentado
+        tblMascota.getColumnModel().getColumn(6).setMaxWidth(300);        // Máximo igual
+
+        tblMascota.fixTable(pnlMascota.getScrollPane());
+    }
  
     private void addListeners() {
         pnlMascota.getBtnBuscar().addActionListener(e -> buscar());
@@ -177,33 +177,70 @@ public class CtrlMascotas {
         }
     }
  
-private void llenarTabla(List<Mascota> mascotas) {
-    DefaultTableModel model = (DefaultTableModel) tblMascota.getModel();
-    model.setRowCount(0);
-    if (mascotas == null) return;
+    private void llenarTabla(List<Mascota> mascotas) {
+        DefaultTableModel model = (DefaultTableModel) tblMascota.getModel();
+        model.setRowCount(0);
+        if (mascotas == null) return;
 
-    for (Mascota m : mascotas) {
-        byte[]    imgData = m.getFoto();
-        ImageIcon foto    = (imgData != null && imgData.length > 0)
-            ? new ImageIcon(imgData)
-            : new ImageIcon(getClass().getResource("/icon/pet-paw.png"));
+        for (Mascota m : mascotas) {
+            byte[]    imgData = m.getFoto();
+            ImageIcon foto    = (imgData != null && imgData.length > 0)
+                ? new ImageIcon(imgData)
+                : new ImageIcon(getClass().getResource("/icon/pet-paw.png"));
 
-        tblMascota.addRow(new Object[]{
-            new ModelProfile(foto, m.getNombre()),
-            m.getEspecie(),
-            m.getRaza() != null ? m.getRaza() : "-",
-            m.getSexo() == 'M' ? "Macho" : "Hembra",
-            m.getPeso() != null ? m.getPeso() + " kg" : "-",
-            Estado.ACTIVO,
-            new ModelAction(
-                () -> editar(m),                          // Editar
-                () -> ver(m),                             // Ver detalles
-                () -> eliminar(m),                        // Eliminar
-                () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre())  // Ficha Médica
-            )
-        });
+            tblMascota.addRow(new Object[]{
+                new ModelProfile(foto, m.getNombre()),
+                m.getEspecie(),
+                m.getRaza() != null ? m.getRaza() : "-",
+                m.getSexo() == 'M' ? "Macho" : "Hembra",
+                m.getPeso() != null ? m.getPeso() + " kg" : "-",
+                Estado.ACTIVO,
+                new ModelAction(
+                    () -> editar(m),                    // Editar
+                    () -> ver(m),                       // Ver detalles
+                    () -> eliminar(m),                  // Eliminar
+                    () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre()),  // Ficha Médica
+                    () -> mostrarHistorialMedico(m.getIdMascota(), m.getNombre())  // NUEVO: Historial
+                )
+            });
+        }
     }
-}
+    private void mostrarHistorialMedico(int idMascota, String nombreMascota) {
+        // Crear el panel de historial
+        com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico pnlHistorial = 
+            new com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico();
+
+        // Crear el controlador
+        com.mycompany.veterinaria.grupo4.controller.CtrlHistorialMedico ctrlHistorial = 
+            new com.mycompany.veterinaria.grupo4.controller.CtrlHistorialMedico(pnlHistorial);
+
+        // Crear un JDialog para mostrar el panel
+        JDialog dialog = new JDialog(parentFrame(), "Historial Médico - " + nombreMascota, true);
+        dialog.setSize(1100, 700);
+        dialog.setLocationRelativeTo(parentFrame());
+        dialog.setContentPane(pnlHistorial);
+
+        // Cargar la mascota directamente (opcional: podrías hacer una búsqueda automática)
+        // Para cargar automáticamente, necesitarías obtener la Mascota por ID
+        try {
+            Mascota mascota = restTemplate.getForObject(
+                apiBaseUrl + "/mascota/" + idMascota, Mascota.class);
+            if (mascota != null) {
+                // Necesitas un método público en CtrlHistorialMedico para cargar por ID
+                // Por simplicidad, aquí podrías simular la búsqueda
+                pnlHistorial.getTxtBuscarMascota().setText(mascota.getNombre());
+                // Llamar a buscarMascota después de que el diálogo esté visible
+                SwingUtilities.invokeLater(() -> {
+                    // Esto es un truco: ejecutar la búsqueda después de que el diálogo esté visible
+                    pnlHistorial.getBtnBuscarMascota().doClick();
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        dialog.setVisible(true);
+    }
     private void buscar() {
         String texto = pnlMascota.getTxtBusqueda().getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }

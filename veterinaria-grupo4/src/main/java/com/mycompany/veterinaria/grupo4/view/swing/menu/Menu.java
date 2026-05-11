@@ -34,7 +34,11 @@ public class Menu extends JPanel {
             {"Atención Médica"},         //  Tabla unificada: Fichas médicas e Historial
             {"Mascotas",
                 //"Nuevo",
-                "Ver todos"},            //  Tabla unificada: Directorio de pacientes y sus dueños
+                "Ver todos",
+                "Historial Médico"},
+            
+            
+            //  Tabla unificada: Directorio de pacientes y sus dueños
             {"Clientes",
                 "Ver todos"},
         {"~ADMINISTRACIÓN~"},

@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.model.impl;
 
+import com.mycompany.veterinaria.grupo4.config.RecordatorioConfig;
 import com.mycompany.veterinaria.grupo4.model.dao.IRecordatorioDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.Recordatorio;
 import com.mycompany.veterinaria.grupo4.util.DatabaseConnection;
@@ -169,6 +170,58 @@ public class RecordatorioDAOImpl implements IRecordatorioDAO {
             stmt.setInt(1, idRecordatorio);
             ResultSet rs = stmt.executeQuery();
             return rs.next() && rs.getInt("FILAS_AFECTADAS") > 0;
+        }
+    }
+    @Override
+    public List<RecordatorioConfig> obtenerTodasConfiguraciones() throws SQLException {
+        List<RecordatorioConfig> lista = new ArrayList<>();
+        String sql = "{call SP_OBTENER_CONFIG_RECORDATORIOS}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                RecordatorioConfig c = new RecordatorioConfig();
+                c.setIdConfig(rs.getInt("ID_CONFIG"));
+                c.setTipoRecordatorio(rs.getString("TIPO_RECORDATORIO"));
+                c.setAnticipacion(rs.getString("ANTICIPACION"));
+                c.setMensaje(rs.getString("MENSAJE"));
+                c.setActivo(rs.getBoolean("ACTIVO"));
+                lista.add(c);
+            }
+        }
+        return lista;
+    }
+
+    @Override
+    public boolean actualizarConfiguracion(RecordatorioConfig config) throws SQLException {
+        String sql = "{call SP_ACTUALIZAR_CONFIG_RECORDATORIO(?, ?, ?)}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            stmt.setInt(1, config.getIdConfig());
+            stmt.setString(2, config.getMensaje());
+            stmt.setBoolean(3, config.isActivo());
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() && rs.getInt("FILAS_AFECTADAS") > 0;
+        }
+    }
+    @Override
+    public int crearConfiguracion(RecordatorioConfig config) throws SQLException {
+        String sql = "{call SP_INSERTAR_CONFIG_RECORDATORIO(?, ?, ?, ?)}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            stmt.setString(1, config.getTipoRecordatorio());
+            stmt.setString(2, config.getAnticipacion());
+            stmt.setString(3, config.getMensaje());
+            stmt.setBoolean(4, config.isActivo());
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("ID_CONFIG");
+            }
+            return -1;
         }
     }
 }

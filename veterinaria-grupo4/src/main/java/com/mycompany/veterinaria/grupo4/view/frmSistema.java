@@ -5,7 +5,6 @@ import com.mycompany.veterinaria.grupo4.view.frmMascota;
 import com.mycompany.veterinaria.grupo4.view.frmVeterinario;
 import com.mycompany.veterinaria.grupo4.view.frmServicio;
 import com.mycompany.veterinaria.grupo4.view.frmAtencionMedica;
-import com.mycompany.veterinaria.grupo4.view.frmHistorialMedico;
 import com.mycompany.veterinaria.grupo4.view.frmFactura;
 import com.mycompany.veterinaria.grupo4.view.frmSeleccionarCedula;
 import com.mycompany.veterinaria.grupo4.view.frmReporte;
@@ -190,9 +189,11 @@ public class frmSistema extends JFrame {
             case "frmatencionmedica":
                 form = new frmAtencionMedica(nombreUsuario, idUsuario);
                 break;
+                /*
             case "frmhistorialmedico":
                 form = new frmHistorialMedico();
                 break;
+*/
             case "frmreporte":
                 form = new frmReporte(idUsuario);
                 break;

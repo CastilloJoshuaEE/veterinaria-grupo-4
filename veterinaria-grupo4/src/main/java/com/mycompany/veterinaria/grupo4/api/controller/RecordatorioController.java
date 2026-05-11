@@ -1,5 +1,7 @@
 package com.mycompany.veterinaria.grupo4.api.controller;
 
+import com.mycompany.veterinaria.grupo4.api.dto.RecordatorioRequest;
+import com.mycompany.veterinaria.grupo4.config.RecordatorioConfig;
 import com.mycompany.veterinaria.grupo4.model.entity.Recordatorio;
 import com.mycompany.veterinaria.grupo4.service.RecordatorioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,14 +64,18 @@ public class RecordatorioController {
     public boolean eliminar(@PathVariable int idRecordatorio) {
         return recordatorioService.eliminar(idRecordatorio);
     }
+    @GetMapping("/config/todas")
+    public List<RecordatorioConfig> obtenerTodasConfiguraciones() {
+        // Implementa este método en tu service
+        return recordatorioService.obtenerTodasConfiguraciones();
+    }
 
-    public static class RecordatorioRequest {
-        private Recordatorio recordatorio;
-        private String anticipacion;
-
-        public Recordatorio getRecordatorio() { return recordatorio; }
-        public void setRecordatorio(Recordatorio recordatorio) { this.recordatorio = recordatorio; }
-        public String getAnticipacion() { return anticipacion; }
-        public void setAnticipacion(String anticipacion) { this.anticipacion = anticipacion; }
+    @PutMapping("/config/actualizar")
+    public boolean actualizarConfiguracion(@RequestBody RecordatorioConfig config) {
+        return recordatorioService.actualizarConfiguracion(config);
+    }
+    @PostMapping("/config/crear")
+    public int crearConfiguracion(@RequestBody RecordatorioConfig config) {
+        return recordatorioService.crearConfiguracion(config);
     }
 }

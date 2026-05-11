@@ -1,5 +1,6 @@
 package com.mycompany.veterinaria.grupo4.model.dao;
 
+import com.mycompany.veterinaria.grupo4.config.RecordatorioConfig;
 import com.mycompany.veterinaria.grupo4.model.entity.Recordatorio;
 import java.sql.SQLException;
 import java.util.Date;
@@ -15,4 +16,7 @@ public interface IRecordatorioDAO {
     int registrar(Recordatorio recordatorio, String anticipacion) throws SQLException;
     boolean actualizar(Recordatorio recordatorio) throws SQLException;
     boolean eliminar(int idRecordatorio) throws SQLException;
+    List<RecordatorioConfig> obtenerTodasConfiguraciones() throws SQLException;
+    boolean actualizarConfiguracion(RecordatorioConfig config) throws SQLException;
+    int crearConfiguracion(RecordatorioConfig config) throws SQLException;
 }
