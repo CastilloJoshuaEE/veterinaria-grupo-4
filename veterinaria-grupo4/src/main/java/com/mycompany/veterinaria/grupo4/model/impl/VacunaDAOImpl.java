@@ -106,7 +106,7 @@ public class VacunaDAOImpl implements IVacunaDAO {
             while (rs.next()) {
                 VacunaAplicada v = new VacunaAplicada();
                 v.setIdVacuna(rs.getInt("ID_VACUNA"));
-                v.setNombre(rs.getString("NOMBRE_VACUNA"));
+                v.setNombre(rs.getString("NOMBRE"));
                 v.setFechaAplicacion(rs.getDate("FECHA_APLICACION"));
                 v.setFechaProxima(rs.getDate("FECHA_PROXIMA"));
                 v.setIdMascota(rs.getInt("ID_MASCOTA"));

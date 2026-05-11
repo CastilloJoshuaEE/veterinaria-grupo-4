@@ -82,4 +82,28 @@ public class UsuarioDAOImpl implements IUsuarioDAO {
             return null;
         }
     }
+    @Override
+    public List<Usuario> obtenerTodos() throws SQLException {
+        List<Usuario> lista = new ArrayList<>();
+        String sql = "SELECT ID_USUARIO, NOMBRE_USUARIO, CONTRASENA, CORREO_ELECTRONICO, " +
+                     "ROL, FECHA_CREACION, ESTADO FROM USUARIO WHERE ESTADO = 1 ORDER BY NOMBRE_USUARIO";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            while (rs.next()) {
+                Usuario u = new Usuario();
+                u.setIdUsuario(rs.getInt("ID_USUARIO"));
+                u.setNombreUsuario(rs.getString("NOMBRE_USUARIO"));
+                u.setContrasena(rs.getString("CONTRASENA"));
+                u.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
+                u.setRol(rs.getString("ROL"));
+                u.setFechaCreacion(rs.getTimestamp("FECHA_CREACION"));
+                u.setEstado(rs.getBoolean("ESTADO"));
+                lista.add(u);
+            }
+        }
+        return lista;
+    }
 }

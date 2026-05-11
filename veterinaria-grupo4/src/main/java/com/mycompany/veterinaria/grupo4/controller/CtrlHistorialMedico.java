@@ -297,7 +297,7 @@ public class CtrlHistorialMedico {
         String enfermedades = fichaActual != null ? fichaActual.getEnfermedadesCronicas() : "";
         String observaciones = fichaActual != null ? fichaActual.getObservaciones() : "";
         
-        // CORRECCIÓN: Obtener el Frame padre correctamente
+        //  Obtener el Frame padre correctamente
         Frame parent = null;
         Component comp = view;
         while (comp != null && !(comp instanceof Frame)) {
