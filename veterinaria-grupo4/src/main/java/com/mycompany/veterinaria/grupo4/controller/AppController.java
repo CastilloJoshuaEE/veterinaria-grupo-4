@@ -4,6 +4,7 @@ import com.mycompany.veterinaria.grupo4.view.FrmPrincipal;
 import com.mycompany.veterinaria.grupo4.view.auth.PnlBgLogin;
 import com.mycompany.veterinaria.grupo4.view.PnlMain;
 import com.mycompany.veterinaria.grupo4.view.Dashboard;
+import com.mycompany.veterinaria.grupo4.view.atencionMedica.PnlAtencionMedica;
 import com.mycompany.veterinaria.grupo4.view.cita.PnlCita;
 import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
 import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
@@ -26,6 +27,7 @@ public class AppController {
     private PnlCita pnlCita;
     private PnlMascota pnlMascota;
     private PnlVeterinario pnlVeterinario;
+    private PnlAtencionMedica pnlAtencion;
     
     //Controladores
     private AuthController authcontroller;
@@ -89,6 +91,8 @@ public class AppController {
                         default -> action.cancel();
                     }
                 }
+                case 2 ->  mostrarAtencion();
+                
                 case 3 -> {
                     switch (subIndex) {
                         case 1 -> mostrarMascotas(); 
@@ -117,6 +121,12 @@ public class AppController {
         if (pnlMascota == null) pnlMascota = new PnlMascota();
         CtrlMascotas ctrl = new CtrlMascotas(pnlMascota);
         main.showForm(pnlMascota);
+    }
+    
+    private void mostrarAtencion() {
+        if (pnlAtencion == null) pnlAtencion = new PnlAtencionMedica();
+        CtrlAtencionMedica ctrl = new CtrlAtencionMedica(pnlAtencion);
+        main.showForm(pnlAtencion);
     }
 
     private void mostrarCitas() {

@@ -382,6 +382,40 @@ public class CitaDAOImpl implements ICitaDAO {
     }
     
     /**
+     * Recupera todas las citas médicas registradas en el sistema que se encuentran 
+     * en estado 'PENDIENTE'.
+     * <p>
+     * Este método ejecuta el procedimiento almacenado {@code SP_OBTENER_CITAS_PENDIENTES} 
+     * y delega la construcción del objeto al método centralizado 
+     * {@link #mapResultSetToCita(ResultSet)}.
+     * </p>
+     *
+     * @return Una {@link List} de objetos {@link Cita} que representan la cola de 
+     * atención médica actual. Si no hay citas, devuelve una lista vacía.
+     * @throws SQLException Si ocurre un error de acceso a datos, problemas de red 
+     * con SQL Server o si el procedimiento almacenado no existe.
+     */
+    @Override
+    public List<Cita> obtenerPendientes() throws SQLException {
+        List<Cita> lista = new ArrayList<>();
+        String sql = "{call SP_OBTENER_CITAS_PENDIENTES}";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                // Se utiliza el mapeador centralizado para mantener la consistencia
+                lista.add(mapResultSetToCita(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error crítico en CitaDAO.obtenerPendientes: " + e.getMessage());
+            throw e;
+        }
+        return lista;
+    }
+    
+    /**
     * Método auxiliar para transformar una fila de la BD en un objeto Cita completo.
     * Aquí es donde "hidratamos" los objetos asociados (Cliente, Mascota, etc.)
     */

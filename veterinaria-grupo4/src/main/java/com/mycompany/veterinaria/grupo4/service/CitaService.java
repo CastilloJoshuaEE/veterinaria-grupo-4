@@ -110,4 +110,13 @@ public class CitaService {
             return false;
         }
     }
+
+    public List<Cita> listarPendientes() {
+        try {
+            return citaDAO.obtenerPendientes();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

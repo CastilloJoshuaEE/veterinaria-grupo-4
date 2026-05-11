@@ -404,19 +404,36 @@ CREATE OR ALTER PROCEDURE SP_OBTENER_CITAS_PENDIENTES
 AS
 BEGIN
     SELECT C.ID_CITA,
-           CONCAT(CL.NOMBRE, ' ', CL.APELLIDO) AS CLIENTE,
+           C.ESTADO,                                           
+           C.FECHA_HORA,
+           C.OBSERVACIONES,
+           C.FECHA_REGISTRO,                                   
+
+           -- Cliente
+           CL.ID_CLIENTE,                                      
+           CONCAT(CL.NOMBRE, ' ', CL.APELLIDO) AS NOMBRE_CLIENTE, 
            CL.CEDULA AS CEDULA_CLIENTE,
-           M.NOMBRE  AS MASCOTA,
+
+           -- Mascota
+           M.ID_MASCOTA,                                       
+           M.NOMBRE AS NOMBRE_MASCOTA,
+
+           -- Servicio
+           S.ID_SERVICIO,                                      
            S.NOMBRE_SERVICIO,
-           C.ID_VETERINARIO, V.NOMBRE AS NOMBRE_VETERINARIO, V.APELLIDO AS APELLIDO_VETERINARIO,
-           C.FECHA_HORA, C.OBSERVACIONES,
+
+           -- Veterinario
+           V.ID_VETERINARIO,
+           V.NOMBRE  AS NOMBRE_VETERINARIO,
+           V.APELLIDO AS APELLIDO_VETERINARIO,
+
            CONCAT(S.NOMBRE_SERVICIO, ' - ',
                   FORMAT(C.FECHA_HORA, 'dd/MM/yyyy HH:mm'),
                   ' - ', M.NOMBRE, ' (Dr. ', V.APELLIDO, ')') AS DISPLAY_TEXT
     FROM CITA C
     INNER JOIN CLIENTE     CL ON C.ID_CLIENTE     = CL.ID_CLIENTE
     INNER JOIN MASCOTA     M  ON C.ID_MASCOTA     = M.ID_MASCOTA
-    INNER JOIN SERVICIO    S  ON C.ID_SERVICIO    = S.ID_SERVICIO
+    INNER JOIN SERVICIO     S  ON C.ID_SERVICIO    = S.ID_SERVICIO
     INNER JOIN VETERINARIO V  ON C.ID_VETERINARIO = V.ID_VETERINARIO
     WHERE C.ESTADO = 'PENDIENTE'
     ORDER BY C.FECHA_HORA;

@@ -36,7 +36,6 @@ public class Menu extends JPanel {
                 //"Nuevo",
                 "Ver todos"},            //  Tabla unificada: Directorio de pacientes y sus dueños
             {"Clientes",
-                //"Nuevo",
                 "Ver todos"},
         {"~ADMINISTRACIÓN~"},
             {"Inventario",

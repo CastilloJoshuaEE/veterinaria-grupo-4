@@ -245,73 +245,73 @@ public class CtrlCitas {
      *
      * @param form instancia activa del formulario
      */
-private void filtrarVeterinariosPorServicio(FormRegistroCita form) {
-    Servicio seleccionado = (Servicio) form.getCmbServicio().getSelectedItem();
-    if (seleccionado == null) {
-        cargarVeterinarios(new ArrayList<>());
-        return;
-    }
-    try {
-        List<Veterinario> filtrados = restTemplate.exchange(
-            apiVeterinario + "/servicio/" + seleccionado.getIdServicio(),
-            HttpMethod.GET, null,
-            new ParameterizedTypeReference<List<Veterinario>>() {}
-        ).getBody();
+    private void filtrarVeterinariosPorServicio(FormRegistroCita form) {
+        Servicio seleccionado = (Servicio) form.getCmbServicio().getSelectedItem();
+        if (seleccionado == null) {
+            cargarVeterinarios(new ArrayList<>());
+            return;
+        }
+        try {
+            List<Veterinario> filtrados = restTemplate.exchange(
+                apiVeterinario + "/servicio/" + seleccionado.getIdServicio(),
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Veterinario>>() {}
+            ).getBody();
 
-        if (filtrados != null && !filtrados.isEmpty()) {
-            cargarVeterinarios(filtrados);
-        } else {
-            // NO HAY VETERINARIOS DISPONIBLES - Mostrar mensaje
-            form.getCmbVeterinario().removeAllItems();
-            // Agregar un ítem deshabilitado que indique que no hay disponibles
-            Veterinario sinVeterinarios = new Veterinario();
-            sinVeterinarios.setIdVeterinario(-1);
-            sinVeterinarios.setNombre("️ No hay veterinarios disponibles");
-            sinVeterinarios.setApellido("para este servicio");
-            form.getCmbVeterinario().addItem(sinVeterinarios);
-            form.getCmbVeterinario().setEnabled(false);
-            
-            // Mostrar mensaje al usuario
+            if (filtrados != null && !filtrados.isEmpty()) {
+                cargarVeterinarios(filtrados);
+            } else {
+                // NO HAY VETERINARIOS DISPONIBLES - Mostrar mensaje
+                form.getCmbVeterinario().removeAllItems();
+                // Agregar un ítem deshabilitado que indique que no hay disponibles
+                Veterinario sinVeterinarios = new Veterinario();
+                sinVeterinarios.setIdVeterinario(-1);
+                sinVeterinarios.setNombre("️ No hay veterinarios disponibles");
+                sinVeterinarios.setApellido("para este servicio");
+                form.getCmbVeterinario().addItem(sinVeterinarios);
+                form.getCmbVeterinario().setEnabled(false);
+
+                // Mostrar mensaje al usuario
+                JOptionPane.showMessageDialog(form,
+                    "No hay veterinarios disponibles para el servicio seleccionado.\n" +
+                    "Por favor, seleccione otro servicio o contacte al administrador.",
+                    "Sin veterinarios", JOptionPane.WARNING_MESSAGE);
+            }
+
+            if (form.isModoEdicion() && form.getCitaActual().getVeterinario() != null) {
+                preseleccionarVeterinario(form.getCitaActual().getVeterinario().getIdVeterinario());
+            }
+        } catch (Exception e) {
+            System.err.println("Error al filtrar veterinarios: " + e.getMessage());
+            // En caso de error, mostrar mensaje también
             JOptionPane.showMessageDialog(form,
-                "No hay veterinarios disponibles para el servicio seleccionado.\n" +
-                "Por favor, seleccione otro servicio o contacte al administrador.",
-                "Sin veterinarios", JOptionPane.WARNING_MESSAGE);
+                "Error al cargar veterinarios: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        if (form.isModoEdicion() && form.getCitaActual().getVeterinario() != null) {
-            preseleccionarVeterinario(form.getCitaActual().getVeterinario().getIdVeterinario());
-        }
-    } catch (Exception e) {
-        System.err.println("Error al filtrar veterinarios: " + e.getMessage());
-        // En caso de error, mostrar mensaje también
-        JOptionPane.showMessageDialog(form,
-            "Error al cargar veterinarios: " + e.getMessage(),
-            "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
  
     /**
      * Puebla el combo de veterinarios del formulario activo.
      *
      * @param lista veterinarios a mostrar
      */
-private void cargarVeterinarios(List<Veterinario> lista) {
-    form.getCmbVeterinario().removeAllItems();
-    form.getCmbVeterinario().setEnabled(true);  // Habilitar siempre que se carga
-    for (Veterinario v : lista) {
-        form.getCmbVeterinario().addItem(v);
+    private void cargarVeterinarios(List<Veterinario> lista) {
+        form.getCmbVeterinario().removeAllItems();
+        form.getCmbVeterinario().setEnabled(true);  // Habilitar siempre que se carga
+        for (Veterinario v : lista) {
+            form.getCmbVeterinario().addItem(v);
+        }
+        if (lista.isEmpty()) {
+            // Si la lista está vacía, agregar mensaje
+            Veterinario sinVeterinarios = new Veterinario();
+            sinVeterinarios.setIdVeterinario(-1);
+            sinVeterinarios.setNombre("No hay veterinarios");
+            sinVeterinarios.setApellido("disponibles");
+            form.getCmbVeterinario().addItem(sinVeterinarios);
+            form.getCmbVeterinario().setEnabled(false);
+        }
+        form.getCmbVeterinario().setSelectedIndex(-1);
     }
-    if (lista.isEmpty()) {
-        // Si la lista está vacía, agregar mensaje
-        Veterinario sinVeterinarios = new Veterinario();
-        sinVeterinarios.setIdVeterinario(-1);
-        sinVeterinarios.setNombre("No hay veterinarios");
-        sinVeterinarios.setApellido("disponibles");
-        form.getCmbVeterinario().addItem(sinVeterinarios);
-        form.getCmbVeterinario().setEnabled(false);
-    }
-    form.getCmbVeterinario().setSelectedIndex(-1);
-}
  
     /**
      * Preselecciona en el combo de veterinarios del formulario activo
