@@ -29,41 +29,35 @@ public class FacturaDAOImpl implements IFacturaDAO {
                 f.setIva(rs.getDouble("IVA"));
                 f.setTotal(rs.getDouble("TOTAL"));
                 f.setEstado(rs.getString("ESTADO"));
-                f.setIdMetodoPago(rs.getInt("ID_METODO_PAGO"));
+                f.setMetodoPago(rs.getString("METODO"));
                 lista.add(f);
             }
         }
         return lista;
     }
 
-@Override
-public Factura obtenerDetalleFactura(int idFactura) throws SQLException {
-    Factura factura = null;
-    String sql = "{call SP_OBTENER_DETALLE_FACTURA(?)}";
-    
-    try (Connection conn = DatabaseConnection.getConnection();
-         CallableStatement stmt = conn.prepareCall(sql)) {
-        stmt.setInt(1, idFactura);
-        ResultSet rs = stmt.executeQuery();
+    @Override
+    public Factura obtenerDetalleFactura(int idFactura) throws SQLException {
+        Factura factura = null;
+        String sql = "{call SP_OBTENER_DETALLE_FACTURA(?)}";
         
-        // Primer ResultSet - Datos del cliente
-        if (rs.next()) {
-            factura = new Factura();
-            factura.setIdFactura(idFactura);
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            stmt.setInt(1, idFactura);
+            ResultSet rs = stmt.executeQuery();
             
-            Cliente cliente = new Cliente();
-            cliente.setNombre(rs.getString("NOMBRE_CLIENTE"));
-            cliente.setCedula(rs.getString("CEDULA"));
-            cliente.setTelefono(rs.getString("TELEFONO"));
-            cliente.setDireccion(rs.getString("DIRECCION"));
-            cliente.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-            factura.setCliente(cliente);
-        }
-        
-        // Segundo ResultSet - Datos de factura
-        if (stmt.getMoreResults()) {
-            rs = stmt.getResultSet();
+            // Primer ResultSet - Datos del cliente y factura
             if (rs.next()) {
+                factura = new Factura();
+                factura.setIdFactura(idFactura);
+                
+                Cliente cliente = new Cliente();
+                cliente.setNombre(rs.getString("NOMBRE_CLIENTE"));
+                cliente.setCedula(rs.getString("CEDULA"));
+                cliente.setTelefono(rs.getString("TELEFONO"));
+                cliente.setDireccion(rs.getString("DIRECCION"));
+                cliente.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
+                factura.setCliente(cliente);
                 factura.setFecha(rs.getTimestamp("FECHA"));
                 factura.setSubtotal(rs.getDouble("SUBTOTAL"));
                 factura.setIva(rs.getDouble("IVA"));
@@ -71,86 +65,86 @@ public Factura obtenerDetalleFactura(int idFactura) throws SQLException {
                 factura.setEstado(rs.getString("ESTADO"));
                 factura.setMetodoPago(rs.getString("METODO"));
             }
-        }
-        
-        // Tercer ResultSet - Servicios
-        if (stmt.getMoreResults()) {
-            rs = stmt.getResultSet();
-            List<Object[]> servicios = new ArrayList<>();
-            while (rs.next()) {
-                servicios.add(new Object[]{
-                    rs.getString("NOMBRE_SERVICIO"),
-                    rs.getString("DESCRIPCION_SERVICIO"),
-                    String.format("$%.2f", rs.getDouble("PRECIO_UNITARIO")),
-                    String.format("$%.2f", rs.getDouble("TOTAL_SERVICIO")),
-                    rs.getString("VETERINARIO")
-                });
+            
+            // Segundo ResultSet - Servicios
+            if (stmt.getMoreResults()) {
+                rs = stmt.getResultSet();
+                List<Object[]> servicios = new ArrayList<>();
+                while (rs.next()) {
+                    servicios.add(new Object[]{
+                        rs.getString("NOMBRE_SERVICIO"),
+                        rs.getString("DESCRIPCION"),
+                        String.format("$%.2f", rs.getDouble("PRECIO_UNITARIO")),
+                        String.format("$%.2f", rs.getDouble("TOTAL_SERVICIO")),
+                        rs.getString("VETERINARIO")
+                    });
+                }
+                factura.setServicios(servicios);
             }
-            factura.setServicios(servicios);
-        }
-        
-        // Cuarto ResultSet - Mascotas
-        if (stmt.getMoreResults()) {
-            rs = stmt.getResultSet();
-            List<Object[]> mascotas = new ArrayList<>();
-            while (rs.next()) {
-                mascotas.add(new Object[]{
-                    rs.getString("NOMBRE_MASCOTA"),
-                    rs.getString("ESPECIE"),
-                    rs.getString("RAZA"),
-                    rs.getString("DIAGNOSTICO"),
-                    rs.getString("TRATAMIENTO")
-                });
+            
+            // Tercer ResultSet - Mascotas
+            if (stmt.getMoreResults()) {
+                rs = stmt.getResultSet();
+                List<Object[]> mascotas = new ArrayList<>();
+                while (rs.next()) {
+                    mascotas.add(new Object[]{
+                        rs.getString("NOMBRE_MASCOTA"),
+                        rs.getString("ESPECIE"),
+                        rs.getString("RAZA"),
+                        rs.getString("DIAGNOSTICO"),
+                        rs.getString("TRATAMIENTO")
+                    });
+                }
+                factura.setMascotas(mascotas);
             }
-            factura.setMascotas(mascotas);
-        }
-        
-        // Quinto ResultSet - Medicamentos
-        if (stmt.getMoreResults()) {
-            rs = stmt.getResultSet();
-            List<Object[]> medicamentos = new ArrayList<>();
-            while (rs.next()) {
-                medicamentos.add(new Object[]{
-                    rs.getString("MEDICAMENTO"),
-                    rs.getString("DOSIS"),
-                    rs.getString("FRECUENCIA"),
-                    rs.getString("DURACION"),
-                    String.format("$%.2f", rs.getDouble("PRECIO"))
-                });
+            
+            // Cuarto ResultSet - Medicamentos
+            if (stmt.getMoreResults()) {
+                rs = stmt.getResultSet();
+                List<Object[]> medicamentos = new ArrayList<>();
+                while (rs.next()) {
+                    medicamentos.add(new Object[]{
+                        rs.getString("MEDICAMENTO"),
+                        rs.getString("DOSIS"),
+                        rs.getString("FRECUENCIA"),
+                        rs.getString("DURACION"),
+                        String.format("$%.2f", rs.getDouble("PRECIO"))
+                    });
+                }
+                factura.setMedicamentos(medicamentos);
             }
-            factura.setMedicamentos(medicamentos);
-        }
-        
-        // Sexto ResultSet - Instrumentos
-        if (stmt.getMoreResults()) {
-            rs = stmt.getResultSet();
-            List<Object[]> instrumentos = new ArrayList<>();
-            while (rs.next()) {
-                instrumentos.add(new Object[]{
-                    rs.getString("INSTRUMENTO"),
-                    String.format("$%.2f", rs.getDouble("COSTO_USO"))
-                });
+            
+            // Quinto ResultSet - Instrumentos
+            if (stmt.getMoreResults()) {
+                rs = stmt.getResultSet();
+                List<Object[]> instrumentos = new ArrayList<>();
+                while (rs.next()) {
+                    instrumentos.add(new Object[]{
+                        rs.getString("INSTRUMENTO"),
+                        String.format("$%.2f", rs.getDouble("COSTO_USO"))
+                    });
+                }
+                factura.setInstrumentos(instrumentos);
             }
-            factura.setInstrumentos(instrumentos);
-        }
-        
-        // Séptimo ResultSet - Vacunas
-        if (stmt.getMoreResults()) {
-            rs = stmt.getResultSet();
-            List<Object[]> vacunas = new ArrayList<>();
-            while (rs.next()) {
-                vacunas.add(new Object[]{
-                    rs.getString("NOMBRE_VACUNA"),
-                    rs.getDate("FECHA_APLICACION"),
-                    rs.getDate("FECHA_PROXIMA"),
-                    rs.getString("DESCRIPCION")
-                });
+            
+            // Sexto ResultSet - Vacunas
+            if (stmt.getMoreResults()) {
+                rs = stmt.getResultSet();
+                List<Object[]> vacunas = new ArrayList<>();
+                while (rs.next()) {
+                    vacunas.add(new Object[]{
+                        rs.getString("NOMBRE_VACUNA"),
+                        rs.getDate("FECHA_APLICACION"),
+                        rs.getDate("FECHA_PROXIMA"),
+                        rs.getString("DESCRIPCION")
+                    });
+                }
+                factura.setVacunas(vacunas);
             }
-            factura.setVacunas(vacunas);
         }
+        return factura;
     }
-    return factura;
-}
+
     @Override
     public int generarFacturaAtencion(int idAtencionMedica, String metodoPago, 
                                       String cuentaOrigen, String cuentaDestino) throws SQLException {
@@ -160,12 +154,12 @@ public Factura obtenerDetalleFactura(int idFactura) throws SQLException {
              CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setInt(1, idAtencionMedica);
             stmt.setString(2, metodoPago);
-            if (cuentaOrigen != null) {
+            if (cuentaOrigen != null && !cuentaOrigen.isEmpty()) {
                 stmt.setString(3, cuentaOrigen);
             } else {
                 stmt.setNull(3, Types.VARCHAR);
             }
-            if (cuentaDestino != null) {
+            if (cuentaDestino != null && !cuentaDestino.isEmpty()) {
                 stmt.setString(4, cuentaDestino);
             } else {
                 stmt.setNull(4, Types.VARCHAR);

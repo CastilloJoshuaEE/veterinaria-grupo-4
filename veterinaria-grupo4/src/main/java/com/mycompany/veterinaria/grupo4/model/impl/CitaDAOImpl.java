@@ -526,24 +526,5 @@ public class CitaDAOImpl implements ICitaDAO {
 
         return cita;
     }
-   /**
- * Obtiene todas las citas con estado PENDIENTE
- * @return Lista de citas pendientes
- * @throws SQLException Si ocurre un error en la ejecución del procedimiento
- */
-@Override
-public List<Cita> obtenerPendientes() throws SQLException {
-    List<Cita> lista = new ArrayList<>();
-    String sql = "{call SP_OBTENER_CITAS_PENDIENTES}";
-    
-    try (Connection conn = DatabaseConnection.getConnection();
-         CallableStatement stmt = conn.prepareCall(sql);
-         ResultSet rs = stmt.executeQuery()) {
-        
-        while (rs.next()) {
-            lista.add(mapResultSetToCita(rs));
-        }
-    }
-    return lista;
-}
+
 }

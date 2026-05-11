@@ -8,8 +8,7 @@ import java.sql.SQLException;
 
 
 public class DatabaseConnection {
-    // server=DESKTOP-B0CFGB3_sql_server; database=DB_VidaAnimal;
-    // CASTILLO: DESKTOP-B0CFGB3
+
 private static final String URL =
 "jdbc:sqlserver://localhost:1433;databaseName=DB_VidaAnimal;encrypt=true;trustServerCertificate=true;";    
     // No se necesita usuario/contraseña con autenticación integrada
