@@ -71,8 +71,6 @@ public class PnlCliente extends javax.swing.JPanel {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Clientes");
 
-        txtBusqueda.setText("myTextField1");
-
         btnNuevo.setBackground(new java.awt.Color(255, 178, 39));
         btnNuevo.setForeground(new java.awt.Color(255, 255, 255));
         btnNuevo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icon/add-one.png"))); // NOI18N
