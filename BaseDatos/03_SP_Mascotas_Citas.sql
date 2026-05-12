@@ -416,7 +416,8 @@ BEGIN
            -- Mascota
            M.ID_MASCOTA,                                       
            M.NOMBRE AS NOMBRE_MASCOTA,
-
+           M.ESPECIE AS ESPECIE_MASCOTA,
+           
            -- Servicio
            S.ID_SERVICIO,                                      
            S.NOMBRE_SERVICIO,

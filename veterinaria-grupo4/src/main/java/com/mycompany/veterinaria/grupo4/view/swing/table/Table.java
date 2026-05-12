@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -46,11 +47,18 @@ public class Table extends JTable {
             public Component getTableCellRendererComponent(JTable jtable, Object o,
                     boolean selected, boolean focus, int i, int i1) {
 
-                Color bg = selected ? new Color(239, 244, 255) : Color.WHITE;
+                Color bg = selected
+                        ? UIManager.getColor("Table.selectionBackground")
+                        : UIManager.getColor("Table.background");
+
+                Color fg = selected
+                        ? UIManager.getColor("Table.selectionForeground")
+                        : UIManager.getColor("Table.foreground");
                 
                 // Celda de Avatar de mascotas
                 if (o instanceof ModelProfile data) {
                     Profile cell = new Profile(data);
+                    cell.setOpaque(true);
                     cell.setBackground(bg);
                     return cell;
                 }
@@ -58,12 +66,14 @@ public class Table extends JTable {
                 // Celda de Estado de cita
                 if (o instanceof EstadoCita type) {
                     CellCitaEstado cell = new CellCitaEstado(type);
+                    cell.setOpaque(true);
                     cell.setBackground(bg);
                     return cell;
                 }
                 // Celda de Estado Activo Inactivo
                 if (o instanceof Estado type) {
                     CellEstado cell = new CellEstado(type);
+                    cell.setOpaque(true);
                     cell.setBackground(bg);
                     return cell;
                 }
@@ -71,6 +81,7 @@ public class Table extends JTable {
                 // Celda de ACCIÓN (botones)
                 if (o instanceof ModelAction) {
                     Action cell = new Action();
+                    cell.setOpaque(true);
                     cell.setBackground(bg);
                     return cell;
                 }
@@ -80,9 +91,7 @@ public class Table extends JTable {
                         jtable, o, selected, focus, i, i1);
                 setBorder(noFocusBorder);
                 com.setBackground(bg);
-                com.setForeground(selected
-                        ? new Color(15, 89, 140)
-                        : new Color(102, 102, 102));
+                com.setForeground(fg);  
                 return com;
             }
         });
