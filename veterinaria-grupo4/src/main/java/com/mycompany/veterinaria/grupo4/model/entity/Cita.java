@@ -2,6 +2,21 @@ package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
 
+/**
+ * Entidad que representa una cita medica programada en el sistema veterinario.
+ * <p>
+ * Contiene la informacion de agendamiento de consultas, incluyendo el cliente,
+ * la mascota, el servicio solicitado, el veterinario asignado, la fecha y hora,
+ * el estado actual y observaciones adicionales. Esta entidad es fundamental
+ * para la gestion de la agenda de la clinica.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
+ * @version 1.0
+ * @since 1.0
+ */
 public class Cita {
     private int idCita;
     private Cliente cliente;
@@ -13,6 +28,9 @@ public class Cita {
     private String observaciones;
     private Date fechaRegistro;
 
+    /**
+     * Constructor por defecto.
+     */
     public Cita() {}
 
     public int getIdCita() { return idCita; }

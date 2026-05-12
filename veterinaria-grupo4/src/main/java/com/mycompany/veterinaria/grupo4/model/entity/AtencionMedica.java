@@ -2,6 +2,20 @@ package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
 
+/**
+ * Entidad que representa una atencion medica realizada a una mascota.
+ * <p>
+ * Contiene toda la informacion clinica generada durante una consulta veterinaria,
+ * incluyendo diagnostico, tratamiento y observaciones. Cada atencion medica
+ * esta asociada a una cita previamente agendada.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class AtencionMedica {
     private int idAtencionMedica;
     private int idCita;
@@ -12,6 +26,9 @@ public class AtencionMedica {
     private String tratamiento;
     private String observaciones;
 
+    /**
+     * Constructor por defecto.
+     */
     public AtencionMedica() {}
 
     public int getIdAtencionMedica() { return idAtencionMedica; }

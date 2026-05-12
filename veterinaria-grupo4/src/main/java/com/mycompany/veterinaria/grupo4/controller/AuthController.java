@@ -10,17 +10,30 @@ import javax.swing.JOptionPane;
 import org.springframework.web.client.RestTemplate;
 
 /**
- *
- * @author juan
+ * Controlador de autenticacion del sistema.
+ * <p>
+ * Gestiona el proceso de inicio de sesion, validando las credenciales
+ * del usuario mediante la API REST y manejando la sesion activa.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
  */
 public class AuthController implements ActionListener{
     private AppController app;
     private PnlBgLogin pnl;
-    //API
     private RestTemplate restTemplate = new RestTemplate();
     private String apiBaseUrl = "http://localhost:8080/api/auth";
-    
 
+    /**
+     * Constructor del controlador de autenticacion.
+     * 
+     * @param app controlador principal de la aplicacion
+     * @param pnl panel de login que contiene los componentes de la UI
+     */
     public AuthController(AppController app, PnlBgLogin pnl) {
         this.app = app;
         this.pnl = pnl;
@@ -35,12 +48,15 @@ public class AuthController implements ActionListener{
         }
     }
     
+    /**
+     * Ejecuta el proceso de login validando credenciales.
+     */
     private void login() {
         String usuario = pnl.getPnlLogin().getTxtEmail().getText().trim();
         String password = new String(pnl.getPnlLogin().getTxtPass().getPassword()).trim();
         
         if (usuario.equals("Ingrese su usuario") || usuario.isEmpty() ||
-            password.equals("Ingrese su contraseña") || password.isEmpty()) {
+            password.equals("Ingrese su contrasena") || password.isEmpty()) {
             System.out.println(usuario + password);
             JOptionPane.showMessageDialog(pnl, "Complete todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -55,26 +71,26 @@ public class AuthController implements ActionListener{
             
             if (user != null && user.getIdUsuario() > 0) {
                 SessionManager.getInstance().login(user);
-                JOptionPane.showMessageDialog(pnl, "Login exitoso", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(pnl, "Login exitoso", "Exito", JOptionPane.INFORMATION_MESSAGE);
                 app.cargarPnlDefault();
             } else {
-                JOptionPane.showMessageDialog(pnl, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(pnl, "Usuario o contrasena incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
-            // Si el servidor no está corriendo, mostrar mensaje
-            JOptionPane.showMessageDialog(pnl, "Error de conexión. Asegúrese que el servidor esté corriendo.\n" + ex.getMessage(), 
+            JOptionPane.showMessageDialog(pnl, "Error de conexion. Asegurese que el servidor este corriendo.\n" + ex.getMessage(), 
                 "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
     }
     
+    /**
+     * Registra los listeners para los componentes del panel de login.
+     */
     private void addListeners() {
         this.pnl.getPnlLogin().getTxtUser().addActionListener(this);
         this.pnl.getPnlLogin().getTxtEmail().addActionListener(this);
         this.pnl.getPnlLogin().getTxtPass().addActionListener(this);
         this.pnl.getPnlLogin().getCmdForget().addActionListener(this);
         this.pnl.getPnlLogin().getCmdLogin().addActionListener(this);
-        
-        
     }
 }

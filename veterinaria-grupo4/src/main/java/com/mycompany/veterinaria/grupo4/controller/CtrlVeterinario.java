@@ -18,26 +18,42 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 /**
- *
- * @author juan
+ * Controlador para la gestion de veterinarios del sistema.
+ * <p>
+ * Gestiona la tabla de veterinarios, el formulario de registro/edicion,
+ * y las operaciones REST sobre el recurso /api/veterinario.
+ * Permite administrar el personal veterinario, sus especialidades
+ * y los servicios que pueden realizar.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author BESILLA TOMALA ANGEL KALED – MODULO: VETERINARIO
+ * @version 1.0
+ * @since 1.0
  */
 public class CtrlVeterinario {
     private final PnlVeterinario pnlVeterinario;
     private FormVeterinario form;
- 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String api = "http://localhost:8080/api";
  
     /**
      * Mapa de servicios actualmente asignados al veterinario en el formulario.
-     * Clave: {@code idServicioVeterinario} (FK de la tabla intermedia).
+     * Clave: idServicioVeterinario (FK de la tabla intermedia).
      * Valor: nombre del servicio para mostrarlo en la UI.
-     * Se reconstruye cada vez que se abre el formulario de edición.
+     * Se reconstruye cada vez que se abre el formulario de edicion.
      */
     private final Map<Integer, String> serviciosAsignados = new LinkedHashMap<>();
+    
+    /** Mapa auxiliar usado solo en modo alta para guardar los servicios seleccionados */
+    private final Map<Integer, Integer> pendientesAlta = new LinkedHashMap<>();
  
-    // ─── Constructor ──────────────────────────────────────────────────────────
- 
+    /**
+     * Constructor del controlador de veterinarios.
+     * 
+     * @param pnlVeterinario panel principal de veterinarios
+     */
     public CtrlVeterinario(PnlVeterinario pnlVeterinario) {
         this.pnlVeterinario = pnlVeterinario;
         initTabla();
@@ -46,12 +62,13 @@ public class CtrlVeterinario {
         addListeners();
     }
  
-    // ─── Inicialización ───────────────────────────────────────────────────────
- 
+    /**
+     * Inicializa la estructura de la tabla de veterinarios.
+     */
     private void initTabla() {
         pnlVeterinario.getTblVeterinario().setModel(new DefaultTableModel(
             new Object[][]{},
-            new String[]{"Veterinario", "Cédula", "Especialidad", "Teléfono", "Acción"}
+            new String[]{"Veterinario", "Cedula", "Especialidad", "Telefono", "Accion"}
         ) {
             @Override public boolean isCellEditable(int row, int col) { return col == 4; }
         });
@@ -65,19 +82,25 @@ public class CtrlVeterinario {
         pnlVeterinario.getTblVeterinario().fixTable(pnlVeterinario.getScrollPane());
     }
  
-    /** Configura el hint del campo de búsqueda. */
+    /**
+     * Configura el hint del campo de busqueda.
+     */
     private void initBusqueda() {
-        pnlVeterinario.getTxtBusqueda().setHint("Buscar por cédula o nombre...");
+        pnlVeterinario.getTxtBusqueda().setHint("Buscar por cedula o nombre...");
     }
  
+    /**
+     * Registra los listeners del panel principal.
+     */
     private void addListeners() {
         pnlVeterinario.getBtnBuscar().addActionListener(e -> buscar());
         pnlVeterinario.getTxtBusqueda().addActionListener(e -> buscar());
         pnlVeterinario.getBtnNuevo().addActionListener(e -> nuevo());
     }
  
-    // ─── Tabla ────────────────────────────────────────────────────────────────
- 
+    /**
+     * Carga todos los veterinarios desde la API.
+     */
     private void cargarTabla() {
         try {
             List<Veterinario> lista = restTemplate.exchange(
@@ -92,6 +115,11 @@ public class CtrlVeterinario {
         }
     }
  
+    /**
+     * Llena la tabla con los datos de los veterinarios.
+     * 
+     * @param lista lista de veterinarios a mostrar
+     */
     private void llenarTabla(List<Veterinario> lista) {
         DefaultTableModel model = (DefaultTableModel)
             pnlVeterinario.getTblVeterinario().getModel();
@@ -116,6 +144,9 @@ public class CtrlVeterinario {
         }
     }
  
+    /**
+     * Busca veterinarios por termino de busqueda.
+     */
     private void buscar() {
         String termino = pnlVeterinario.getTxtBusqueda().getText().trim();
         if (termino.isEmpty()) { cargarTabla(); return; }
@@ -133,9 +164,9 @@ public class CtrlVeterinario {
         }
     }
  
-    // ─── Formulario ───────────────────────────────────────────────────────────
- 
-    /** Abre el formulario en modo alta con combos precargados. */
+    /**
+     * Abre el formulario en modo alta con combos precargados.
+     */
     private void nuevo() {
         serviciosAsignados.clear();
         form = new FormVeterinario(parentFrame());
@@ -145,7 +176,7 @@ public class CtrlVeterinario {
     }
  
     /**
-     * Abre el formulario en modo edición con los datos del veterinario precargados,
+     * Abre el formulario en modo edicion con los datos del veterinario precargados,
      * incluyendo los servicios que ya tiene asignados.
      *
      * @param v veterinario a editar
@@ -168,7 +199,6 @@ public class CtrlVeterinario {
      * @param form instancia activa del formulario
      */
     private void cargarCombos(FormVeterinario form) {
-        // Especialidades
         try {
             List<EspecialidadVeterinaria> especialidades = restTemplate.exchange(
                 api + "/especialidad/listar", HttpMethod.GET, null,
@@ -179,7 +209,6 @@ public class CtrlVeterinario {
             System.err.println("Error al cargar especialidades: " + e.getMessage());
         }
  
-        // Servicios disponibles
         try {
             List<Servicio> servicios = restTemplate.exchange(
                 api + "/servicio/activos", HttpMethod.GET, null,
@@ -193,13 +222,9 @@ public class CtrlVeterinario {
  
     /**
      * Obtiene los servicios ya asignados al veterinario y los muestra en el panel.
-     * <p>
-     * Nota: el endpoint {@code GET /api/servicio/veterinario/{id}} debe devolver
-     * la lista de servicios con el campo {@code idServicioVeterinario} poblado
-     * (columna de la tabla intermedia), necesario para poder eliminar la asignación.
      *
-     * @param form          instancia activa del formulario
-     * @param idVeterinario ID del veterinario en edición
+     * @param form instancia activa del formulario
+     * @param idVeterinario ID del veterinario en edicion
      */
     private void cargarServiciosAsignados(FormVeterinario form, int idVeterinario) {
         try {
@@ -215,7 +240,6 @@ public class CtrlVeterinario {
             serviciosAsignados.clear();
  
             for (Servicio s : asignados) {
-                // idServicioVeterinario debe venir mapeado en el entity/DTO
                 int idAsignacion = s.getIdServicio();
                 serviciosAsignados.put(idAsignacion, s.getNombreServicio());
                 form.agregarServicioAsignado(s.getNombreServicio(),
@@ -238,7 +262,7 @@ public class CtrlVeterinario {
             String err = validarDatos(form);
             if (err != null) {
                 JOptionPane.showMessageDialog(form, err,
-                    "Validación", JOptionPane.WARNING_MESSAGE);
+                    "Validacion", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if (form.isModoEdicion()) actualizar(form);
@@ -246,12 +270,8 @@ public class CtrlVeterinario {
         });
     }
  
-    // ─── Asignación de servicios ──────────────────────────────────────────────
- 
     /**
      * Asigna el servicio seleccionado en el combo al veterinario.
-     * En modo alta la asignación se encola y se persiste al guardar;
-     * en modo edición se persiste de inmediato si el veterinario ya tiene ID.
      *
      * @param form instancia activa del formulario
      */
@@ -263,24 +283,20 @@ public class CtrlVeterinario {
             return;
         }
  
-        // Verificar duplicado en la lista local
         if (serviciosAsignados.containsValue(seleccionado.getNombreServicio())) {
             JOptionPane.showMessageDialog(form,
-                "El servicio ya está asignado.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                "El servicio ya esta asignado.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
  
         if (form.isModoEdicion()) {
-            // Persistir de inmediato
             asignarServicioApi(form,
                 seleccionado.getIdServicio(),
                 form.getVeterinarioActual().getIdVeterinario(),
                 seleccionado.getNombreServicio());
         } else {
-            // En alta aún no hay ID de veterinario; se guarda localmente con clave negativa temporal
             int claveTemp = -(serviciosAsignados.size() + 1);
             serviciosAsignados.put(claveTemp, seleccionado.getNombreServicio());
-            // Guardamos el idServicio real en la clave positiva para usarlo al registrar
             pendientesAlta.put(claveTemp, seleccionado.getIdServicio());
             form.agregarServicioAsignado(seleccionado.getNombreServicio(),
                 () -> eliminarLocal(form, claveTemp));
@@ -290,13 +306,8 @@ public class CtrlVeterinario {
     }
  
     /**
-     * Mapa auxiliar usado solo en modo alta para guardar los servicios seleccionados
-     * antes de que exista el {@code idVeterinario}.
-     * Clave: clave temporal negativa. Valor: {@code idServicio} real.
+     * Llama a la API para asignar un servicio a un veterinario ya existente.
      */
-    private final Map<Integer, Integer> pendientesAlta = new LinkedHashMap<>();
- 
-    /** Llama a la API para asignar un servicio a un veterinario ya existente. */
     private void asignarServicioApi(FormVeterinario form, int idServicio,
                                     int idVeterinario, String nombreServicio) {
         try {
@@ -306,7 +317,6 @@ public class CtrlVeterinario {
                 null, Boolean.class));
  
             if (ok) {
-                // Recargar para obtener el idServicioVeterinario real
                 cargarServiciosAsignados(form, idVeterinario);
             } else {
                 JOptionPane.showMessageDialog(form,
@@ -320,11 +330,11 @@ public class CtrlVeterinario {
     }
  
     /**
-     * Elimina una asignación de la API y actualiza el panel.
+     * Elimina una asignacion de la API y actualiza el panel.
      *
-     * @param form          instancia activa del formulario
-     * @param idAsignacion  ID de la fila en SERVICIO_VETERINARIO
-     * @param idServicio    ID del servicio (para refrescar la lista)
+     * @param form instancia activa del formulario
+     * @param idAsignacion ID de la fila en SERVICIO_VETERINARIO
+     * @param idServicio ID del servicio (para refrescar la lista)
      */
     private void eliminarAsignacion(FormVeterinario form, int idAsignacion, int idServicio) {
         try {
@@ -333,16 +343,17 @@ public class CtrlVeterinario {
             cargarServiciosAsignados(form, form.getVeterinarioActual().getIdVeterinario());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(form,
-                "Error al eliminar asignación: " + e.getMessage(),
+                "Error al eliminar asignacion: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
  
-    /** Elimina un servicio de la lista local en modo alta (sin persistir). */
+    /**
+     * Elimina un servicio de la lista local en modo alta (sin persistir).
+     */
     private void eliminarLocal(FormVeterinario form, int claveTemp) {
         serviciosAsignados.remove(claveTemp);
         pendientesAlta.remove(claveTemp);
-        // Reconstruir el panel desde el mapa local actualizado
         form.limpiarServiciosAsignados();
         for (Map.Entry<Integer, String> entry : serviciosAsignados.entrySet()) {
             int clave = entry.getKey();
@@ -351,30 +362,28 @@ public class CtrlVeterinario {
         }
     }
  
-    // ─── Validación y construcción ────────────────────────────────────────────
- 
     /**
      * Valida los campos obligatorios del formulario.
      *
      * @param form instancia activa del formulario
-     * @return mensaje de error, o {@code null} si todo es válido
+     * @return mensaje de error, o null si todo es valido
      */
     private String validarDatos(FormVeterinario form) {
         if (form.getTxtCedula().getText().trim().isEmpty())
-            return "La cédula es obligatoria.";
+            return "La cedula es obligatoria.";
         if (form.getTxtNombre().getText().trim().isEmpty())
             return "El nombre es obligatorio.";
         if (form.getTxtApellido().getText().trim().isEmpty())
             return "El apellido es obligatorio.";
         if (form.getTxtTelefono().getText().trim().isEmpty())
-            return "El teléfono es obligatorio.";
+            return "El telefono es obligatorio.";
         if (form.getCmbEspecialidad().getSelectedItem() == null)
             return "Seleccione una especialidad.";
         return null;
     }
  
     /**
-     * Construye el objeto {@link Veterinario} desde el estado actual del formulario.
+     * Construye el objeto Veterinario desde el estado actual del formulario.
      *
      * @param form instancia activa del formulario
      * @return veterinario listo para enviar a la API
@@ -402,16 +411,17 @@ public class CtrlVeterinario {
         return v;
     }
  
-    // ─── API ──────────────────────────────────────────────────────────────────
- 
+    /**
+     * Registra un nuevo veterinario en el sistema.
+     * 
+     * @param form formulario de veterinario
+     */
     private void registrar(FormVeterinario form) {
         try {
             boolean ok = Boolean.TRUE.equals(restTemplate.postForObject(
                 api + "/veterinario/crear", buildVeterinario(form), Boolean.class));
  
             if (ok) {
-                // Asignar servicios pendientes: necesitamos el nuevo ID
-                // Obtenemos el veterinario recién creado por cédula para recuperar su ID
                 Veterinario nuevo = restTemplate.getForObject(
                     api + "/veterinario/cedula/" + form.getTxtCedula().getText().trim(),
                     Veterinario.class);
@@ -423,12 +433,12 @@ public class CtrlVeterinario {
                 pendientesAlta.clear();
  
                 JOptionPane.showMessageDialog(pnlVeterinario,
-                    "Veterinario registrado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    "Veterinario registrado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
                 form.dispose();
                 cargarTabla();
             } else {
                 JOptionPane.showMessageDialog(form,
-                    "Ya existe un veterinario con esa cédula.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    "Ya existe un veterinario con esa cedula.", "Aviso", JOptionPane.WARNING_MESSAGE);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(form,
@@ -437,6 +447,11 @@ public class CtrlVeterinario {
         }
     }
  
+    /**
+     * Actualiza un veterinario existente.
+     * 
+     * @param form formulario de veterinario
+     */
     private void actualizar(FormVeterinario form) {
         try {
             boolean ok = Boolean.TRUE.equals(restTemplate.postForObject(
@@ -444,7 +459,7 @@ public class CtrlVeterinario {
  
             if (ok) {
                 JOptionPane.showMessageDialog(pnlVeterinario,
-                    "Veterinario actualizado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    "Veterinario actualizado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
                 form.dispose();
                 cargarTabla();
             }
@@ -455,7 +470,9 @@ public class CtrlVeterinario {
         }
     }
  
-    /** Asigna un servicio sin mostrar mensajes de error al usuario (usado en flujo de alta). */
+    /**
+     * Asigna un servicio sin mostrar mensajes de error al usuario (usado en flujo de alta).
+     */
     private void asignarServicioSilencioso(int idServicio, int idVeterinario) {
         try {
             restTemplate.postForObject(
@@ -467,15 +484,25 @@ public class CtrlVeterinario {
         }
     }
  
+    /**
+     * Muestra los detalles de un veterinario.
+     * 
+     * @param v veterinario a visualizar
+     */
     private void ver(Veterinario v) {
         // TODO: panel de detalle de veterinario
         System.out.println("Ver: " + v.getNombre());
     }
  
+    /**
+     * Elimina un veterinario del sistema.
+     * 
+     * @param v veterinario a eliminar
+     */
     private void eliminar(Veterinario v) {
         int confirm = JOptionPane.showConfirmDialog(pnlVeterinario,
             "¿Eliminar al Dr. " + v.getNombre() + " " + v.getApellido() + "?\n"
-            + "Se eliminarán también sus asignaciones de servicio.",
+            + "Se eliminaran tambien sus asignaciones de servicio.",
             "Confirmar", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) return;
         try {
@@ -488,8 +515,11 @@ public class CtrlVeterinario {
         }
     }
  
-    // ─── Utilidades ───────────────────────────────────────────────────────────
- 
+    /**
+     * Devuelve el Frame padre del panel de veterinarios.
+     * 
+     * @return Frame contenedor
+     */
     private Frame parentFrame() {
         return (Frame) SwingUtilities.getWindowAncestor(pnlVeterinario);
     }

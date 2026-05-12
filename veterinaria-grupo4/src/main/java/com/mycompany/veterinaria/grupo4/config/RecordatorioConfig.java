@@ -1,9 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.config;
 
+/**
+ * Configuracion de los recordatorios del sistema.
+ * <p>
+ * Define los parametros para cada tipo de recordatorio, incluyendo
+ * el tiempo de anticipacion, el mensaje a mostrar y si esta activo.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
+ * @version 1.0
+ * @since 1.0
+ */
 public class RecordatorioConfig {
     private int idConfig;
     private String tipoRecordatorio;
@@ -11,6 +20,9 @@ public class RecordatorioConfig {
     private String mensaje;
     private boolean activo;
 
+    /**
+     * Constructor por defecto.
+     */
     public RecordatorioConfig() {}
 
     public int getIdConfig() { return idConfig; }

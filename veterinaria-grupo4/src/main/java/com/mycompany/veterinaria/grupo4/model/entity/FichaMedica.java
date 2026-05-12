@@ -1,11 +1,22 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
 
+/**
+ * Entidad que representa la ficha medica de una mascota.
+ * <p>
+ * Contiene el historial clinico relevante de cada mascota, incluyendo
+ * alergias, enfermedades cronicas y observaciones generales. Esta ficha
+ * complementa el historial de atenciones medicas con informacion
+ * permanente del paciente.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 public class FichaMedica {
     private int idFicha;
     private int idMascota;

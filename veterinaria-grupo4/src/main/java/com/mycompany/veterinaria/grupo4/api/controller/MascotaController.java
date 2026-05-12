@@ -13,6 +13,19 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Controlador REST para la gestión de mascotas del sistema veterinario.
+ * <p>
+ * Proporciona endpoints para listar, buscar, crear, actualizar, eliminar
+ * mascotas, así como gestionar sus fotos y fichas médicas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MÓDULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 @RestController
 @RequestMapping("/api/mascota")
 @CrossOrigin(origins = "*")
@@ -21,26 +34,64 @@ public class MascotaController {
     @Autowired
     private MascotaService mascotaService;
 
+    /**
+     * Lista las mascotas asociadas a un cliente específico.
+     * 
+     * @param idCliente identificador del cliente
+     * @return Lista de mascotas del cliente
+     */
     @GetMapping("/listar/{idCliente}")
     public List<Mascota> listarPorCliente(@PathVariable int idCliente) {
         return mascotaService.listarPorCliente(idCliente);
     }
     
+    /**
+     * Lista todas las mascotas registradas en el sistema.
+     * 
+     * @return Lista completa de mascotas
+     */
     @GetMapping("/listar")
     public List<Mascota> listarTodo() {
         return mascotaService.listarTodo();
     }
 
+    /**
+     * Busca mascotas cuyo nombre coincida con el término de búsqueda.
+     * 
+     * @param termino término de búsqueda para el nombre de la mascota
+     * @return Lista de mascotas que coinciden con el término
+     */
     @GetMapping("/buscar")
     public List<Mascota> buscarMascotas(@RequestParam(name = "termino", required = false, defaultValue = "") String termino) {
         return mascotaService.buscarMascotas(termino);
     }
 
+    /**
+     * Obtiene una mascota por su identificador.
+     * 
+     * @param idMascota identificador de la mascota
+     * @return Objeto Mascota correspondiente
+     */
     @GetMapping("/{idMascota}")
     public Mascota obtenerPorId(@PathVariable int idMascota) {
         return mascotaService.obtenerPorId(idMascota);
     }
     
+    /**
+     * Crea una nueva mascota en el sistema con posibilidad de adjuntar foto.
+     * 
+     * @param idCliente identificador del cliente dueño
+     * @param nombre nombre de la mascota
+     * @param especie especie de la mascota
+     * @param raza raza de la mascota (opcional)
+     * @param sexo sexo de la mascota ('M' o 'H')
+     * @param fechaNacimiento fecha de nacimiento (opcional)
+     * @param peso peso de la mascota (opcional)
+     * @param color color de la mascota (opcional)
+     * @param foto foto de la mascota (opcional)
+     * @return ID de la mascota creada
+     * @throws IOException si hay error al procesar la foto
+     */
     @PostMapping(value = "/crear", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public int crear(
             @RequestParam("idCliente") int idCliente,
@@ -71,6 +122,22 @@ public class MascotaController {
         return mascotaService.crear(mascota);
     }
 
+    /**
+     * Actualiza los datos de una mascota existente.
+     * 
+     * @param idMascota identificador de la mascota
+     * @param idCliente identificador del cliente dueño
+     * @param nombre nombre de la mascota
+     * @param especie especie de la mascota
+     * @param raza raza de la mascota (opcional)
+     * @param sexo sexo de la mascota
+     * @param fechaNacimiento fecha de nacimiento (opcional)
+     * @param peso peso de la mascota (opcional)
+     * @param color color de la mascota (opcional)
+     * @param foto foto de la mascota (opcional)
+     * @return true si la actualización fue exitosa
+     * @throws IOException si hay error al procesar la foto
+     */
     @PutMapping(value = "/actualizar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean actualizar(
             @RequestParam("idMascota") int idMascota,
@@ -103,6 +170,12 @@ public class MascotaController {
         return mascotaService.actualizar(mascota);
     }
 
+    /**
+     * Elimina una mascota del sistema.
+     * 
+     * @param idMascota identificador de la mascota a eliminar
+     * @throws ResponseStatusException si la mascota tiene citas médicas realizadas
+     */
     @DeleteMapping("/eliminar/{idMascota}")
     public void eliminar(@PathVariable int idMascota) {
         boolean resultado = mascotaService.eliminar(idMascota);
@@ -112,28 +185,44 @@ public class MascotaController {
         }
     }
 
+    /**
+     * Obtiene la foto de una mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     * @return arreglo de bytes con la imagen de la mascota
+     */
     @GetMapping("/foto/{idMascota}")
     public byte[] obtenerFoto(@PathVariable int idMascota) {
         return mascotaService.obtenerFoto(idMascota);
     }
+    
+    /**
+     * Guarda la ficha médica de una mascota.
+     * 
+     * @param fichaDTO objeto con los datos de la ficha médica
+     * @return true si el guardado fue exitoso
+     */
     @PostMapping("/ficha/guardar")
-public boolean guardarFichaMedica(@RequestBody FichaMedicaDTO fichaDTO) {
-    try {
-        // Asumiendo que tienes un FichaMedicaService
-        // Si no existe, usa MascotaService
-        return mascotaService.guardarFichaMedica(fichaDTO.getIdMascota(), 
-            fichaDTO.getAlergias(), 
-            fichaDTO.getEnfermedadesCronicas(), 
-            fichaDTO.getObservaciones());
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
+    public boolean guardarFichaMedica(@RequestBody FichaMedicaDTO fichaDTO) {
+        try {
+            return mascotaService.guardarFichaMedica(fichaDTO.getIdMascota(), 
+                fichaDTO.getAlergias(), 
+                fichaDTO.getEnfermedadesCronicas(), 
+                fichaDTO.getObservaciones());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
-}
 
-@GetMapping("/ficha/{idMascota}")
-public FichaMedicaDTO obtenerFichaMedica(@PathVariable int idMascota) {
-    return mascotaService.obtenerFichaMedica(idMascota);
-}
-
+    /**
+     * Obtiene la ficha médica de una mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     * @return objeto FichaMedicaDTO con los datos de la ficha médica
+     */
+    @GetMapping("/ficha/{idMascota}")
+    public FichaMedicaDTO obtenerFichaMedica(@PathVariable int idMascota) {
+        return mascotaService.obtenerFichaMedica(idMascota);
+    }
 }

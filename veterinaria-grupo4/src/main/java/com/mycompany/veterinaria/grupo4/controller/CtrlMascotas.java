@@ -17,7 +17,6 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.math.BigDecimal;
@@ -47,23 +46,31 @@ import org.springframework.web.client.RestTemplate;
 /**
  * Controlador de la vista de Mascotas.
  * <p>
- * Gestiona la tabla principal, el formulario de registro/edición
- * y las operaciones REST sobre los recursos {@code /api/mascota}
- * y {@code /api/cliente}.
- *
- * @author juan
+ * Gestiona la tabla principal, el formulario de registro/edicion
+ * y las operaciones REST sobre los recursos /api/mascota
+ * y /api/cliente. Permite registrar, editar, eliminar mascotas,
+ * asi como gestionar su ficha medica y ver el historial clinico.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
  */
 public class CtrlMascotas {
  
     private final PnlMascota pnlMascota;
     private final Table      tblMascota;
     private FormRegistroMascota form;
- 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String apiBaseUrl = "http://localhost:8080/api";
  
-    // ─── Constructor ──────────────────────────────────────────────────────────
- 
+    /**
+     * Constructor del controlador de mascotas.
+     * 
+     * @param pnlMascota panel principal de mascotas
+     */
     public CtrlMascotas(PnlMascota pnlMascota) {
         this.pnlMascota = pnlMascota;
         this.tblMascota = pnlMascota.getTblMascota();
@@ -73,12 +80,13 @@ public class CtrlMascotas {
         addListeners();
     }
  
-    // ─── Inicialización ───────────────────────────────────────────────────────
- 
+    /**
+     * Inicializa la estructura de la tabla de mascotas.
+     */
     private void initTabla() {
         tblMascota.setModel(new DefaultTableModel(
             new Object[][]{},
-            new String[]{"Mascota", "Especie", "Raza", "Sexo", "Peso", "Estado", "Acción"}
+            new String[]{"Mascota", "Especie", "Raza", "Sexo", "Peso", "Estado", "Accion"}
         ) {
             @Override public boolean isCellEditable(int row, int col) { return col == 6; }
         });
@@ -89,61 +97,65 @@ public class CtrlMascotas {
         tblMascota.getColumnModel().getColumn(3).setPreferredWidth(60);
         tblMascota.getColumnModel().getColumn(4).setPreferredWidth(60);
         tblMascota.getColumnModel().getColumn(5).setPreferredWidth(90);
-
-        // AUMENTAR el ancho de la columna de acción (columna 6)
-        // Ahora con 5 botones (editar, ver, eliminar, ficha, historial)
-        tblMascota.getColumnModel().getColumn(6).setPreferredWidth(220);  // Aumentado de 160 a 220
-        tblMascota.getColumnModel().getColumn(6).setMinWidth(200);        // Mínimo aumentado
-        tblMascota.getColumnModel().getColumn(6).setMaxWidth(300);        // Máximo igual
+        tblMascota.getColumnModel().getColumn(6).setPreferredWidth(220);
+        tblMascota.getColumnModel().getColumn(6).setMinWidth(200);
+        tblMascota.getColumnModel().getColumn(6).setMaxWidth(300);
 
         tblMascota.fixTable(pnlMascota.getScrollPane());
     }
  
+    /**
+     * Registra los listeners del panel principal.
+     */
     private void addListeners() {
         pnlMascota.getBtnBuscar().addActionListener(e -> buscar());
         pnlMascota.getBtnNuevo().addActionListener(e -> nuevo());
         pnlMascota.getCmbClientes().addActionListener(e -> cargarMascotasPorCliente());
     }
+    
+    /**
+     * Carga la lista de clientes en el combo box.
+     */
     private void cargarClientes() {
-      try {
-          List<Cliente> clientes = restTemplate.exchange(
-              apiBaseUrl + "/cliente/listar",
-              HttpMethod.GET, null,
-              new ParameterizedTypeReference<List<Cliente>>() {}
-          ).getBody();
-          if (clientes != null) {
-              pnlMascota.getCmbClientes().removeAllItems();
-              // Usar un renderer personalizado para mostrar la cédula
-              // O crear un objeto con toString() sobrescrito
-              pnlMascota.getCmbClientes().addItem(new Cliente(0, "", "TODOS", "LOS CLIENTES", ""));
-              for (Cliente c : clientes) {
-                  // Crear un objeto anónimo con toString() que muestre la cédula
-                  pnlMascota.getCmbClientes().addItem(c);
-              }
+        try {
+            List<Cliente> clientes = restTemplate.exchange(
+                apiBaseUrl + "/cliente/listar",
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Cliente>>() {}
+            ).getBody();
+            if (clientes != null) {
+                pnlMascota.getCmbClientes().removeAllItems();
+                pnlMascota.getCmbClientes().addItem(new Cliente(0, "", "TODOS", "LOS CLIENTES", ""));
+                for (Cliente c : clientes) {
+                    pnlMascota.getCmbClientes().addItem(c);
+                }
 
-              // IMPORTANTE: Establecer un renderer para el ComboBox
-              pnlMascota.getCmbClientes().setRenderer(new DefaultListCellRenderer() {
-                  @Override
-                  public Component getListCellRendererComponent(JList<?> list, Object value, 
-                          int index, boolean isSelected, boolean cellHasFocus) {
-                      super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                      if (value instanceof Cliente) {
-                          Cliente c = (Cliente) value;
-                          if (c.getIdCliente() == 0) {
-                              setText("--- TODOS LOS CLIENTES ---");
-                          } else {
-                              setText(c.getCedula() + " - " + c.getNombre() + " " + c.getApellido());
-                          }
-                      }
-                      return this;
-                  }
-              });
-          }
-      } catch (Exception e) {
-          JOptionPane.showMessageDialog(pnlMascota, "Error al cargar clientes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-      }
-  }
-  private void cargarMascotasPorCliente() {
+                pnlMascota.getCmbClientes().setRenderer(new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList<?> list, Object value, 
+                            int index, boolean isSelected, boolean cellHasFocus) {
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                        if (value instanceof Cliente) {
+                            Cliente c = (Cliente) value;
+                            if (c.getIdCliente() == 0) {
+                                setText("--- TODOS LOS CLIENTES ---");
+                            } else {
+                                setText(c.getCedula() + " - " + c.getNombre() + " " + c.getApellido());
+                            }
+                        }
+                        return this;
+                    }
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(pnlMascota, "Error al cargar clientes: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * Carga las mascotas filtradas por cliente seleccionado.
+     */
+    private void cargarMascotasPorCliente() {
         Cliente clienteSeleccionado = (Cliente) pnlMascota.getCmbClientes().getSelectedItem();
         if (clienteSeleccionado != null && clienteSeleccionado.getIdCliente() > 0) {
             try {
@@ -157,11 +169,13 @@ public class CtrlMascotas {
                 JOptionPane.showMessageDialog(pnlMascota, "Error al cargar mascotas del cliente: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            cargarTabla(); // Si no hay cliente seleccionado, carga todas
+            cargarTabla();
         }
     }
-    // ─── Tabla ────────────────────────────────────────────────────────────────
- 
+    
+    /**
+     * Carga todas las mascotas desde la API.
+     */
     private void cargarTabla() {
         try {
             List<Mascota> lista = restTemplate.exchange(
@@ -177,6 +191,11 @@ public class CtrlMascotas {
         }
     }
  
+    /**
+     * Llena la tabla con los datos de las mascotas.
+     * 
+     * @param mascotas lista de mascotas a mostrar
+     */
     private void llenarTabla(List<Mascota> mascotas) {
         DefaultTableModel model = (DefaultTableModel) tblMascota.getModel();
         model.setRowCount(0);
@@ -196,42 +215,40 @@ public class CtrlMascotas {
                 m.getPeso() != null ? m.getPeso() + " kg" : "-",
                 Estado.ACTIVO,
                 new ModelAction(
-                    () -> editar(m),                    // Editar
-                    () -> ver(m),                       // Ver detalles
-                    () -> eliminar(m),                  // Eliminar
-                    () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre()),  // Ficha Médica
-                    () -> mostrarHistorialMedico(m.getIdMascota(), m.getNombre())  // NUEVO: Historial
+                    () -> editar(m),
+                    () -> ver(m),
+                    () -> eliminar(m),
+                    () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre()),
+                    () -> mostrarHistorialMedico(m.getIdMascota(), m.getNombre())
                 )
             });
         }
     }
+    
+    /**
+     * Muestra el historial medico de una mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     * @param nombreMascota nombre de la mascota
+     */
     private void mostrarHistorialMedico(int idMascota, String nombreMascota) {
-        // Crear el panel de historial
         com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico pnlHistorial = 
             new com.mycompany.veterinaria.grupo4.view.historial.PnlHistorialMedico();
 
-        // Crear el controlador
         com.mycompany.veterinaria.grupo4.controller.CtrlHistorialMedico ctrlHistorial = 
             new com.mycompany.veterinaria.grupo4.controller.CtrlHistorialMedico(pnlHistorial);
 
-        // Crear un JDialog para mostrar el panel
-        JDialog dialog = new JDialog(parentFrame(), "Historial Médico - " + nombreMascota, true);
+        JDialog dialog = new JDialog(parentFrame(), "Historial Medico - " + nombreMascota, true);
         dialog.setSize(1100, 700);
         dialog.setLocationRelativeTo(parentFrame());
         dialog.setContentPane(pnlHistorial);
 
-        // Cargar la mascota directamente (opcional: podrías hacer una búsqueda automática)
-        // Para cargar automáticamente, necesitarías obtener la Mascota por ID
         try {
             Mascota mascota = restTemplate.getForObject(
                 apiBaseUrl + "/mascota/" + idMascota, Mascota.class);
             if (mascota != null) {
-                // Necesitas un método público en CtrlHistorialMedico para cargar por ID
-                // Por simplicidad, aquí podrías simular la búsqueda
                 pnlHistorial.getTxtBuscarMascota().setText(mascota.getNombre());
-                // Llamar a buscarMascota después de que el diálogo esté visible
                 SwingUtilities.invokeLater(() -> {
-                    // Esto es un truco: ejecutar la búsqueda después de que el diálogo esté visible
                     pnlHistorial.getBtnBuscarMascota().doClick();
                 });
             }
@@ -241,6 +258,10 @@ public class CtrlMascotas {
 
         dialog.setVisible(true);
     }
+    
+    /**
+     * Busca mascotas por termino de busqueda.
+     */
     private void buscar() {
         String texto = pnlMascota.getTxtBusqueda().getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }
@@ -258,9 +279,9 @@ public class CtrlMascotas {
         }
     }
  
-    // ─── Formulario ───────────────────────────────────────────────────────────
- 
-    /** Abre el formulario en modo alta. */
+    /**
+     * Abre el formulario en modo alta.
+     */
     private void nuevo() {
         form = new FormRegistroMascota(parentFrame());
         conectarForm(form);
@@ -268,8 +289,7 @@ public class CtrlMascotas {
     }
  
     /**
-     * Abre el formulario en modo edición precargado con los datos de {@code m}.
-     * Obtiene el cliente propietario desde la API antes de mostrar el formulario.
+     * Abre el formulario en modo edicion precargado con los datos de la mascota.
      *
      * @param m mascota a editar
      */
@@ -282,7 +302,6 @@ public class CtrlMascotas {
  
     /**
      * Registra los listeners del formulario activo.
-     * Se llama cada vez que se crea una nueva instancia del formulario.
      *
      * @param form instancia activa del formulario
      */
@@ -290,11 +309,10 @@ public class CtrlMascotas {
         form.getBtnBuscarCliente().addActionListener(e -> {
             String cedula = form.getTxtCedula().getText().trim();
             if (cedula.isEmpty()) {
-                JOptionPane.showMessageDialog(form, "Ingrese la cédula del cliente.", "Búsqueda", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(form, "Ingrese la cedula del cliente.", "Busqueda", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             try {
-                // URL: /cliente/cedula/{cedula}
                 Cliente cliente = restTemplate.getForObject(apiBaseUrl + "/cliente/cedula/" + cedula, Cliente.class);
                 form.setClienteSeleccionado(cliente);
             } catch (Exception ex) {
@@ -318,7 +336,7 @@ public class CtrlMascotas {
         form.getBtnAccion().addActionListener(e -> {
             String err = validarDatos(form);
             if (err != null) {
-                JOptionPane.showMessageDialog(form, err, "Validación", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(form, err, "Validacion", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if (form.isModoEdicion()) actualizar(form);
@@ -326,33 +344,11 @@ public class CtrlMascotas {
         });
     }
  
-    /** Busca un cliente por cédula y actualiza el campo de nombre en el formulario. */
-    private void buscarClientePorCedula(FormRegistroMascota form) {
-        String cedula = form.getTxtCedula().getText().trim();
-        if (cedula.isEmpty()) {
-            JOptionPane.showMessageDialog(form,
-                "Ingrese la cédula del cliente.", "Búsqueda", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        try {
-            Cliente cliente = restTemplate.getForObject(
-                apiBaseUrl + "/cliente/buscar?cedula=" + cedula, Cliente.class);
-            form.setClienteSeleccionado(cliente);
-        } catch (Exception ex) {
-            form.setClienteSeleccionado(null);
-            JOptionPane.showMessageDialog(form,
-                "Error al buscar cliente: " + ex.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
- 
-    // ─── Validación y construcción ────────────────────────────────────────────
- 
     /**
      * Valida los campos obligatorios del formulario.
      *
      * @param form instancia activa del formulario
-     * @return mensaje de error, o {@code null} si todo es válido
+     * @return mensaje de error, o null si todo es valido
      */
     private String validarDatos(FormRegistroMascota form) {
         if (form.getClienteSeleccionado() == null)
@@ -367,8 +363,7 @@ public class CtrlMascotas {
     }
  
     /**
-     * Construye un objeto {@link Mascota} con los datos actuales del formulario.
-     * Si es modo edición, toma la instancia existente para conservar el ID.
+     * Construye un objeto Mascota con los datos actuales del formulario.
      *
      * @param form instancia activa del formulario
      * @return mascota lista para enviar a la API
@@ -394,24 +389,32 @@ public class CtrlMascotas {
         return m;
     }
  
-    // ─── API ──────────────────────────────────────────────────────────────────
- 
+    /**
+     * Registra una nueva mascota.
+     * 
+     * @param form formulario con los datos
+     */
     private void registrar(FormRegistroMascota form) {
         guardar(buildMascota(form), form.getFotoBytes(), form.getFotoNombreArchivo());
         form.dispose();
     }
  
+    /**
+     * Actualiza una mascota existente.
+     * 
+     * @param form formulario con los datos actualizados
+     */
     private void actualizar(FormRegistroMascota form) {
         guardar(buildMascota(form), form.getFotoBytes(), form.getFotoNombreArchivo());
         form.dispose();
     }
  
     /**
-     * Envía la mascota a la API como {@code multipart/form-data}.
-     * Maneja tanto el alta ({@code idMascota == 0}) como la actualización.
+     * Envia la mascota a la API como multipart/form-data.
+     * Maneja tanto el alta como la actualizacion.
      *
      * @param m              mascota a persistir
-     * @param fotoBytes      bytes de la imagen, o {@code null} si no se cambió
+     * @param fotoBytes      bytes de la imagen, o null si no se cambia
      * @param nombreArchivo  nombre del archivo de imagen
      */
     public void guardar(Mascota m, byte[] fotoBytes, String nombreArchivo) {
@@ -441,12 +444,12 @@ public class CtrlMascotas {
             if (m.getIdMascota() == 0) {
                 restTemplate.postForObject(apiBaseUrl + "/mascota/crear", request, Integer.class);
                 JOptionPane.showMessageDialog(pnlMascota,
-                    "Mascota registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    "Mascota registrada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 body.add("idMascota", m.getIdMascota());
                 restTemplate.put(apiBaseUrl + "/mascota/actualizar", request);
                 JOptionPane.showMessageDialog(pnlMascota,
-                    "Mascota actualizada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    "Mascota actualizada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
             }
             cargarTabla();
         } catch (Exception e) {
@@ -456,190 +459,188 @@ public class CtrlMascotas {
         }
     }
  
-/** Guarda o actualiza la ficha médica de una mascota. */
-/** Guarda o actualiza la ficha médica de una mascota. */
-public void guardarFichaMedica(int idMascota, String alergias,
-        String enfermedades, String observaciones) {
-    try {
-        // Crear el DTO con los datos
-        FichaMedicaDTO dto = new FichaMedicaDTO();
-        dto.setIdMascota(idMascota);
-        dto.setAlergias(alergias);
-        dto.setEnfermedadesCronicas(enfermedades);
-        dto.setObservaciones(observaciones);
+    /**
+     * Guarda o actualiza la ficha medica de una mascota.
+     */
+    public void guardarFichaMedica(int idMascota, String alergias,
+            String enfermedades, String observaciones) {
+        try {
+            FichaMedicaDTO dto = new FichaMedicaDTO();
+            dto.setIdMascota(idMascota);
+            dto.setAlergias(alergias);
+            dto.setEnfermedadesCronicas(enfermedades);
+            dto.setObservaciones(observaciones);
 
-        // Configurar headers para JSON
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<FichaMedicaDTO> request = new HttpEntity<>(dto, headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<FichaMedicaDTO> request = new HttpEntity<>(dto, headers);
 
-        // Enviar POST
-        Boolean resultado = restTemplate.postForObject(
-            apiBaseUrl + "/mascota/ficha/guardar", request, Boolean.class);
-        
-        if (resultado != null && resultado) {
+            Boolean resultado = restTemplate.postForObject(
+                apiBaseUrl + "/mascota/ficha/guardar", request, Boolean.class);
+            
+            if (resultado != null && resultado) {
+                JOptionPane.showMessageDialog(pnlMascota,
+                    "Ficha medica guardada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(pnlMascota,
+                    "Error al guardar la ficha medica.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(pnlMascota,
-                "Ficha médica guardada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(pnlMascota,
-                "Error al guardar la ficha médica.", "Error", JOptionPane.ERROR_MESSAGE);
+                "Error al guardar ficha: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(pnlMascota,
-            "Error al guardar ficha: " + e.getMessage(),
-            "Error", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
     }
-}
 
+    /**
+     * Muestra los detalles completos de una mascota.
+     * 
+     * @param m mascota a visualizar
+     */
     private void ver(Mascota m) {
-       // Crear un JDialog personalizado para mostrar los detalles
-       JDialog dialog = new JDialog(parentFrame(), "Detalles de " + m.getNombre(), true);
-       dialog.setSize(500, 550);
-       dialog.setLocationRelativeTo(parentFrame());
+        JDialog dialog = new JDialog(parentFrame(), "Detalles de " + m.getNombre(), true);
+        dialog.setSize(500, 550);
+        dialog.setLocationRelativeTo(parentFrame());
 
-       JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-       mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
-       mainPanel.setBackground(Color.WHITE);
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        mainPanel.setBackground(Color.WHITE);
 
-       // Panel superior con foto y nombre
-       JPanel headerPanel = new JPanel(new BorderLayout(10, 5));
-       headerPanel.setOpaque(false);
+        JPanel headerPanel = new JPanel(new BorderLayout(10, 5));
+        headerPanel.setOpaque(false);
 
-       // Foto
-       JLabel fotoLabel = new JLabel();
-       fotoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-       if (m.getFoto() != null && m.getFoto().length > 0) {
-           ImageIcon foto = new ImageIcon(m.getFoto());
-           Image img = foto.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
-           fotoLabel.setIcon(new ImageIcon(img));
-       } else {
-           ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/icon/pet-paw.png"));
-           Image img = defaultIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-           fotoLabel.setIcon(new ImageIcon(img));
-       }
+        JLabel fotoLabel = new JLabel();
+        fotoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        if (m.getFoto() != null && m.getFoto().length > 0) {
+            ImageIcon foto = new ImageIcon(m.getFoto());
+            Image img = foto.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            fotoLabel.setIcon(new ImageIcon(img));
+        } else {
+            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/icon/pet-paw.png"));
+            Image img = defaultIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+            fotoLabel.setIcon(new ImageIcon(img));
+        }
 
-       JPanel fotoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-       fotoPanel.setOpaque(false);
-       fotoPanel.add(fotoLabel);
-       headerPanel.add(fotoPanel, BorderLayout.WEST);
+        JPanel fotoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        fotoPanel.setOpaque(false);
+        fotoPanel.add(fotoLabel);
+        headerPanel.add(fotoPanel, BorderLayout.WEST);
 
-       // Nombre de la mascota
-       JLabel nombreLabel = new JLabel(m.getNombre());
-       nombreLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
-       nombreLabel.setForeground(new Color(230, 140, 30));
-       JPanel nombrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-       nombrePanel.setOpaque(false);
-       nombrePanel.add(nombreLabel);
-       headerPanel.add(nombrePanel, BorderLayout.CENTER);
+        JLabel nombreLabel = new JLabel(m.getNombre());
+        nombreLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
+        nombreLabel.setForeground(new Color(230, 140, 30));
+        JPanel nombrePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        nombrePanel.setOpaque(false);
+        nombrePanel.add(nombreLabel);
+        headerPanel.add(nombrePanel, BorderLayout.CENTER);
 
-       mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-       // Panel central con información en tabla
-       JPanel infoPanel = new JPanel(new GridBagLayout());
-       infoPanel.setOpaque(false);
-       GridBagConstraints gbc = new GridBagConstraints();
-       gbc.insets = new Insets(5, 10, 5, 10);
-       gbc.anchor = GridBagConstraints.WEST;
+        JPanel infoPanel = new JPanel(new GridBagLayout());
+        infoPanel.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
 
-       // Obtener cliente
-       Cliente cliente = obtenerClientePorId(m.getIdCliente());
-       String nombreCliente = cliente != null ? cliente.getNombre() + " " + cliente.getApellido() : "No encontrado";
-       String cedulaCliente = cliente != null ? cliente.getCedula() : "No disponible";
-       String telefonoCliente = cliente != null ? cliente.getTelefono() : "No disponible";
+        Cliente cliente = obtenerClientePorId(m.getIdCliente());
+        String nombreCliente = cliente != null ? cliente.getNombre() + " " + cliente.getApellido() : "No encontrado";
+        String cedulaCliente = cliente != null ? cliente.getCedula() : "No disponible";
+        String telefonoCliente = cliente != null ? cliente.getTelefono() : "No disponible";
 
-       // Agregar campos
-       addInfoRow(infoPanel, gbc, "ID:", String.valueOf(m.getIdMascota()), 0);
-       addInfoRow(infoPanel, gbc, "Especie:", m.getEspecie(), 1);
-       addInfoRow(infoPanel, gbc, "Raza:", m.getRaza() != null ? m.getRaza() : "-", 2);
-       addInfoRow(infoPanel, gbc, "Sexo:", m.getSexo() == 'M' ? "Macho" : "Hembra", 3);
-       addInfoRow(infoPanel, gbc, "Peso:", m.getPeso() != null ? m.getPeso() + " kg" : "-", 4);
-       addInfoRow(infoPanel, gbc, "Color:", m.getColor() != null ? m.getColor() : "-", 5);
-       addInfoRow(infoPanel, gbc, "Fecha Nac.:", m.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(m.getFechaNacimiento()) : "-", 6);
-       addInfoRow(infoPanel, gbc, "Propietario:", nombreCliente, 7);
-       addInfoRow(infoPanel, gbc, "Cédula:", cedulaCliente, 8);
-       addInfoRow(infoPanel, gbc, "Teléfono:", telefonoCliente, 9);
-       addInfoRow(infoPanel, gbc, "Fecha Registro:", m.getFechaRegistro() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(m.getFechaRegistro()) : "-", 10);
+        addInfoRow(infoPanel, gbc, "ID:", String.valueOf(m.getIdMascota()), 0);
+        addInfoRow(infoPanel, gbc, "Especie:", m.getEspecie(), 1);
+        addInfoRow(infoPanel, gbc, "Raza:", m.getRaza() != null ? m.getRaza() : "-", 2);
+        addInfoRow(infoPanel, gbc, "Sexo:", m.getSexo() == 'M' ? "Macho" : "Hembra", 3);
+        addInfoRow(infoPanel, gbc, "Peso:", m.getPeso() != null ? m.getPeso() + " kg" : "-", 4);
+        addInfoRow(infoPanel, gbc, "Color:", m.getColor() != null ? m.getColor() : "-", 5);
+        addInfoRow(infoPanel, gbc, "Fecha Nac.:", m.getFechaNacimiento() != null ? new SimpleDateFormat("dd/MM/yyyy").format(m.getFechaNacimiento()) : "-", 6);
+        addInfoRow(infoPanel, gbc, "Propietario:", nombreCliente, 7);
+        addInfoRow(infoPanel, gbc, "Cedula:", cedulaCliente, 8);
+        addInfoRow(infoPanel, gbc, "Telefono:", telefonoCliente, 9);
+        addInfoRow(infoPanel, gbc, "Fecha Registro:", m.getFechaRegistro() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(m.getFechaRegistro()) : "-", 10);
 
-       JScrollPane scrollPane = new JScrollPane(infoPanel);
-       scrollPane.setBorder(BorderFactory.createEmptyBorder());
-       scrollPane.setOpaque(false);
-       scrollPane.getViewport().setOpaque(false);
-       mainPanel.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(infoPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-       // Panel inferior con botón cerrar
-       JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-       buttonPanel.setOpaque(false);
-       JButton btnCerrar = new JButton("Cerrar");
-       btnCerrar.setBackground(new Color(230, 140, 30));
-       btnCerrar.setForeground(Color.WHITE);
-       btnCerrar.setFocusPainted(false);
-       btnCerrar.addActionListener(e -> dialog.dispose());
-       buttonPanel.add(btnCerrar);
-       mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setOpaque(false);
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setBackground(new Color(230, 140, 30));
+        btnCerrar.setForeground(Color.WHITE);
+        btnCerrar.setFocusPainted(false);
+        btnCerrar.addActionListener(e -> dialog.dispose());
+        buttonPanel.add(btnCerrar);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-       dialog.setContentPane(mainPanel);
-       dialog.setVisible(true);
-   }
+        dialog.setContentPane(mainPanel);
+        dialog.setVisible(true);
+    }
 
-   private void addInfoRow(JPanel panel, GridBagConstraints gbc, String label, String value, int row) {
-       gbc.gridx = 0;
-       gbc.gridy = row;
-       JLabel lbl = new JLabel(label);
-       lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
-       lbl.setForeground(new Color(100, 100, 100));
-       panel.add(lbl, gbc);
+    /**
+     * Agrega una fila de informacion al panel de detalles.
+     */
+    private void addInfoRow(JPanel panel, GridBagConstraints gbc, String label, String value, int row) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lbl.setForeground(new Color(100, 100, 100));
+        panel.add(lbl, gbc);
 
-       gbc.gridx = 1;
-       JLabel val = new JLabel(value);
-       val.setFont(new Font("SansSerif", Font.PLAIN, 12));
-       panel.add(val, gbc);
-   }
+        gbc.gridx = 1;
+        JLabel val = new JLabel(value);
+        val.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        panel.add(val, gbc);
+    }
  
+    /**
+     * Elimina una mascota del sistema.
+     * 
+     * @param m mascota a eliminar
+     */
     private void eliminar(Mascota m) {
         int confirm = JOptionPane.showConfirmDialog(pnlMascota,
-            "¿Está seguro de eliminar a " + m.getNombre() + "? Se eliminará también su ficha médica.\n" +
-            "Si la mascota ya tiene antecedentes clínicos (citas), no podrá ser eliminada.",
+            "¿Esta seguro de eliminar a " + m.getNombre() + "? Se eliminara tambien su ficha medica.\n" +
+            "Si la mascota ya tiene antecedentes clinicos (citas), no podra ser eliminada.",
             "Confirmar", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) return;
 
         try {
             restTemplate.delete(apiBaseUrl + "/mascota/eliminar/" + m.getIdMascota());
-            JOptionPane.showMessageDialog(pnlMascota, "Mascota eliminada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(pnlMascota, "Mascota eliminada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
             cargarTabla();
             if (pnlMascota.getCmbClientes().getSelectedItem() != null) {
                 cargarMascotasPorCliente();
             }
         } catch (org.springframework.web.client.HttpClientErrorException e) {
-            // Error HTTP 4xx - el backend lanza excepción con mensaje
             String mensajeError = "No se puede eliminar la mascota.";
             try {
-                // Intentar extraer el mensaje del cuerpo de la respuesta
                 String responseBody = e.getResponseBodyAsString();
-                if (responseBody != null && responseBody.contains("cita médica")) {
-                    mensajeError = "No se puede eliminar la mascota porque ya posee un antecedente clínico (cita médica realizada) en esta veterinaria.\n" +
+                if (responseBody != null && responseBody.contains("cita medica")) {
+                    mensajeError = "No se puede eliminar la mascota porque ya posee un antecedente clinico (cita medica realizada) en esta veterinaria.\n" +
                                    "Se recomienda mantener su registro para conservar la integridad de los datos.";
                 } else if (responseBody != null && responseBody.contains("pendiente")) {
                     mensajeError = "No se puede eliminar la mascota porque tiene citas pendientes.\n" +
                                    "Primero cancele o complete las citas pendientes.";
                 }
             } catch (Exception ex) {
-                // Si no se puede extraer, usar mensaje por defecto
                 mensajeError = e.getMessage();
             }
-            JOptionPane.showMessageDialog(pnlMascota, mensajeError, "Eliminación no permitida", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(pnlMascota, mensajeError, "Eliminacion no permitida", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(pnlMascota, "Error al eliminar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
  
-    // ─── Utilidades ───────────────────────────────────────────────────────────
- 
     /**
      * Obtiene el cliente propietario de una mascota dado su ID.
      *
      * @param idCliente identificador del cliente
-     * @return cliente encontrado, o {@code null} si falla la llamada
+     * @return cliente encontrado, o null si falla la llamada
      */
     private Cliente obtenerClientePorId(int idCliente) {
         try {
@@ -650,25 +651,32 @@ public void guardarFichaMedica(int idMascota, String alergias,
         }
     }
  
-    /** Devuelve el {@link Frame} padre del panel de mascotas. */
+    /**
+     * Devuelve el Frame padre del panel de mascotas.
+     */
     private Frame parentFrame() {
         return (Frame) SwingUtilities.getWindowAncestor(pnlMascota);
     }
+    
+    /**
+     * Muestra el formulario de ficha medica de la mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     * @param nombreMascota nombre de la mascota
+     */
     private void mostrarFichaMedica(int idMascota, String nombreMascota) {
-        JDialog dialog = new JDialog(parentFrame(), "Ficha Médica - " + nombreMascota, true);
+        JDialog dialog = new JDialog(parentFrame(), "Ficha Medica - " + nombreMascota, true);
         dialog.setSize(550, 450);
         dialog.setLocationRelativeTo(parentFrame());
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Panel de formulario
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Alergias
         gbc.gridx = 0; gbc.gridy = 0;
         formPanel.add(new JLabel("Alergias:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0;
@@ -677,16 +685,14 @@ public void guardarFichaMedica(int idMascota, String alergias,
         JScrollPane scrollAlergias = new JScrollPane(txtAlergias);
         formPanel.add(scrollAlergias, gbc);
 
-        // Enfermedades Crónicas
         gbc.gridx = 0; gbc.gridy = 1;
-        formPanel.add(new JLabel("Enfermedades Crónicas:"), gbc);
+        formPanel.add(new JLabel("Enfermedades Cronicas:"), gbc);
         gbc.gridx = 1; gbc.gridy = 1;
         JTextArea txtEnfermedades = new JTextArea(3, 20);
         txtEnfermedades.setLineWrap(true);
         JScrollPane scrollEnfermedades = new JScrollPane(txtEnfermedades);
         formPanel.add(scrollEnfermedades, gbc);
 
-        // Observaciones
         gbc.gridx = 0; gbc.gridy = 2;
         formPanel.add(new JLabel("Observaciones:"), gbc);
         gbc.gridx = 1; gbc.gridy = 2;
@@ -695,7 +701,6 @@ public void guardarFichaMedica(int idMascota, String alergias,
         JScrollPane scrollObservaciones = new JScrollPane(txtObservaciones);
         formPanel.add(scrollObservaciones, gbc);
 
-        // Cargar datos existentes
         try {
             FichaMedicaDTO ficha = restTemplate.getForObject(
                 apiBaseUrl + "/mascota/ficha/" + idMascota, 
@@ -706,10 +711,9 @@ public void guardarFichaMedica(int idMascota, String alergias,
                 txtObservaciones.setText(ficha.getObservaciones() != null ? ficha.getObservaciones() : "");
             }
         } catch (Exception e) {
-            System.err.println("Error al cargar ficha médica: " + e.getMessage());
+            System.err.println("Error al cargar ficha medica: " + e.getMessage());
         }
 
-        // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton btnGuardar = new JButton("Guardar");
         btnGuardar.setBackground(new Color(230, 140, 30));
@@ -737,5 +741,4 @@ public void guardarFichaMedica(int idMascota, String alergias,
         dialog.setContentPane(mainPanel);
         dialog.setVisible(true);
     }
-    
 }

@@ -9,8 +9,30 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementacion del DAO para la gestion de mascotas.
+ * <p>
+ * Esta clase implementa la interfaz IMascotaDAO y proporciona la logica
+ * de acceso a datos para la entidad Mascota utilizando procedimientos
+ * almacenados de SQL Server. Permite operaciones CRUD completas,
+ * busqueda de mascotas, gestion de fotos y fichas medicas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 public class MascotaDAOImpl implements IMascotaDAO {
 
+    /**
+     * Obtiene las mascotas asociadas a un cliente.
+     *
+     * @param idCliente identificador del cliente
+     * @return lista de mascotas del cliente
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<Mascota> obtenerPorCliente(int idCliente) throws SQLException {
         List<Mascota> mascotas = new ArrayList<>();
@@ -39,6 +61,13 @@ public class MascotaDAOImpl implements IMascotaDAO {
         return mascotas;
     }
 
+    /**
+     * Obtiene una mascota por su identificador.
+     *
+     * @param idMascota identificador de la mascota
+     * @return objeto Mascota encontrado
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public Mascota obtenerPorId(int idMascota) throws SQLException {
         String sql = "{call SP_OBTENER_MASCOTA_POR_ID(?)}";
@@ -66,6 +95,13 @@ public class MascotaDAOImpl implements IMascotaDAO {
         }
     }
 
+    /**
+     * Inserta una nueva mascota en la base de datos.
+     *
+     * @param mascota objeto Mascota a insertar
+     * @return ID generado para la mascota
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public int insertar(Mascota mascota) throws SQLException {
         String sql = "{call SP_INSERTAR_MASCOTA(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
@@ -88,6 +124,13 @@ public class MascotaDAOImpl implements IMascotaDAO {
         }
     }
 
+    /**
+     * Actualiza los datos de una mascota existente.
+     *
+     * @param mascota objeto Mascota con datos actualizados
+     * @return true si la actualizacion fue exitosa
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public boolean actualizar(Mascota mascota) throws SQLException {
         String sql = "{call SP_ACTUALIZAR_MASCOTA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
@@ -107,6 +150,13 @@ public class MascotaDAOImpl implements IMascotaDAO {
         }
     }
 
+    /**
+     * Elimina una mascota de la base de datos.
+     *
+     * @param idMascota identificador de la mascota a eliminar
+     * @return true si la eliminacion fue exitosa
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public boolean eliminar(int idMascota) throws SQLException {
         String sql = "{call SP_ELIMINAR_MASCOTA(?)}";
@@ -117,6 +167,13 @@ public class MascotaDAOImpl implements IMascotaDAO {
         }
     }
 
+    /**
+     * Obtiene la foto de una mascota.
+     *
+     * @param idMascota identificador de la mascota
+     * @return arreglo de bytes con la imagen
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public byte[] obtenerFoto(int idMascota) throws SQLException {
         String sql = "{call SP_OBTENER_FOTO_MASCOTA(?)}";
@@ -131,10 +188,15 @@ public class MascotaDAOImpl implements IMascotaDAO {
         }
     }
     
+    /**
+     * Lista todas las mascotas registradas.
+     *
+     * @return lista de todas las mascotas
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<Mascota> listarTodo() throws SQLException {
         List<Mascota> mascotas = new ArrayList<>();
-        // Usamos el SP que definimos para el listado general
         String sql = "{call SP_OBTENER_MASCOTAS}";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -143,14 +205,12 @@ public class MascotaDAOImpl implements IMascotaDAO {
 
             while (rs.next()) {
                 Mascota m = new Mascota();
-                // Datos básicos de la mascota
                 m.setIdMascota(rs.getInt("ID_MASCOTA"));
                 m.setIdCliente(rs.getInt("ID_CLIENTE"));
                 m.setNombre(rs.getString("NOMBRE"));
                 m.setEspecie(rs.getString("ESPECIE"));
                 m.setRaza(rs.getString("RAZA"));
 
-                // Manejo del char SEXO
                 String sexoStr = rs.getString("SEXO");
                 if (sexoStr != null && !sexoStr.isEmpty()) {
                     m.setSexo(sexoStr.charAt(0));
@@ -158,49 +218,46 @@ public class MascotaDAOImpl implements IMascotaDAO {
 
                 m.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
 
-                // Manejo de Double para evitar el 0.0 si es nulo en DB
                 double peso = rs.getDouble("PESO");
                 if (!rs.wasNull()) {
                     m.setPeso(peso);
                 }
 
                 m.setColor(rs.getString("COLOR"));
-
-                // ── CRÍTICO: La foto para tu ModelProfile ──
                 m.setFoto(rs.getBytes("FOTO")); 
-
                 m.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-
                 mascotas.add(m);
             }
         }
         return mascotas;
     }
     
+    /**
+     * Busca mascotas por termino (nombre o cedula del dueño).
+     *
+     * @param termino termino de busqueda
+     * @return lista de mascotas que coinciden
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<Mascota> buscarMascotas(String termino) throws SQLException {
         List<Mascota> lista = new ArrayList<>();
-        // Llamada al nuevo SP de búsqueda dinámica
         String sql = "{call SP_BUSCAR_MASCOTAS(?)}";
 
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
 
-            // Seteamos el término de búsqueda (nombre, cédula, etc.)
             stmt.setString(1, termino);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Mascota m = new Mascota();
-
-                    // Mapeo de datos básicos
                     m.setIdMascota(rs.getInt("ID_MASCOTA"));
                     m.setIdCliente(rs.getInt("ID_CLIENTE"));
                     m.setNombre(rs.getString("NOMBRE"));
                     m.setEspecie(rs.getString("ESPECIE"));
                     m.setRaza(rs.getString("RAZA"));
 
-                    // Manejo del tipo char para SEXO
                     String sexoStr = rs.getString("SEXO");
                     if (sexoStr != null && !sexoStr.isEmpty()) {
                         m.setSexo(sexoStr.charAt(0));
@@ -208,64 +265,73 @@ public class MascotaDAOImpl implements IMascotaDAO {
 
                     m.setFechaNacimiento(rs.getDate("FECHA_NACIMIENTO"));
 
-                    // Manejo de Double para evitar errores con valores nulos
                     double peso = rs.getDouble("PESO");
                     if (!rs.wasNull()) {
                         m.setPeso(peso);
                     }
 
                     m.setColor(rs.getString("COLOR"));
-
-                    // ── CRÍTICO: Obtenemos la FOTO para el ModelProfile ──
                     m.setFoto(rs.getBytes("FOTO"));
-
                     m.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-
-                    // Opcional: Si su objeto Mascota tiene campos para el nombre del dueño
-                    // m.setNombreDueno(rs.getString("NOMBRE_CLIENTE"));
-
                     lista.add(m);
                 }
             }
         }
         return lista;
     }
+    
+    /**
+     * Actualiza la ficha medica de una mascota.
+     *
+     * @param idMascota identificador de la mascota
+     * @param alergias alergias de la mascota
+     * @param enfermedadesCronicas enfermedades cronicas
+     * @param observaciones observaciones adicionales
+     * @return true si la actualizacion fue exitosa
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
-public boolean actualizarFichaMedica(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) throws SQLException {
-    String sql = "{call SP_ACTUALIZAR_FICHA_MEDICA(?, ?, ?, ?)}";
-    try (Connection conn = DatabaseConnection.getConnection();
-         CallableStatement stmt = conn.prepareCall(sql)) {
-        stmt.setInt(1, idMascota);
-        stmt.setString(2, alergias);
-        stmt.setString(3, enfermedadesCronicas);
-        stmt.setString(4, observaciones);
-        
-        // El SP puede devolver un resultado
-        boolean hadResults = stmt.execute();
-        return !hadResults; // Si no hay error, retorna true
-    } catch (SQLException e) {
-        e.printStackTrace();
-        throw e;
-    }
-}
-
-@Override
-public FichaMedicaDTO obtenerFichaMedicaDTO(int idMascota) throws SQLException {
-    String sql = "{call SP_OBTENER_FICHA_MEDICA(?)}";
-    try (Connection conn = DatabaseConnection.getConnection();
-         CallableStatement stmt = conn.prepareCall(sql)) {
-        stmt.setInt(1, idMascota);
-        ResultSet rs = stmt.executeQuery();
-        
-        FichaMedicaDTO ficha = new FichaMedicaDTO();
-        ficha.setIdMascota(idMascota);
-        
-        if (rs.next()) {
-            ficha.setAlergias(rs.getString("ALERGIAS"));
-            ficha.setEnfermedadesCronicas(rs.getString("ENFERMEDADES_CRONICAS"));
-            ficha.setObservaciones(rs.getString("OBSERVACIONES"));
+    public boolean actualizarFichaMedica(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) throws SQLException {
+        String sql = "{call SP_ACTUALIZAR_FICHA_MEDICA(?, ?, ?, ?)}";
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            stmt.setInt(1, idMascota);
+            stmt.setString(2, alergias);
+            stmt.setString(3, enfermedadesCronicas);
+            stmt.setString(4, observaciones);
+            
+            boolean hadResults = stmt.execute();
+            return !hadResults;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         }
-        return ficha;
     }
-}
+
+    /**
+     * Obtiene la ficha medica de una mascota como DTO.
+     *
+     * @param idMascota identificador de la mascota
+     * @return objeto FichaMedicaDTO con los datos
+     * @throws SQLException si ocurre un error en la base de datos
+     */
+    @Override
+    public FichaMedicaDTO obtenerFichaMedicaDTO(int idMascota) throws SQLException {
+        String sql = "{call SP_OBTENER_FICHA_MEDICA(?)}";
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            stmt.setInt(1, idMascota);
+            ResultSet rs = stmt.executeQuery();
+            
+            FichaMedicaDTO ficha = new FichaMedicaDTO();
+            ficha.setIdMascota(idMascota);
+            
+            if (rs.next()) {
+                ficha.setAlergias(rs.getString("ALERGIAS"));
+                ficha.setEnfermedadesCronicas(rs.getString("ENFERMEDADES_CRONICAS"));
+                ficha.setObservaciones(rs.getString("OBSERVACIONES"));
+            }
+            return ficha;
+        }
+    }
 }

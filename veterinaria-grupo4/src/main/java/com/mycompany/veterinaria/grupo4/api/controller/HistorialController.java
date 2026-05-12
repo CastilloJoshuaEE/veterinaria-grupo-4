@@ -6,6 +6,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * Controlador REST para la gestión del historial médico de mascotas.
+ * <p>
+ * Proporciona endpoints para obtener el historial por mascota,
+ * registrar nuevas entradas y obtener el historial completo.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MÓDULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 @RestController
 @RequestMapping("/api/historial")
 @CrossOrigin(origins = "*")
@@ -15,7 +28,8 @@ public class HistorialController {
     private HistorialService historialService;
 
     /**
-     * Obtiene el historial médico completo de una mascota
+     * Obtiene el historial médico completo de una mascota.
+     * 
      * @param idMascota ID de la mascota
      * @return Lista de registros del historial médico
      */
@@ -25,7 +39,8 @@ public class HistorialController {
     }
 
     /**
-     * Registra una nueva entrada en el historial médico
+     * Registra una nueva entrada en el historial médico.
+     * 
      * @param idMascota ID de la mascota
      * @param idCita ID de la cita (opcional)
      * @param idAtencionMedica ID de la atención médica (opcional)
@@ -40,9 +55,10 @@ public class HistorialController {
     }
 
     /**
-     * Obtiene el historial médico completo con todos los detalles
+     * Obtiene el historial médico completo con todos los detalles.
+     * 
      * @param idMascota ID de la mascota
-     * @return DataSet o List con la información completa
+     * @return Lista con la información completa del historial
      */
     @GetMapping("/completo/{idMascota}")
     public List<HistorialMedico> obtenerHistorialCompleto(@PathVariable int idMascota) {

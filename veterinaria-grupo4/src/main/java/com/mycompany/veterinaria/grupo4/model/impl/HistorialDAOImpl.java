@@ -7,8 +7,30 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementacion del DAO para la gestion del historial medico.
+ * <p>
+ * Esta clase implementa la interfaz IHistorialDAO y proporciona la logica
+ * de acceso a datos para la entidad HistorialMedico utilizando procedimientos
+ * almacenados de SQL Server. Permite obtener el historial completo de una
+ * mascota y registrar nuevas entradas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 public class HistorialDAOImpl implements IHistorialDAO {
 
+    /**
+     * Obtiene el historial medico completo de una mascota.
+     *
+     * @param idMascota identificador de la mascota
+     * @return lista de registros del historial
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<HistorialMedico> obtenerPorMascota(int idMascota) throws SQLException {
         List<HistorialMedico> lista = new ArrayList<>();
@@ -36,6 +58,15 @@ public class HistorialDAOImpl implements IHistorialDAO {
         return lista;
     }
 
+    /**
+     * Registra una nueva entrada en el historial medico.
+     *
+     * @param idMascota identificador de la mascota
+     * @param idCita identificador de la cita (opcional)
+     * @param idAtencionMedica identificador de la atencion medica (opcional)
+     * @return true si el registro fue exitoso
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public boolean registrar(int idMascota, Integer idCita, Integer idAtencionMedica) throws SQLException {
         String sql = "{call SP_REGISTRAR_HISTORIAL(?, ?, ?)}";

@@ -1,12 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.api.dto;
 
 /**
- *
- * @author Usuario
+ * Data Transfer Object para la ficha medica de una mascota.
+ * <p>
+ * Este DTO encapsula la informacion clinica relevante de una mascota,
+ * incluyendo alergias, enfermedades cronicas y observaciones generales.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
  */
 public class FichaMedicaDTO {
     private int idMascota;

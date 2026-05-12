@@ -10,7 +10,21 @@ package com.mycompany.veterinaria.grupo4.model.entity;
  */
 
 import java.util.Date;
-
+/**
+ * Entidad que representa un usuario del sistema veterinario.
+ * <p>
+ * Gestiona las credenciales y permisos de acceso de los diferentes
+ * actores del sistema (administradores, veterinarios, recepcionistas).
+ * Incluye informacion de autenticacion como nombre de usuario, contrasena,
+ * correo electronico, rol, fecha de creacion y estado de actividad.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class Usuario {
     private int idUsuario;
     private String nombreUsuario;
@@ -19,10 +33,19 @@ public class Usuario {
     private String rol;
     private Date fechaCreacion;
     private boolean estado;
-
-    // Constructores
+    /**
+     * Constructor por defecto.
+     */
     public Usuario() {}
-
+    /**
+     * Constructor con los campos basicos del usuario.
+     * 
+     * @param idUsuario identificador del usuario
+     * @param nombreUsuario nombre de usuario
+     * @param contrasena contrasena del usuario
+     * @param correoElectronico correo electronico
+     * @param rol rol del usuario (ADMINISTRADOR, VETERINARIO, etc.)
+     */
     public Usuario(int idUsuario, String nombreUsuario, String contrasena, String correoElectronico, String rol) {
         this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
