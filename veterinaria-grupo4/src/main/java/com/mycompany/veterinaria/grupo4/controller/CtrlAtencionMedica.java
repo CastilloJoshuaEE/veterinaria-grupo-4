@@ -6,6 +6,8 @@ import com.mycompany.veterinaria.grupo4.model.entity.InstrumentoMedico;
 import com.mycompany.veterinaria.grupo4.model.entity.Medicamento;
 import com.mycompany.veterinaria.grupo4.view.atencionMedica.FormAtencionMedica;
 import com.mycompany.veterinaria.grupo4.view.atencionMedica.PnlAtencionMedica;
+import com.mycompany.veterinaria.grupo4.view.factura.frmDetalleFactura;
+import com.mycompany.veterinaria.grupo4.view.factura.frmMetodoPago;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
 import java.awt.Frame;
 import java.text.SimpleDateFormat;
@@ -13,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -314,7 +315,7 @@ public class CtrlAtencionMedica {
                     null, Boolean.class);
             }
  
-            int idFactura = solicitarPagoYFacturar(form, idAtencion);
+            int idFactura = solicitarPagoYFacturarConDialogo(form, idAtencion);
  
             if (idFactura > 0) {
                 JOptionPane.showMessageDialog(pnlAtencion,
@@ -337,46 +338,146 @@ public class CtrlAtencionMedica {
     }
  
     /**
-     * Muestra un dialogo para seleccionar el metodo de pago y llama al endpoint
-     * de generacion de factura.
+     * Muestra el dialogo de metodo de pago y genera la factura.
      *
      * @param form        formulario activo (para posicionamiento del dialogo)
      * @param idAtencion  ID de la atencion recien creada
      * @return ID de la factura generada, o -1 si se cancelo
      */
-    private int solicitarPagoYFacturar(FormAtencionMedica form, int idAtencion) {
-        String[] metodos = {"EFECTIVO", "TRANSFERENCIA BANCARIA"};
-        JComboBox<String> cmbMetodo = new JComboBox<>(metodos);
- 
-        int opcion = JOptionPane.showConfirmDialog(form,
-            new Object[]{"Metodo de pago:", cmbMetodo},
-            "Generar Factura", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
- 
-        if (opcion != JOptionPane.OK_OPTION) return -1;
- 
-        String metodo        = (String) cmbMetodo.getSelectedItem();
-        String cuentaOrigen  = null;
-        String cuentaDestino = null;
- 
-        if ("TRANSFERENCIA BANCARIA".equals(metodo)) {
-            cuentaOrigen  = JOptionPane.showInputDialog(form, "Cuenta origen:");
-            cuentaDestino = JOptionPane.showInputDialog(form, "Cuenta destino:");
-            if (cuentaOrigen == null || cuentaDestino == null) return -1;
+    private int solicitarPagoYFacturarConDialogo(FormAtencionMedica form, int idAtencion) {
+    // Calcular total a pagar
+    double totalAPagar = calcularTotalAtencion(idAtencion);
+    
+    // Mostrar el diálogo de método de pago personalizado
+    frmMetodoPago dialogPago = new frmMetodoPago(SwingUtilities.getWindowAncestor(form), totalAPagar);
+    dialogPago.setVisible(true);
+    
+    if (!dialogPago.isConfirmed()) {
+        eliminarAtencionMedica(idAtencion);
+        return -1;
+    }
+    
+    String metodoPago = dialogPago.getMetodoPago();
+    String cuentaOrigen = dialogPago.getCuentaOrigen();
+    String cuentaDestino = dialogPago.getCuentaDestino();
+    
+    try {
+        String url = api + "/factura/generar?"
+            + "idAtencionMedica=" + idAtencion
+            + "&metodoPago=" + java.net.URLEncoder.encode(metodoPago, "UTF-8");
+        if (cuentaOrigen != null && !cuentaOrigen.isEmpty()) {
+            url += "&cuentaOrigen=" + java.net.URLEncoder.encode(cuentaOrigen, "UTF-8");
         }
- 
-        try {
-            String url = api + "/factura/generar"
-                + "?idAtencionMedica=" + idAtencion
-                + "&metodoPago="       + metodo;
-            if (cuentaOrigen  != null) url += "&cuentaOrigen="  + cuentaOrigen;
-            if (cuentaDestino != null) url += "&cuentaDestino=" + cuentaDestino;
- 
-            return Optional.ofNullable(restTemplate.postForObject(url, null, Integer.class)).orElse(-1);
-        } catch (Exception e) {
+        if (cuentaDestino != null && !cuentaDestino.isEmpty()) {
+            url += "&cuentaDestino=" + java.net.URLEncoder.encode(cuentaDestino, "UTF-8");
+        }
+        
+        System.out.println("URL: " + url); // DEBUG
+        
+        int idFactura = Optional.ofNullable(restTemplate.postForObject(url, null, Integer.class)).orElse(-1);
+        
+        if (idFactura > 0) {
+            frmDetalleFactura detalleFactura = new frmDetalleFactura(
+                SwingUtilities.getWindowAncestor(form), 
+                idFactura
+            );
+            detalleFactura.setVisible(true);
+        } else {
+            // Mostrar error más específico
             JOptionPane.showMessageDialog(form,
-                "Error al generar factura: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-            return -1;
+                "No se pudo generar la factura. El procedimiento almacenado retornó -1.\n" +
+                "Verifique que la atención médica tenga datos válidos.",
+                "Error de facturación", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        return idFactura;
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(form,
+            "Error al generar factura: " + e.getMessage() + "\n\n" +
+            "StackTrace: " + getStackTraceAsString(e),
+            "Error", JOptionPane.ERROR_MESSAGE);
+        return -1;
+    }
+}
+
+private String getStackTraceAsString(Exception e) {
+    StringBuilder sb = new StringBuilder();
+    for (StackTraceElement element : e.getStackTrace()) {
+        sb.append(element.toString()).append("\n");
+        if (sb.length() > 500) break;
+    }
+    return sb.toString();
+}
+ 
+    /**
+     * Calcula el total a pagar de una atencion medica.
+     *
+     * @param idAtencion ID de la atencion medica
+     * @return total a pagar (servicio + medicamentos + instrumentos + IVA)
+     */
+    private double calcularTotalAtencion(int idAtencion) {
+        double total = 0;
+        
+        try {
+            // Obtener precio del servicio desde la cita
+            AtencionMedica atencion = restTemplate.getForObject(
+                api + "/atencion-medica/" + idAtencion, AtencionMedica.class);
+            
+            if (atencion != null && atencion.getIdCita() > 0) {
+                Cita cita = restTemplate.getForObject(
+                    api + "/cita/" + atencion.getIdCita(), Cita.class);
+                if (cita != null && cita.getServicio() != null) {
+                    total += cita.getServicio().getPrecio();
+                }
+            }
+            
+            // Sumar precio de medicamentos recetados
+            List<Medicamento> medicamentos = restTemplate.exchange(
+                api + "/medicamento/atencion/" + idAtencion, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<Medicamento>>() {}
+            ).getBody();
+            if (medicamentos != null) {
+                for (Medicamento m : medicamentos) {
+                    total += m.getPrecio();
+                }
+            }
+            
+            // Sumar costo de instrumentos usados
+            List<InstrumentoMedico> instrumentos = restTemplate.exchange(
+                api + "/instrumento/atencion/" + idAtencion, HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<InstrumentoMedico>>() {}
+            ).getBody();
+            if (instrumentos != null) {
+                for (InstrumentoMedico i : instrumentos) {
+                    total += i.getCostoUso();
+                }
+            }
+            
+            // Agregar IVA (12%)
+            double subtotal = total;
+            total = subtotal * 1.12;
+            
+        } catch (Exception e) {
+            System.err.println("Error al calcular total: " + e.getMessage());
+        }
+        
+        return total;
+    }
+ 
+    /**
+     * Elimina una atencion medica si se cancela el pago.
+     *
+     * @param idAtencion ID de la atencion a eliminar
+     */
+    private void eliminarAtencionMedica(int idAtencion) {
+        try {
+            restTemplate.delete(api + "/atencion-medica/eliminar/" + idAtencion);
+            JOptionPane.showMessageDialog(form,
+                "Operacion cancelada. No se registro la atencion medica.",
+                "Cancelado", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            System.err.println("Error al eliminar atencion medica: " + e.getMessage());
         }
     }
  

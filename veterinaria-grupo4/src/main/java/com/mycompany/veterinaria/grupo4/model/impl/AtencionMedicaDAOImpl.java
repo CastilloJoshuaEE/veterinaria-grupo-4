@@ -100,9 +100,7 @@ public class AtencionMedicaDAOImpl implements IAtencionMedicaDAO {
             if (rs.next()) {
                 AtencionMedica a = new AtencionMedica();
                 a.setIdAtencionMedica(rs.getInt("ID_ATENCION_MEDICA"));
-                a.setIdCita(rs.getInt("ID_CITA"));
-                a.setIdMascota(rs.getInt("ID_MASCOTA"));
-                a.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
+                
                 a.setFecha(rs.getTimestamp("FECHA"));
                 a.setDiagnostico(rs.getString("DIAGNOSTICO"));
                 a.setTratamiento(rs.getString("TRATAMIENTO"));

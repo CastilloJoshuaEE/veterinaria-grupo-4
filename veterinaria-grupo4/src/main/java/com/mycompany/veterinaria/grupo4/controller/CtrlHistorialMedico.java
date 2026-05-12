@@ -215,44 +215,51 @@ public class CtrlHistorialMedico {
      * @param idMascota identificador de la mascota
      */
     private void cargarHistorialMedico(int idMascota) {
-        try {
-            List<HistorialMedico> historial = restTemplate.exchange(
-                apiBaseUrl + "/historial/mascota/" + idMascota,
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<HistorialMedico>>() {}
-            ).getBody();
-            
-            javax.swing.table.DefaultTableModel model = 
-                (javax.swing.table.DefaultTableModel) view.getTblAtenciones().getModel();
-            model.setRowCount(0);
-            
-            Set<String> serviciosUnicos = new HashSet<>();
-            
-            if (historial != null) {
-                for (HistorialMedico h : historial) {
-                    String fecha = h.getFecha() != null ? sdfFecha.format(h.getFecha()) : "-";
-                    String servicio = h.getNombreServicio() != null ? h.getNombreServicio() : "-";
-                    String veterinario = h.getNombreVeterinario() != null ? h.getNombreVeterinario() : "-";
-                    
-                    serviciosUnicos.add(servicio);
-                    
-                    model.addRow(new Object[]{
-                        fecha, servicio, veterinario,
-                        "-", "-",
-                        h.getDiagnostico() != null ? h.getDiagnostico() : "-",
-                        h.getTratamiento() != null ? h.getTratamiento() : "-"
-                    });
-                }
+    try {
+        List<HistorialMedico> historial = restTemplate.exchange(
+            apiBaseUrl + "/historial/mascota/" + idMascota,
+            HttpMethod.GET, null,
+            new ParameterizedTypeReference<List<HistorialMedico>>() {}
+        ).getBody();
+        
+        javax.swing.table.DefaultTableModel model = 
+            (javax.swing.table.DefaultTableModel) view.getTblAtenciones().getModel();
+        model.setRowCount(0);
+        
+        Set<String> serviciosUnicos = new HashSet<>();
+        
+        if (historial != null) {
+            for (HistorialMedico h : historial) {
+                String fecha = h.getFecha() != null ? sdfFecha.format(h.getFecha()) : "-";
+                String servicio = h.getNombreServicio() != null ? h.getNombreServicio() : "-";
+                String veterinario = h.getNombreVeterinario() != null ? h.getNombreVeterinario() : "-";
+                
+                // Obtener instrumentos y medicamentos
+                String instrumentos = h.getInstrumentosUsados() != null && !h.getInstrumentosUsados().isEmpty() 
+                    ? h.getInstrumentosUsados() : "-";
+                String medicamentos = h.getMedicamentosRecetados() != null && !h.getMedicamentosRecetados().isEmpty() 
+                    ? h.getMedicamentosRecetados() : "-";
+                
+                serviciosUnicos.add(servicio);
+                
+                model.addRow(new Object[]{
+                    fecha, servicio, veterinario,
+                    instrumentos,  // ← Instrumentos
+                    medicamentos,  // ← Medicamentos
+                    h.getDiagnostico() != null ? h.getDiagnostico() : "-",
+                    h.getTratamiento() != null ? h.getTratamiento() : "-"
+                });
             }
-            
-            view.getLblTotalAtenciones().setText("Total atenciones: " + (historial != null ? historial.size() : 0));
-            view.getLblServiciosUnicos().setText("Servicios unicos: " + serviciosUnicos.size());
-            
-        } catch (Exception e) {
-            System.err.println("Error al cargar historial: " + e.getMessage());
-            e.printStackTrace();
         }
+        
+        view.getLblTotalAtenciones().setText("Total atenciones: " + (historial != null ? historial.size() : 0));
+        view.getLblServiciosUnicos().setText("Servicios únicos: " + serviciosUnicos.size());
+        
+    } catch (Exception e) {
+        System.err.println("Error al cargar historial: " + e.getMessage());
+        e.printStackTrace();
     }
+}
     
     /**
      * Carga las vacunas aplicadas a la mascota.
