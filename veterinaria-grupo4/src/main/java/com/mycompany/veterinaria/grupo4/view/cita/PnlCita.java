@@ -26,6 +26,7 @@ public class PnlCita extends javax.swing.JPanel {
         pnlBg.setOpaque(true);
         pnlBg.putClientProperty(FlatClientProperties.STYLE, "background:$Panel.background");
         pnlBg.setBorder(new EmptyBorder(5, 5, 5, 5));
+        btnBuscar.setVisible(false);
     }
 
     public Button getBtnBuscar() {

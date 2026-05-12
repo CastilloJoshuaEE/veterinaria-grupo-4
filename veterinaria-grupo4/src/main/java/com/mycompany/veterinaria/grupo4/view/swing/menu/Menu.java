@@ -27,9 +27,10 @@ public class Menu extends JPanel {
     private final String menuItems[][] = {
         {"~PRINCIPAL~"},
             {"Dashboard"},               //  Resumen general, gráficos. Citas del dia
-            {"Citas Médicas", 
-                //"Agendar",             //  Nueva Cita Medica
-                "Ver todas"},            //  Citas Medicas tabla
+            {"Citas Médicas"
+                //,"Agendar"             //  Nueva Cita Medica
+                //,"Ver todas"
+            },            //  Citas Medicas tabla
         {"~CLÍNICA~"},
             {"Atención Médica"},         //  Tabla unificada: Fichas médicas e Historial
             {"Mascotas",
@@ -39,8 +40,9 @@ public class Menu extends JPanel {
             
             
             //  Tabla unificada: Directorio de pacientes y sus dueños
-            {"Clientes",
-                "Ver todos"},
+            {"Clientes"
+                //,"Ver todos"
+            },
         {"~ADMINISTRACIÓN~"},
             {"Inventario",
                 "Medicamentos",          //  Tabla Medicamentos
@@ -100,7 +102,7 @@ public class Menu extends JPanel {
                 + "background:$Menu.background;"
                 + "arc:10");
         header = new JLabel(headerName);
-       
+        header.setIcon(new ImageIcon(getClass().getResource("/image/LOGO-ICON.png")));
         header.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$Menu.header.font;"
                 + "foreground:$Menu.foreground");

@@ -389,6 +389,8 @@ public class CitaDAOImpl implements ICitaDAO {
         } catch (SQLException e) {
             mascota.setNombre("");
         }
+        try { mascota.setEspecie(rs.getString("ESPECIE_MASCOTA")); }  // ✅ nuevo
+        catch (SQLException e) { mascota.setEspecie(""); }
         cita.setMascota(mascota);
 
         Servicio servicio = new Servicio();
@@ -415,6 +417,8 @@ public class CitaDAOImpl implements ICitaDAO {
         } catch (SQLException e) {
             vete.setNombre("");
         }
+        try { vete.setApellido(rs.getString("APELLIDO_VETERINARIO")); }  // ✅ nuevo
+        catch (SQLException e) { vete.setApellido(""); }
         cita.setVeterinario(vete);
 
         return cita;

@@ -227,7 +227,6 @@ public class ServicioDAOImpl implements IServicioDAO {
             while (rs.next()) {
                 Veterinario v = new Veterinario();
                 v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
                 v.setNombre(rs.getString("NOMBRE"));
                 v.setApellido(rs.getString("APELLIDO"));
                 try {
@@ -235,19 +234,12 @@ public class ServicioDAOImpl implements IServicioDAO {
                 } catch (SQLException ex) {
                     v.setTelefono("");
                 }
-                
-                try {
-                    String nombreEspecialidad = rs.getString("ESPECIALIDAD");
-                    if (nombreEspecialidad != null && !nombreEspecialidad.isEmpty()) {
-                        EspecialidadVeterinaria esp = new EspecialidadVeterinaria();
-                        esp.setNombreEspecialidad(nombreEspecialidad);
-                        try {
-                            esp.setIdEspecialidad(rs.getInt("ID_ESPECIALIDAD"));
-                        } catch (SQLException ex) {
-                        }
-                        v.setEspecialidad(esp);
-                    }
-                } catch (SQLException ex) {
+                String nombreEspecialidad = rs.getString("ESPECIALIDAD");
+                if (nombreEspecialidad != null && !nombreEspecialidad.trim().isEmpty()) {
+                    EspecialidadVeterinaria esp = new EspecialidadVeterinaria();
+                    esp.setIdEspecialidad(rs.getInt("ID_ESPECIALIDAD"));
+                    esp.setNombreEspecialidad(nombreEspecialidad);                    
+                    v.setEspecialidad(esp);
                 }
                 lista.add(v);
             }
@@ -308,7 +300,7 @@ public class ServicioDAOImpl implements IServicioDAO {
     public List<Veterinario> obtenerTodosConEspecialidad() throws SQLException {
         List<Veterinario> lista = new ArrayList<>();
         String sql = "SELECT V.ID_VETERINARIO, V.CEDULA, V.NOMBRE, V.APELLIDO, V.TELEFONO, " +
-                     "E.NOMBRE_ESPECIALIDAD AS ESPECIALIDAD " +
+                     "E.NOMBRE_ESPECIALIDAD AS NOMBRE_ESPECIALIDAD " +
                      "FROM VETERINARIO V LEFT JOIN ESPECIALIDAD_VETERINARIA E " +
                      "ON V.ID_ESPECIALIDAD = E.ID_ESPECIALIDAD";
 
@@ -324,7 +316,7 @@ public class ServicioDAOImpl implements IServicioDAO {
                 v.setApellido(rs.getString("APELLIDO"));
                 v.setTelefono(rs.getString("TELEFONO"));
                 
-                String nombreEspecialidad = rs.getString("ESPECIALIDAD");
+                String nombreEspecialidad = rs.getString("NOMBRE_ESPECIALIDAD");
                 if (nombreEspecialidad != null) {
                     EspecialidadVeterinaria esp = new EspecialidadVeterinaria();
                     esp.setNombreEspecialidad(nombreEspecialidad);

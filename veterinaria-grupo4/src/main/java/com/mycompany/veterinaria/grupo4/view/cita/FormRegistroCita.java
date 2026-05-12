@@ -8,6 +8,7 @@ import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.Button;
 import com.mycompany.veterinaria.grupo4.view.swing.CalendarioCita;
 import com.mycompany.veterinaria.grupo4.view.swing.MyTextField;
+import com.mycompany.veterinaria.grupo4.view.swing.scrollbar.ScrollBarCustom;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -38,6 +39,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.JWindow;
@@ -142,10 +144,17 @@ public class FormRegistroCita extends JDialog {
                 dispose();
             }
         });
- 
+        JScrollPane scroll = new JScrollPane(buildCuerpo(servicios));
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5)); // Margen para el scroll
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.getVerticalScrollBar().setUnitIncrement(16); 
+        scroll.setVerticalScrollBar(new ScrollBarCustom());
+        
         JPanel root = buildRoot();
         root.add(buildHeader(titulo),     BorderLayout.NORTH);
-        root.add(buildCuerpo(servicios),  BorderLayout.CENTER);
+        root.add(scroll,  BorderLayout.CENTER);
         root.add(buildFooter(labelBoton), BorderLayout.SOUTH);
         setContentPane(root);
     }

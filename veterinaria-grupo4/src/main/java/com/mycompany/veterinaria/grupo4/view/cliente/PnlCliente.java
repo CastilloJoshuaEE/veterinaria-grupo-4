@@ -21,6 +21,7 @@ public class PnlCliente extends javax.swing.JPanel {
         setOpaque(true);
         putClientProperty(FlatClientProperties.STYLE, "background:$Panel.background");
         setBorder(new EmptyBorder(5, 5, 5, 5));
+        txtBusqueda.setHint("Buscar por Nombre");
         
         pnlBg.setOpaque(true);
         pnlBg.putClientProperty(FlatClientProperties.STYLE, "background:$Panel.background");
@@ -70,8 +71,6 @@ public class PnlCliente extends javax.swing.JPanel {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Clientes");
-
-        txtBusqueda.setText("myTextField1");
 
         btnNuevo.setBackground(new java.awt.Color(255, 178, 39));
         btnNuevo.setForeground(new java.awt.Color(255, 255, 255));

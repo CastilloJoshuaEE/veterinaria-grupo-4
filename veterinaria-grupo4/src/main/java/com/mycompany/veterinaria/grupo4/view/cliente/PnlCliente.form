@@ -86,9 +86,6 @@
           </Properties>
         </Component>
         <Component class="com.mycompany.veterinaria.grupo4.view.swing.MyTextField" name="txtBusqueda">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="myTextField1"/>
-          </Properties>
         </Component>
         <Component class="com.mycompany.veterinaria.grupo4.view.swing.Button" name="btnNuevo">
           <Properties>

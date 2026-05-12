@@ -187,7 +187,7 @@ public class FormAtencionMedica extends JDialog {
         String mascota    = cita.getMascota()     != null
             ? cita.getMascota().getNombre() + " · " + cita.getMascota().getEspecie() : "—";
         String dueno      = cita.getCliente()     != null
-            ? cita.getCliente().getNombre() + " " + cita.getCliente().getApellido() : "—";
+            ? cita.getCliente().getNombre() + " ": "—";
         String veterinario = cita.getVeterinario() != null
             ? "Dr. " + cita.getVeterinario().getNombre() + " " + cita.getVeterinario().getApellido() : "—";
         String servicio   = cita.getServicio()    != null
