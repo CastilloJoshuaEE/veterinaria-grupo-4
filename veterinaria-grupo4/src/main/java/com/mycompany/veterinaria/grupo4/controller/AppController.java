@@ -116,12 +116,7 @@ public class AppController {
             System.out.println("index: "+index + "subIndex: "+subIndex);
             switch (index) {
                 case 0 -> mostrarDashboard();
-                case 1 -> {
-                    switch (subIndex) {
-                        case 1 -> mostrarCitas();
-                        default -> action.cancel();
-                    }
-                }
+                case 1 -> mostrarCitas();
                 case 2 ->  mostrarAtencion();
                 case 3 -> {
                     switch (subIndex) {
@@ -130,12 +125,7 @@ public class AppController {
                         default -> action.cancel();
                     }
                 }
-                case 4 -> {
-                    switch (subIndex) {
-                        case 1 -> mostrarClientes(); 
-                        default -> action.cancel();
-                    }
-                }
+                case 4 ->  mostrarClientes(); 
                 case 5 -> {
                     switch (subIndex) {
                         case 3 -> mostrarServicios();

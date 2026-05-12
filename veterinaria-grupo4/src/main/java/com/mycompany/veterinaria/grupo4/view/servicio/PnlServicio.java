@@ -60,7 +60,7 @@ public class PnlServicio extends javax.swing.JPanel {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Servicios");
 
-        txtBusqueda.setText("myTextField1");
+        txtBusqueda.setText("");
         txtBusqueda.setHint("Buscar por nombre...");
 
         btnNuevo.setBackground(new java.awt.Color(255, 178, 39));

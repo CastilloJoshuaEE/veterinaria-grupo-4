@@ -21,6 +21,7 @@ public class PnlCliente extends javax.swing.JPanel {
         setOpaque(true);
         putClientProperty(FlatClientProperties.STYLE, "background:$Panel.background");
         setBorder(new EmptyBorder(5, 5, 5, 5));
+        txtBusqueda.setHint("Buscar por Nombre");
         
         pnlBg.setOpaque(true);
         pnlBg.putClientProperty(FlatClientProperties.STYLE, "background:$Panel.background");

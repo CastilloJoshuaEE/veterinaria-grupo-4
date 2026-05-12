@@ -183,15 +183,18 @@ public class CtrlCitas {
     private void editar(Cita cita) {
         Cliente cliente = cita.getCliente();
         form = new FormRegistroCita(parentFrame(), cita, cliente, servicios);
- 
+        // Deshabilitar busqueda       
+        form.getBtnBuscarCliente().setVisible(false);
+        form.getTxtCedula().setText(cliente.getCedula());
+        form.getTxtCedula().setEnabled(false);
+        // Cargar Mascotas
         List<Mascota> mascotas = obtenerMascotasPorCliente(
             cliente != null ? cliente.getIdCliente() : -1);
         form.cargarMascotasDisponibles(mascotas);
- 
         if (cita.getMascota() != null) {
             form.preseleccionarMascota(cita.getMascota().getIdMascota());
         }
- 
+        filtrarVeterinariosPorServicio(form);
         conectarForm(form);
         form.setVisible(true);
     }
@@ -288,7 +291,10 @@ public class CtrlCitas {
             }
 
             if (form.isModoEdicion() && form.getCitaActual().getVeterinario() != null) {
-                preseleccionarVeterinario(form.getCitaActual().getVeterinario().getIdVeterinario());
+                int idServicioOriginal = form.getCitaActual().getServicio().getIdServicio();
+                if (idServicioOriginal == seleccionado.getIdServicio()) {
+                    preseleccionarVeterinario(form.getCitaActual().getVeterinario().getIdVeterinario());
+                }
             }
         } catch (Exception e) {
             System.err.println("Error al filtrar veterinarios: " + e.getMessage());
