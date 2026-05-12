@@ -52,6 +52,9 @@ public class HistorialDAOImpl implements IHistorialDAO {
                 h.setNombreVeterinario(rs.getString("VETERINARIO"));
                 h.setDiagnostico(rs.getString("DIAGNOSTICO"));
                 h.setTratamiento(rs.getString("TRATAMIENTO"));
+                h.setInstrumentosUsados(rs.getString("INSTRUMENTOS_USADOS"));
+                h.setMedicamentosRecetados(rs.getString("MEDICAMENTOS_RECETADOS"));
+            
                 lista.add(h);
             }
         }

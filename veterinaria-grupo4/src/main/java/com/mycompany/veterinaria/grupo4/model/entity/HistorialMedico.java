@@ -29,7 +29,8 @@ public class HistorialMedico {
     private String nombreVeterinario;
     private String diagnostico;
     private String tratamiento;
-
+    private String instrumentosUsados;    
+    private String medicamentosRecetados;
     public HistorialMedico() {}
 
     // Getters y Setters
@@ -51,4 +52,9 @@ public class HistorialMedico {
     public void setDiagnostico(String diagnostico) { this.diagnostico = diagnostico; }
     public String getTratamiento() { return tratamiento; }
     public void setTratamiento(String tratamiento) { this.tratamiento = tratamiento; }
+        public String getInstrumentosUsados() { return instrumentosUsados; }
+    public void setInstrumentosUsados(String instrumentosUsados) { this.instrumentosUsados = instrumentosUsados; }
+    public String getMedicamentosRecetados() { return medicamentosRecetados; }
+    public void setMedicamentosRecetados(String medicamentosRecetados) { this.medicamentosRecetados = medicamentosRecetados; }
+
 }

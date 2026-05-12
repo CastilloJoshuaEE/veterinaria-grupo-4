@@ -118,15 +118,19 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
     public List<Medicamento> obtenerRecetadosPorAtencion(int idAtencionMedica) throws SQLException {
         List<Medicamento> lista = new ArrayList<>();
         String sql = "{call SP_OBTENER_MEDICAMENTOS_POR_ATENCION(?)}";
-        
+
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setInt(1, idAtencionMedica);
             ResultSet rs = stmt.executeQuery();
-            
+
             while (rs.next()) {
                 Medicamento m = new Medicamento();
                 m.setNombre(rs.getString("NOMBRE"));
+                m.setPrecio(rs.getDouble("PRECIO"));
+                m.setDosis(rs.getString("DOSIS"));
+                m.setFrecuencia(rs.getString("FRECUENCIA"));
+                m.setDuracion(rs.getString("DURACION"));
                 lista.add(m);
             }
         }

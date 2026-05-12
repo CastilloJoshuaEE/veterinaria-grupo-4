@@ -6,6 +6,7 @@ import com.mycompany.veterinaria.grupo4.view.swing.MyTextField;
 import com.mycompany.veterinaria.grupo4.view.swing.table.Table;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class PnlHistorialMedico extends JPanel {
@@ -34,6 +35,18 @@ public class PnlHistorialMedico extends JPanel {
     private JScrollPane scrollVacunas;
     
     private int idMascotaSeleccionada = 0;
+    
+    // Modelos de tabla no editables
+    private class NonEditableTableModel extends DefaultTableModel {
+        public NonEditableTableModel(Object[] columnNames, int rowCount) {
+            super(columnNames, rowCount);
+        }
+        
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false; // Todas las celdas no editables
+        }
+    }
     
     public PnlHistorialMedico() {
         initComponents();
@@ -188,9 +201,10 @@ public class PnlHistorialMedico extends JPanel {
         panel.setOpaque(false);
         
         tblAtenciones = new Table();
-        tblAtenciones.setModel(new javax.swing.table.DefaultTableModel(
-            new Object[][]{},
-            new String[]{"Fecha", "Servicio", "Veterinario", "Instrumentos", "Medicamentos", "Diagnóstico", "Tratamiento"}
+        // Usar modelo no editable
+        tblAtenciones.setModel(new NonEditableTableModel(
+            new String[]{"Fecha", "Servicio", "Veterinario", "Instrumentos", "Medicamentos", "Diagnóstico", "Tratamiento"},
+            0
         ));
         
         scrollAtenciones = new JScrollPane(tblAtenciones);
@@ -205,9 +219,10 @@ public class PnlHistorialMedico extends JPanel {
         panel.setOpaque(false);
         
         tblVacunas = new Table();
-        tblVacunas.setModel(new javax.swing.table.DefaultTableModel(
-            new Object[][]{},
-            new String[]{"Vacuna", "Descripción", "Fecha Aplicación", "Próxima Dosis"}
+        // Usar modelo no editable
+        tblVacunas.setModel(new NonEditableTableModel(
+            new String[]{"Vacuna", "Descripción", "Fecha Aplicación", "Próxima Dosis"},
+            0
         ));
         
         scrollVacunas = new JScrollPane(tblVacunas);
