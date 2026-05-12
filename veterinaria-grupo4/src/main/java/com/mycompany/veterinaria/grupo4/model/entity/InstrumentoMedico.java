@@ -1,5 +1,19 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
 
+/**
+ * Entidad que representa un instrumento o insumo medico.
+ * <p>
+ * Contiene la informacion de los instrumentos y materiales utilizados
+ * durante las atenciones medicas, incluyendo su nombre, descripcion,
+ * costo de uso y estado de disponibilidad en inventario.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class InstrumentoMedico {
     private int idInstrumento;
     private String nombre;

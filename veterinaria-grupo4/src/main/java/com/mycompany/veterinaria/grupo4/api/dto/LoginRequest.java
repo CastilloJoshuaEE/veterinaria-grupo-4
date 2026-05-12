@@ -1,9 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.api.dto;
 
+/**
+ * Data Transfer Object para la solicitud de inicio de sesion.
+ * <p>
+ * Encapsula las credenciales de autenticacion enviadas por el cliente
+ * para validar el acceso al sistema.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class LoginRequest {
     private String usuario;
     private String password;

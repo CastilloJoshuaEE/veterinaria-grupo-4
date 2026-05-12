@@ -1,7 +1,21 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
-
+/**
+ * Entidad que representa una vacuna aplicada a una mascota.
+ * <p>
+ * Registra el historial de vacunacion de cada mascota, incluyendo el nombre
+ * de la vacuna, descripcion, periodo de refuerzo (en meses), fecha de aplicacion,
+ * fecha proxima dosis y la mascota asociada. Permite gestionar y dar seguimiento
+ * al plan de vacunacion de los pacientes.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 public class VacunaAplicada {
     private int idVacuna;
     private String nombre;

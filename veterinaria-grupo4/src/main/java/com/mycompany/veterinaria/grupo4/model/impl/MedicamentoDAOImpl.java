@@ -7,8 +7,29 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementacion del DAO para la gestion de medicamentos.
+ * <p>
+ * Esta clase implementa la interfaz IMedicamentoDAO y proporciona la logica
+ * de acceso a datos para la entidad Medicamento utilizando procedimientos
+ * almacenados de SQL Server. Permite obtener medicamentos disponibles,
+ * buscar por ID, registrar recetas y listar medicamentos recetados.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class MedicamentoDAOImpl implements IMedicamentoDAO {
 
+    /**
+     * Obtiene los medicamentos disponibles (stock > 0).
+     *
+     * @return lista de medicamentos disponibles
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<Medicamento> obtenerDisponibles() throws SQLException {
         List<Medicamento> lista = new ArrayList<>();
@@ -30,6 +51,13 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
         return lista;
     }
 
+    /**
+     * Obtiene un medicamento por su identificador.
+     *
+     * @param idMedicamento identificador del medicamento
+     * @return objeto Medicamento encontrado
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public Medicamento obtenerPorId(int idMedicamento) throws SQLException {
         String sql = "{call SP_OBTENER_MEDICAMENTO_POR_ID(?)}";
@@ -53,6 +81,17 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
         }
     }
 
+    /**
+     * Registra un medicamento recetado en una atencion medica.
+     *
+     * @param idAtencionMedica identificador de la atencion
+     * @param idMedicamento identificador del medicamento
+     * @param dosis dosis prescrita
+     * @param frecuencia frecuencia de administracion
+     * @param duracion duracion del tratamiento
+     * @return true si el registro fue exitoso
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public boolean insertarRecetado(int idAtencionMedica, int idMedicamento, String dosis, String frecuencia, String duracion) throws SQLException {
         String sql = "{call SP_INSERTAR_MEDICAMENTO_RECETADO(?, ?, ?, ?, ?)}";
@@ -68,6 +107,13 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
         }
     }
 
+    /**
+     * Obtiene los medicamentos recetados en una atencion medica.
+     *
+     * @param idAtencionMedica identificador de la atencion
+     * @return lista de medicamentos recetados
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<Medicamento> obtenerRecetadosPorAtencion(int idAtencionMedica) throws SQLException {
         List<Medicamento> lista = new ArrayList<>();

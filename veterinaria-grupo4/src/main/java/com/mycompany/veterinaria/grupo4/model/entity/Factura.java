@@ -3,6 +3,20 @@ package com.mycompany.veterinaria.grupo4.model.entity;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Entidad que representa una factura emitida en el sistema.
+ * <p>
+ * Contiene la informacion financiera de una transaccion, incluyendo
+ * subtotal, IVA, total, metodo de pago y listas detalladas de servicios,
+ * mascotas, medicamentos, instrumentos y vacunas facturados.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class Factura {
     private int idFactura;
     private int idCliente;
@@ -19,6 +33,10 @@ public class Factura {
     private List<Object[]> medicamentos;
     private List<Object[]> instrumentos;
     private List<Object[]> vacunas;
+    
+    /**
+     * Constructor por defecto.
+     */
     public Factura() {}
 
     public int getIdFactura() { return idFactura; }

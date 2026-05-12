@@ -1,5 +1,19 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
 
+/**
+ * Entidad que representa el detalle de una factura.
+ * <p>
+ * Contiene la informacion de cada linea de detalle de una factura,
+ * incluyendo el servicio prestado, cantidad, precios, descuentos y totales.
+ * Permite desglosar los costos asociados a una atencion medica o servicio.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class DetalleFactura {
     private int idDetalle;
     private int idFactura;
@@ -11,6 +25,9 @@ public class DetalleFactura {
     private Integer idAtencionMedica;
     private Integer idMascota;
 
+    /**
+     * Constructor por defecto.
+     */
     public DetalleFactura() {}
 
     // Getters y Setters

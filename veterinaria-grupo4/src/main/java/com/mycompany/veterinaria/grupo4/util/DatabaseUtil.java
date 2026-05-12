@@ -1,16 +1,32 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.util;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Clase utilitaria para la ejecucion de procedimientos almacenados.
+ * <p>
+ * Proporciona metodos estaticos para ejecutar procedimientos almacenados
+ * que retornan datos (SELECT) o que realizan operaciones de manipulacion
+ * (INSERT, UPDATE, DELETE) en la base de datos SQL Server.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class DatabaseUtil {
 
-    // Ejecuta un SP que retorna datos (SELECT)
+    /**
+     * Ejecuta un procedimiento almacenado que retorna datos (SELECT).
+     *
+     * @param nombreSP nombre del procedimiento almacenado
+     * @param parametros lista de parametros del SP
+     * @return ResultSet con los datos obtenidos
+     * @throws SQLException si ocurre un error en la ejecucion
+     */
     public static ResultSet ejecutarSPQuery(String nombreSP, List<Parametro> parametros) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -19,7 +35,6 @@ public class DatabaseUtil {
             conn = DatabaseConnection.getConnection();
             String sql = "{call " + nombreSP + "(";
             
-            // Construir la llamada al SP con parámetros
             if (parametros != null && !parametros.isEmpty()) {
                 sql += "?,".repeat(parametros.size());
                 sql = sql.substring(0, sql.length() - 1);
@@ -28,7 +43,6 @@ public class DatabaseUtil {
             
             stmt = conn.prepareStatement(sql);
             
-            // Asignar parámetros
             if (parametros != null) {
                 for (int i = 0; i < parametros.size(); i++) {
                     Parametro p = parametros.get(i);
@@ -41,11 +55,15 @@ public class DatabaseUtil {
         } catch (SQLException e) {
             throw e;
         }
-        // Nota: No cierras aquí porque necesitas el ResultSet abierto.
-        // El llamado debe cerrar ResultSet, Statement y Connection.
     }
     
-    // Ejecuta un SP que NO retorna datos (INSERT, UPDATE, DELETE)
+    /**
+     * Ejecuta un procedimiento almacenado que NO retorna datos (INSERT, UPDATE, DELETE).
+     *
+     * @param nombreSP nombre del procedimiento almacenado
+     * @param parametros lista de parametros del SP
+     * @return true si la ejecucion fue exitosa
+     */
     public static boolean ejecutarSPNonQuery(String nombreSP, List<Parametro> parametros) {
         Connection conn = null;
         CallableStatement stmt = null;
@@ -60,10 +78,9 @@ public class DatabaseUtil {
                 }
             }
             
-            // Registrar parámetro de retorno si el SP devuelve algo
             stmt.registerOutParameter("ReturnVal", Types.INTEGER);
             
-            boolean result = stmt.execute();
+            stmt.execute();
             int returnValue = stmt.getInt("ReturnVal");
             
             return returnValue == 1;
@@ -81,7 +98,14 @@ public class DatabaseUtil {
         }
     }
     
-    // Ejecuta un SP que retorna un ResultSet (con manejo de cierre)
+    /**
+     * Ejecuta un procedimiento almacenado que retorna un ResultSet con manejo de cierre.
+     *
+     * @param nombreSP nombre del procedimiento almacenado
+     * @param parametros lista de parametros del SP
+     * @return ResultSet con los datos obtenidos
+     * @throws SQLException si ocurre un error en la ejecucion
+     */
     public static ResultSet ejecutarSPQueryConCierre(String nombreSP, List<Parametro> parametros) throws SQLException {
         Connection conn = DatabaseConnection.getConnection();
         CallableStatement stmt = conn.prepareCall("{call " + nombreSP + "}");
@@ -93,6 +117,5 @@ public class DatabaseUtil {
         }
         
         return stmt.executeQuery();
-        // El llamado debe cerrar ResultSet, Statement y Connection
     }
 }

@@ -21,7 +21,6 @@
     </properties>
 
     <dependencies>
-
         <!-- API REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -44,16 +43,28 @@
         
         <!-- FLATLAF -->
         <dependency>
-                <groupId>com.formdev</groupId>
-                <artifactId>flatlaf</artifactId>
-                <version>3.5.4</version> 
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.5.4</version> 
+        </dependency>
+        
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-extras</artifactId>
+            <version>3.5.4</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-fonts-roboto</artifactId>
+            <version>2.137</version>
         </dependency>
         
         <!-- SWING RAVEN -->
         <dependency>
             <groupId>io.github.dj-raven</groupId>
             <artifactId>swing-pack</artifactId>
-            <version>1.0.1</version> 
+            <version>1.0.1</version>
         </dependency>
         
         <dependency>
@@ -63,42 +74,60 @@
         </dependency>
 
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf-extras</artifactId>
-            <version>3.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf-fonts-roboto</artifactId>
-            <version>2.137</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.weisj</groupId>
-            <artifactId>jsvg</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-        
-        <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
             <version>RELEASE260</version>
         </dependency>
     </dependencies>
     
-<build>
-    <plugins>
-
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-                <mainClass>com.mycompany.veterinaria.grupo4.Main</mainClass>
-            </configuration>
-        </plugin>
-
-    </plugins>
-</build>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.mycompany.veterinaria.grupo4.Main</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <additionalOptions>
+                        <additionalOption>-Xdoclint:none</additionalOption>
+                        <additionalOption>-quiet</additionalOption>
+                    </additionalOptions>
+                    <failOnError>false</failOnError>
+                    <failOnWarnings>false</failOnWarnings>
+                    <doclint>none</doclint>
+                    <quiet>true</quiet>
+                    <show>private</show>
+                    <nohelp>true</nohelp>
+                    <notree>false</notree>
+                    <nodeprecatedlist>false</nodeprecatedlist>
+                    <noindex>false</noindex>
+                    <nonavbar>false</nonavbar>
+                    <notimestamp>false</notimestamp>
+                    <serialwarn>false</serialwarn>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <additionalOptions>
+                                <additionalOption>-Xdoclint:none</additionalOption>
+                                <additionalOption>-quiet</additionalOption>
+                            </additionalOptions>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

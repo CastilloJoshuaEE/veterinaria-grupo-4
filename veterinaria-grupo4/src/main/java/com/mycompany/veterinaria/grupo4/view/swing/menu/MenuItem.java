@@ -75,15 +75,24 @@ public class MenuItem extends JPanel {
     }
 
     private Icon getIcon() {
-        Color lightColor = FlatUIUtils.getUIColor("Menu.icon.lightColor", Color.orange);
-        Color darkColor = FlatUIUtils.getUIColor("Menu.icon.darkColor", Color.orange);
-        FlatSVGIcon icon = new FlatSVGIcon(getClass().getResource("/icon/svg/" + menuIndex + ".svg"));
-        FlatSVGIcon.ColorFilter f = new FlatSVGIcon.ColorFilter();
-        f.add(Color.decode("#969696"), lightColor, darkColor);
-        icon.setColorFilter(f);
-        return icon;
+        try {
+            Color lightColor = FlatUIUtils.getUIColor("Menu.icon.lightColor", Color.orange);
+            Color darkColor = FlatUIUtils.getUIColor("Menu.icon.darkColor", Color.orange);
+            java.net.URL iconUrl = getClass().getResource("/icon/svg/" + menuIndex + ".svg");
+            if (iconUrl == null) {
+                System.err.println("Icono no encontrado: /icon/svg/" + menuIndex + ".svg");
+                return null;
+            }
+            FlatSVGIcon icon = new FlatSVGIcon(iconUrl);
+            FlatSVGIcon.ColorFilter f = new FlatSVGIcon.ColorFilter();
+            f.add(Color.decode("#969696"), lightColor, darkColor);
+            icon.setColorFilter(f);
+            return icon;
+        } catch (Exception e) {
+            System.err.println("Error cargando icono " + menuIndex + ": " + e.getMessage());
+            return null;
+        }
     }
-
     private void init() {
         setLayout(new MenuLayout());
         putClientProperty(FlatClientProperties.STYLE, ""
