@@ -40,26 +40,8 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
         
-            while (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
-                v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
-                v.setDireccion(rs.getString("DIRECCION"));
-                v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-                v.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-                
-                int idEspecialidad = rs.getInt("ID_ESPECIALIDAD");
-                if (!rs.wasNull() && idEspecialidad > 0) {
-                    EspecialidadVeterinaria esp = new EspecialidadVeterinaria();
-                    esp.setIdEspecialidad(idEspecialidad);
-                    esp.setNombreEspecialidad(rs.getString("NOMBRE_ESPECIALIDAD"));
-                    v.setEspecialidad(esp);
-                }
-                lista.add(v);
+            while (rs.next()) {               
+                lista.add(mapResultSetToVeterinario(rs));
             }
         }
         return lista;
@@ -82,17 +64,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
-                v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
-                v.setDireccion(rs.getString("DIRECCION"));
-                v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-                v.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-                return v;
+                return mapResultSetToVeterinario(rs);
             }
             return null;
         }
@@ -115,17 +87,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
-                v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
-                v.setDireccion(rs.getString("DIRECCION"));
-                v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-                v.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO"));
-                return v;
+                return mapResultSetToVeterinario(rs);
             }
             return null;
         }
@@ -222,16 +184,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
-                v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
-                v.setDireccion(rs.getString("DIRECCION"));
-                v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-                lista.add(v);
+                lista.add(mapResultSetToVeterinario(rs));
             }
         }
         return lista;
@@ -255,16 +208,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setCedula(rs.getString("CEDULA"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                v.setTelefono(rs.getString("TELEFONO"));
-                v.setPagoMensual(rs.getDouble("PAGO_MENSUAL"));
-                v.setDireccion(rs.getString("DIRECCION"));
-                v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-                lista.add(v);
+                lista.add(mapResultSetToVeterinario(rs));
             }
         }
         return lista;
@@ -288,11 +232,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                Veterinario v = new Veterinario();
-                v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                v.setNombre(rs.getString("NOMBRE"));
-                v.setApellido(rs.getString("APELLIDO"));
-                lista.add(v);
+                lista.add(mapResultSetToVeterinario(rs));
             }
         }
         return lista;
@@ -317,25 +257,63 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Veterinario v = new Veterinario();
-                    v.setIdVeterinario(rs.getInt("ID_VETERINARIO"));
-                    v.setCedula(rs.getString("CEDULA"));
-                    v.setNombre(rs.getString("NOMBRE"));
-                    v.setApellido(rs.getString("APELLIDO"));
-                    v.setTelefono(rs.getString("TELEFONO"));
-                    v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO"));
-
-                    int idEspecialidad = rs.getInt("ID_ESPECIALIDAD");
-                    if (!rs.wasNull()) {
-                        EspecialidadVeterinaria especialidad = new EspecialidadVeterinaria();
-                        especialidad.setIdEspecialidad(idEspecialidad);
-                        especialidad.setNombreEspecialidad(rs.getString("ESPECIALIDAD"));
-                        v.setEspecialidad(especialidad); 
-                    }
-                    lista.add(v);
+                    lista.add(mapResultSetToVeterinario(rs));
                 }
             }
         }
         return lista;
     }
+    
+    /**
+    * Metodo auxiliar para transformar una fila del ResultSet en un objeto Veterinario completo.
+    *
+    * @param rs ResultSet con los datos de la consulta
+    * @return objeto Veterinario construido
+    * @throws SQLException si hay error critico en la lectura de datos
+    */
+   private Veterinario mapResultSetToVeterinario(ResultSet rs) throws SQLException {
+       Veterinario v = new Veterinario();
+
+       try { v.setIdVeterinario(rs.getInt("ID_VETERINARIO")); }
+       catch (SQLException e) { v.setIdVeterinario(0); }
+
+       try { v.setCedula(rs.getString("CEDULA")); }
+       catch (SQLException e) { v.setCedula(""); }
+
+       try { v.setNombre(rs.getString("NOMBRE")); }
+       catch (SQLException e) { v.setNombre(""); }
+
+       try { v.setApellido(rs.getString("APELLIDO")); }
+       catch (SQLException e) { v.setApellido(""); }
+
+       try { v.setTelefono(rs.getString("TELEFONO")); }
+       catch (SQLException e) { v.setTelefono(""); }
+
+       try { v.setPagoMensual(rs.getDouble("PAGO_MENSUAL")); }
+       catch (SQLException e) { v.setPagoMensual(0.0); }
+
+       try { v.setDireccion(rs.getString("DIRECCION")); }
+       catch (SQLException e) { v.setDireccion(""); }
+
+       try { v.setCorreoElectronico(rs.getString("CORREO_ELECTRONICO")); }
+       catch (SQLException e) { v.setCorreoElectronico(""); }
+
+       try { v.setFechaRegistro(rs.getTimestamp("FECHA_REGISTRO")); }
+       catch (SQLException e) { v.setFechaRegistro(null); }
+
+       try {
+           int idEspecialidad = rs.getInt("ID_ESPECIALIDAD");
+           if (!rs.wasNull() && idEspecialidad > 0) {
+               EspecialidadVeterinaria esp = new EspecialidadVeterinaria();
+               esp.setIdEspecialidad(idEspecialidad);
+               try { esp.setNombreEspecialidad(rs.getString("NOMBRE_ESPECIALIDAD")); }
+               catch (SQLException e) {
+                   esp.setNombreEspecialidad(""); 
+               }
+               v.setEspecialidad(esp);
+           }
+       } catch (SQLException e) { /* sin especialidad */ }
+
+       return v;
+   }
 }
