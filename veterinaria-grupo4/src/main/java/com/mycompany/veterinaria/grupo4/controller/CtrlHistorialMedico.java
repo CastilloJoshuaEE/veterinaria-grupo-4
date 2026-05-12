@@ -14,6 +14,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 
+/**
+ * Controlador para la gestion del historial medico de mascotas.
+ * <p>
+ * Permite buscar mascotas, visualizar su historial completo de atenciones,
+ * vacunas aplicadas, y gestionar la ficha medica con alergias y
+ * enfermedades cronicas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 public class CtrlHistorialMedico {
     
     private final PnlHistorialMedico view;
@@ -22,27 +36,37 @@ public class CtrlHistorialMedico {
     private final SimpleDateFormat sdfFecha = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private final SimpleDateFormat sdfFechaCorta = new SimpleDateFormat("dd/MM/yyyy");
     
+    /**
+     * Constructor del controlador de historial medico.
+     * 
+     * @param view panel de historial medico
+     */
     public CtrlHistorialMedico(PnlHistorialMedico view) {
         this.view = view;
         initListeners();
     }
     
+    /**
+     * Inicializa los listeners del panel.
+     */
     private void initListeners() {
         view.getBtnBuscarMascota().addActionListener(e -> buscarMascota());
         view.getBtnActualizarFicha().addActionListener(e -> actualizarFichaMedica());
     }
     
+    /**
+     * Busca una mascota por nombre o cedula del dueño.
+     */
     private void buscarMascota() {
         String termino = view.getTxtBuscarMascota().getText().trim();
         if (termino.isEmpty()) {
             JOptionPane.showMessageDialog(view, 
-                "Ingrese un término de búsqueda (nombre de mascota o cédula del dueño)",
-                "Búsqueda", JOptionPane.WARNING_MESSAGE);
+                "Ingrese un termino de busqueda (nombre de mascota o cedula del dueño)",
+                "Busqueda", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
         try {
-            // Buscar mascotas
             List<Mascota> mascotas = restTemplate.exchange(
                 apiBaseUrl + "/mascota/buscar?termino=" + termino,
                 HttpMethod.GET, null,
@@ -56,7 +80,6 @@ public class CtrlHistorialMedico {
                 return;
             }
             
-            // Si hay multiples, mostrar diálogo de selección
             Mascota seleccionada = null;
             if (mascotas.size() == 1) {
                 seleccionada = mascotas.get(0);
@@ -76,6 +99,12 @@ public class CtrlHistorialMedico {
         }
     }
     
+    /**
+     * Muestra un selector de mascotas cuando hay multiples resultados.
+     * 
+     * @param mascotas lista de mascotas encontradas
+     * @return mascota seleccionada o null
+     */
     private Mascota mostrarSelectorMascotas(List<Mascota> mascotas) {
         String[] opciones = mascotas.stream()
             .map(m -> m.getNombre() + " (" + m.getEspecie() + ") - ID: " + m.getIdMascota())
@@ -96,33 +125,30 @@ public class CtrlHistorialMedico {
         return null;
     }
     
+    /**
+     * Carga todos los datos completos de una mascota seleccionada.
+     * 
+     * @param mascota mascota seleccionada
+     */
     private void cargarDatosCompletos(Mascota mascota) {
         view.setIdMascotaSeleccionada(mascota.getIdMascota());
         
-        // 1. Cargar datos de la mascota
         cargarDatosMascota(mascota);
-        
-        // 2. Cargar datos del dueño
         cargarDatosDueno(mascota.getIdCliente());
-        
-        // 3. Cargar foto
         cargarFoto(mascota.getIdMascota());
-        
-        // 4. Cargar historial médico (atenciones)
         cargarHistorialMedico(mascota.getIdMascota());
-        
-        // 5. Cargar vacunas
         cargarVacunas(mascota.getIdMascota());
-        
-        // 6. Verificar si existe ficha médica y habilitar botón
         verificarFichaMedica(mascota.getIdMascota());
-        
-        // 7. Actualizar resumen
         actualizarResumen();
         
         view.getBtnActualizarFicha().setEnabled(true);
     }
     
+    /**
+     * Carga los datos basicos de la mascota en la interfaz.
+     * 
+     * @param mascota mascota cuyos datos cargar
+     */
     private void cargarDatosMascota(Mascota mascota) {
         view.getLblNombreMascota().setText(mascota.getNombre());
         
@@ -138,6 +164,11 @@ public class CtrlHistorialMedico {
         }
     }
     
+    /**
+     * Carga los datos del dueño de la mascota.
+     * 
+     * @param idCliente identificador del cliente
+     */
     private void cargarDatosDueno(int idCliente) {
         try {
             Cliente cliente = restTemplate.getForObject(
@@ -153,6 +184,11 @@ public class CtrlHistorialMedico {
         }
     }
     
+    /**
+     * Carga la foto de la mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     */
     private void cargarFoto(int idMascota) {
         try {
             byte[] foto = restTemplate.getForObject(
@@ -173,6 +209,11 @@ public class CtrlHistorialMedico {
         }
     }
     
+    /**
+     * Carga el historial de atenciones medicas de la mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     */
     private void cargarHistorialMedico(int idMascota) {
         try {
             List<HistorialMedico> historial = restTemplate.exchange(
@@ -195,11 +236,9 @@ public class CtrlHistorialMedico {
                     
                     serviciosUnicos.add(servicio);
                     
-                    // Colorear fila según servicio (opcional)
                     model.addRow(new Object[]{
                         fecha, servicio, veterinario,
-                        "-", // Instrumentos (puedes expandir)
-                        "-", // Medicamentos (puedes expandir)
+                        "-", "-",
                         h.getDiagnostico() != null ? h.getDiagnostico() : "-",
                         h.getTratamiento() != null ? h.getTratamiento() : "-"
                     });
@@ -207,7 +246,7 @@ public class CtrlHistorialMedico {
             }
             
             view.getLblTotalAtenciones().setText("Total atenciones: " + (historial != null ? historial.size() : 0));
-            view.getLblServiciosUnicos().setText("Servicios únicos: " + serviciosUnicos.size());
+            view.getLblServiciosUnicos().setText("Servicios unicos: " + serviciosUnicos.size());
             
         } catch (Exception e) {
             System.err.println("Error al cargar historial: " + e.getMessage());
@@ -215,6 +254,11 @@ public class CtrlHistorialMedico {
         }
     }
     
+    /**
+     * Carga las vacunas aplicadas a la mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     */
     private void cargarVacunas(int idMascota) {
         try {
             List<VacunaAplicada> vacunas = restTemplate.exchange(
@@ -234,25 +278,12 @@ public class CtrlHistorialMedico {
                     String fechaProxima = v.getFechaProxima() != null ? 
                         sdfFechaCorta.format(v.getFechaProxima()) : "-";
                     
-                    // Verificar si está próxima a vencer (30 días)
-                    boolean proximaAVencer = false;
-                    if (v.getFechaProxima() != null) {
-                        long dias = (v.getFechaProxima().getTime() - System.currentTimeMillis()) / (1000 * 60 * 60 * 24);
-                        proximaAVencer = dias <= 30 && dias >= 0;
-                    }
-                    
                     model.addRow(new Object[]{
                         v.getNombre() != null ? v.getNombre() : "-",
                         v.getDescripcion() != null ? v.getDescripcion() : "-",
                         fechaAplicacion,
                         fechaProxima
                     });
-                    
-                    // Resaltar filas próximas a vencer
-                    if (proximaAVencer) {
-                        int row = model.getRowCount() - 1;
-                        // El resaltado se puede hacer después
-                    }
                 }
             }
             
@@ -262,193 +293,187 @@ public class CtrlHistorialMedico {
         }
     }
     
+    /**
+     * Verifica si existe ficha medica para la mascota.
+     * 
+     * @param idMascota identificador de la mascota
+     */
     private void verificarFichaMedica(int idMascota) {
         try {
             FichaMedicaDTO ficha = restTemplate.getForObject(
                 apiBaseUrl + "/mascota/ficha/" + idMascota, FichaMedicaDTO.class);
-            
-            // Solo habilitamos el botón, no mostramos mensaje de "sin ficha" automático
-            // El usuario sabrá al abrir el formulario si está vacía o no
-            
         } catch (Exception e) {
             System.err.println("Error al verificar ficha: " + e.getMessage());
         }
     }
     
+    /**
+     * Actualiza el resumen del historial.
+     */
     private void actualizarResumen() {
         // El resumen ya se actualiza al cargar el historial
     }
     
+    /**
+     * Abre el formulario para actualizar la ficha medica de la mascota.
+     */
     private void actualizarFichaMedica() {
-    int idMascota = view.getIdMascotaSeleccionada();
-    if (idMascota <= 0) {
-        JOptionPane.showMessageDialog(view,
-            "Primero seleccione una mascota.",
-            "Error", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    
-    try {
-        // Obtener ficha actual
-        FichaMedicaDTO fichaActual = restTemplate.getForObject(
-            apiBaseUrl + "/mascota/ficha/" + idMascota, FichaMedicaDTO.class);
-        
-        String alergias = fichaActual != null ? fichaActual.getAlergias() : "";
-        String enfermedades = fichaActual != null ? fichaActual.getEnfermedadesCronicas() : "";
-        String observaciones = fichaActual != null ? fichaActual.getObservaciones() : "";
-        
-        //  Obtener el Frame padre correctamente
-        Frame parent = null;
-        Component comp = view;
-        while (comp != null && !(comp instanceof Frame)) {
-            comp = comp.getParent();
-        }
-        if (comp instanceof Frame) {
-            parent = (Frame) comp;
+        int idMascota = view.getIdMascotaSeleccionada();
+        if (idMascota <= 0) {
+            JOptionPane.showMessageDialog(view,
+                "Primero seleccione una mascota.",
+                "Error", JOptionPane.WARNING_MESSAGE);
+            return;
         }
         
-        // Si no se encontró Frame, usar JOptionPane en su lugar
-        if (parent == null) {
-            // Mostrar un diálogo simple sin depender de Frame
-            JDialog dialog = new JDialog();
-            dialog.setTitle("Ficha Médica - " + view.getLblNombreMascota().getText());
-            dialog.setModal(true);
-            dialog.setSize(500, 450);
-            dialog.setLocationRelativeTo(view);
+        try {
+            FichaMedicaDTO fichaActual = restTemplate.getForObject(
+                apiBaseUrl + "/mascota/ficha/" + idMascota, FichaMedicaDTO.class);
             
-            JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-            mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+            String alergias = fichaActual != null ? fichaActual.getAlergias() : "";
+            String enfermedades = fichaActual != null ? fichaActual.getEnfermedadesCronicas() : "";
+            String observaciones = fichaActual != null ? fichaActual.getObservaciones() : "";
             
-            JPanel formPanel = new JPanel(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(8, 8, 8, 8);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
+            Frame parent = null;
+            Component comp = view;
+            while (comp != null && !(comp instanceof Frame)) {
+                comp = comp.getParent();
+            }
+            if (comp instanceof Frame) {
+                parent = (Frame) comp;
+            }
             
-            // Alergias
-            gbc.gridx = 0; gbc.gridy = 0;
-            formPanel.add(new JLabel("Alergias:"), gbc);
-            gbc.gridx = 1;
-            JTextArea txtAlergiasDialog = new JTextArea(4, 25);
-            txtAlergiasDialog.setLineWrap(true);
-            txtAlergiasDialog.setText(alergias);
-            formPanel.add(new JScrollPane(txtAlergiasDialog), gbc);
+            if (parent == null) {
+                JDialog dialog = new JDialog();
+                dialog.setTitle("Ficha Medica - " + view.getLblNombreMascota().getText());
+                dialog.setModal(true);
+                dialog.setSize(500, 450);
+                dialog.setLocationRelativeTo(view);
+                
+                JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+                mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+                
+                JPanel formPanel = new JPanel(new GridBagLayout());
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.insets = new Insets(8, 8, 8, 8);
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                
+                gbc.gridx = 0; gbc.gridy = 0;
+                formPanel.add(new JLabel("Alergias:"), gbc);
+                gbc.gridx = 1;
+                JTextArea txtAlergiasDialog = new JTextArea(4, 25);
+                txtAlergiasDialog.setLineWrap(true);
+                txtAlergiasDialog.setText(alergias);
+                formPanel.add(new JScrollPane(txtAlergiasDialog), gbc);
+                
+                gbc.gridx = 0; gbc.gridy = 1;
+                formPanel.add(new JLabel("Enfermedades Cronicas:"), gbc);
+                gbc.gridx = 1;
+                JTextArea txtEnfermedadesDialog = new JTextArea(4, 25);
+                txtEnfermedadesDialog.setLineWrap(true);
+                txtEnfermedadesDialog.setText(enfermedades);
+                formPanel.add(new JScrollPane(txtEnfermedadesDialog), gbc);
+                
+                gbc.gridx = 0; gbc.gridy = 2;
+                formPanel.add(new JLabel("Observaciones:"), gbc);
+                gbc.gridx = 1;
+                JTextArea txtObservacionesDialog = new JTextArea(5, 25);
+                txtObservacionesDialog.setLineWrap(true);
+                txtObservacionesDialog.setText(observaciones);
+                formPanel.add(new JScrollPane(txtObservacionesDialog), gbc);
+                
+                mainPanel.add(formPanel, BorderLayout.CENTER);
+                
+                JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+                JButton btnGuardarDialog = new JButton("Guardar");
+                btnGuardarDialog.setBackground(new Color(76, 175, 80));
+                btnGuardarDialog.setForeground(Color.WHITE);
+                JButton btnCancelarDialog = new JButton("Cancelar");
+                btnCancelarDialog.setBackground(new Color(150, 150, 150));
+                btnCancelarDialog.setForeground(Color.WHITE);
+                
+                buttonPanel.add(btnGuardarDialog);
+                buttonPanel.add(btnCancelarDialog);
+                mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+                
+                dialog.setContentPane(mainPanel);
+                
+                btnGuardarDialog.addActionListener(evt -> {
+                    FichaMedicaDTO dto = new FichaMedicaDTO();
+                    dto.setIdMascota(idMascota);
+                    dto.setAlergias(txtAlergiasDialog.getText());
+                    dto.setEnfermedadesCronicas(txtEnfermedadesDialog.getText());
+                    dto.setObservaciones(txtObservacionesDialog.getText());
+                    
+                    Boolean resultado = restTemplate.postForObject(
+                        apiBaseUrl + "/mascota/ficha/guardar", dto, Boolean.class);
+                    
+                    if (Boolean.TRUE.equals(resultado)) {
+                        JOptionPane.showMessageDialog(dialog,
+                            "Ficha medica actualizada correctamente.",
+                            "Exito", JOptionPane.INFORMATION_MESSAGE);
+                        dialog.dispose();
+                        cargarDatosCompletos(obtenerMascotaPorId(idMascota));
+                    } else {
+                        JOptionPane.showMessageDialog(dialog,
+                            "Error al guardar la ficha medica.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+                
+                btnCancelarDialog.addActionListener(evt -> dialog.dispose());
+                dialog.setVisible(true);
+                return;
+            }
             
-            // Enfermedades Crónicas
-            gbc.gridx = 0; gbc.gridy = 1;
-            formPanel.add(new JLabel("Enfermedades Crónicas:"), gbc);
-            gbc.gridx = 1;
-            JTextArea txtEnfermedadesDialog = new JTextArea(4, 25);
-            txtEnfermedadesDialog.setLineWrap(true);
-            txtEnfermedadesDialog.setText(enfermedades);
-            formPanel.add(new JScrollPane(txtEnfermedadesDialog), gbc);
+            FormFichaMedica dialog = new FormFichaMedica(parent,
+                "Ficha Medica - " + view.getLblNombreMascota().getText(),
+                alergias, enfermedades, observaciones);
             
-            // Observaciones
-            gbc.gridx = 0; gbc.gridy = 2;
-            formPanel.add(new JLabel("Observaciones:"), gbc);
-            gbc.gridx = 1;
-            JTextArea txtObservacionesDialog = new JTextArea(5, 25);
-            txtObservacionesDialog.setLineWrap(true);
-            txtObservacionesDialog.setText(observaciones);
-            formPanel.add(new JScrollPane(txtObservacionesDialog), gbc);
+            dialog.setVisible(true);
             
-            mainPanel.add(formPanel, BorderLayout.CENTER);
-            
-            // Botones
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-            JButton btnGuardarDialog = new JButton("Guardar");
-            btnGuardarDialog.setBackground(new Color(76, 175, 80));
-            btnGuardarDialog.setForeground(Color.WHITE);
-            JButton btnCancelarDialog = new JButton("Cancelar");
-            btnCancelarDialog.setBackground(new Color(150, 150, 150));
-            btnCancelarDialog.setForeground(Color.WHITE);
-            
-            buttonPanel.add(btnGuardarDialog);
-            buttonPanel.add(btnCancelarDialog);
-            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-            
-            dialog.setContentPane(mainPanel);
-            
-            final String finalAlergias = alergias;
-            final String finalEnfermedades = enfermedades;
-            final String finalObservaciones = observaciones;
-            
-            btnGuardarDialog.addActionListener(evt -> {
-                // Guardar cambios
+            if (dialog.isGuardado()) {
                 FichaMedicaDTO dto = new FichaMedicaDTO();
                 dto.setIdMascota(idMascota);
-                dto.setAlergias(txtAlergiasDialog.getText());
-                dto.setEnfermedadesCronicas(txtEnfermedadesDialog.getText());
-                dto.setObservaciones(txtObservacionesDialog.getText());
+                dto.setAlergias(dialog.getAlergias());
+                dto.setEnfermedadesCronicas(dialog.getEnfermedades());
+                dto.setObservaciones(dialog.getObservaciones());
                 
                 Boolean resultado = restTemplate.postForObject(
                     apiBaseUrl + "/mascota/ficha/guardar", dto, Boolean.class);
                 
                 if (Boolean.TRUE.equals(resultado)) {
-                    JOptionPane.showMessageDialog(dialog,
-                        "Ficha médica actualizada correctamente.",
-                        "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                    dialog.dispose();
-                    // Recargar datos
+                    JOptionPane.showMessageDialog(view,
+                        "Ficha medica actualizada correctamente.",
+                        "Exito", JOptionPane.INFORMATION_MESSAGE);
                     cargarDatosCompletos(obtenerMascotaPorId(idMascota));
                 } else {
-                    JOptionPane.showMessageDialog(dialog,
-                        "Error al guardar la ficha médica.",
+                    JOptionPane.showMessageDialog(view,
+                        "Error al guardar la ficha medica.",
                         "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            });
-            
-            btnCancelarDialog.addActionListener(evt -> dialog.dispose());
-            
-            dialog.setVisible(true);
-            return;
-        }
-        
-        // Si se encontró Frame, usar FormFichaMedica normal
-        FormFichaMedica dialog = new FormFichaMedica(parent,
-            "Ficha Médica - " + view.getLblNombreMascota().getText(),
-            alergias, enfermedades, observaciones);
-        
-        dialog.setVisible(true);
-        
-        if (dialog.isGuardado()) {
-            // Guardar cambios
-            FichaMedicaDTO dto = new FichaMedicaDTO();
-            dto.setIdMascota(idMascota);
-            dto.setAlergias(dialog.getAlergias());
-            dto.setEnfermedadesCronicas(dialog.getEnfermedades());
-            dto.setObservaciones(dialog.getObservaciones());
-            
-            Boolean resultado = restTemplate.postForObject(
-                apiBaseUrl + "/mascota/ficha/guardar", dto, Boolean.class);
-            
-            if (Boolean.TRUE.equals(resultado)) {
-                JOptionPane.showMessageDialog(view,
-                    "Ficha médica actualizada correctamente.",
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                // Recargar datos
-                cargarDatosCompletos(obtenerMascotaPorId(idMascota));
-            } else {
-                JOptionPane.showMessageDialog(view,
-                    "Error al guardar la ficha médica.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
             }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view,
+                "Error al actualizar ficha: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-        
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(view,
-            "Error al actualizar ficha: " + e.getMessage(),
-            "Error", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
     }
-}
 
-// Método auxiliar para obtener mascota por ID
-private Mascota obtenerMascotaPorId(int idMascota) {
-    try {
-        return restTemplate.getForObject(
-            apiBaseUrl + "/mascota/" + idMascota, Mascota.class);
-    } catch (Exception e) {
-        return null;
+    /**
+     * Obtiene una mascota por su identificador.
+     * 
+     * @param idMascota identificador de la mascota
+     * @return mascota encontrada o null
+     */
+    private Mascota obtenerMascotaPorId(int idMascota) {
+        try {
+            return restTemplate.getForObject(
+                apiBaseUrl + "/mascota/" + idMascota, Mascota.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
-}
 }

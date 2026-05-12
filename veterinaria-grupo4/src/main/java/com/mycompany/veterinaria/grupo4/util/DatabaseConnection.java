@@ -1,29 +1,42 @@
 package com.mycompany.veterinaria.grupo4.util;
 
-import org.springframework.stereotype.Component;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-
+/**
+ * Clase utilitaria para la gestion de la conexion a la base de datos SQL Server.
+ * <p>
+ * Proporciona metodos estaticos para obtener y cerrar la conexion a la base de datos
+ * DB_VidaAnimal utilizando autenticacion integrada o credenciales especificas.
+ * Implementa un patron Singleton para mantener una unica instancia de conexion.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class DatabaseConnection {
 
-private static final String URL =
-"jdbc:sqlserver://localhost:1433;databaseName=DB_VidaAnimal;encrypt=true;trustServerCertificate=true;";    
-    // No se necesita usuario/contraseña con autenticación integrada
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=DB_VidaAnimal;encrypt=true;trustServerCertificate=true;";
     private static final String USER = "veterinaria_user";
     private static final String PASSWORD = "123456";
-
     private static Connection connection = null;
 
+    /**
+     * Obtiene la conexion activa a la base de datos.
+     * Si no existe conexion o esta cerrada, crea una nueva.
+     *
+     * @return conexion activa a la base de datos
+     * @throws SQLException si ocurre un error al conectar
+     */
     public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             try {
                 Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                // Con autenticación integrada, no se pasan usuario/contraseña
                 connection = DriverManager.getConnection(URL, USER, PASSWORD);
-                //conectado!!
             } catch (ClassNotFoundException e) {
                 throw new SQLException("Driver no encontrado", e);
             }
@@ -31,6 +44,9 @@ private static final String URL =
         return connection;
     }
 
+    /**
+     * Cierra la conexion a la base de datos si esta abierta.
+     */
     public static void closeConnection() {
         if (connection != null) {
             try {

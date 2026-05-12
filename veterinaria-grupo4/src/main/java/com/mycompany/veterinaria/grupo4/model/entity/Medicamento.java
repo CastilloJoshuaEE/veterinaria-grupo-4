@@ -1,5 +1,18 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
-
+/**
+ * Entidad que representa un medicamento en el inventario de la farmacia.
+ * <p>
+ * Contiene la informacion de los medicamentos disponibles, incluyendo nombre,
+ * descripcion, precio, stock, estado, y datos adicionales para prescripciones
+ * como dosis, frecuencia y duracion del tratamiento.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class Medicamento {
     private int idMedicamento;
     private String nombre;

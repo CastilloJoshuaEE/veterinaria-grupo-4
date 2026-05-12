@@ -8,8 +8,31 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementacion del DAO para la gestion de facturas.
+ * <p>
+ * Esta clase implementa la interfaz IFacturaDAO y proporciona la logica
+ * de acceso a datos para la entidad Factura utilizando procedimientos
+ * almacenados de SQL Server. Maneja la obtencion de facturas por cedula,
+ * detalles completos de factura y generacion de facturas a partir de
+ * atenciones medicas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class FacturaDAOImpl implements IFacturaDAO {
 
+    /**
+     * Obtiene las facturas asociadas a un cliente por su cedula.
+     *
+     * @param cedulaCliente numero de cedula del cliente
+     * @return lista de facturas del cliente
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public List<Factura> obtenerPorCedulaCliente(String cedulaCliente) throws SQLException {
         List<Factura> lista = new ArrayList<>();
@@ -36,6 +59,13 @@ public class FacturaDAOImpl implements IFacturaDAO {
         return lista;
     }
 
+    /**
+     * Obtiene el detalle completo de una factura.
+     *
+     * @param idFactura identificador de la factura
+     * @return objeto Factura con el detalle completo
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public Factura obtenerDetalleFactura(int idFactura) throws SQLException {
         Factura factura = null;
@@ -145,6 +175,16 @@ public class FacturaDAOImpl implements IFacturaDAO {
         return factura;
     }
 
+    /**
+     * Genera una factura a partir de una atencion medica.
+     *
+     * @param idAtencionMedica identificador de la atencion medica
+     * @param metodoPago metodo de pago utilizado
+     * @param cuentaOrigen cuenta de origen (para transferencias)
+     * @param cuentaDestino cuenta de destino (para transferencias)
+     * @return ID de la factura generada
+     * @throws SQLException si ocurre un error en la base de datos
+     */
     @Override
     public int generarFacturaAtencion(int idAtencionMedica, String metodoPago, 
                                       String cuentaOrigen, String cuentaDestino) throws SQLException {

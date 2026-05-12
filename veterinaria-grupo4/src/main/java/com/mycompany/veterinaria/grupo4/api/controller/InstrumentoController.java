@@ -10,7 +10,12 @@ import java.util.List;
 /**
  * Controlador para la gestión de insumos e instrumental médico utilizados 
  * durante las intervenciones en Pet Town.
- * @author Juan Andrés Robles Morales (Jefe)
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MÓDULO: ATENCIÓN VETERINARIA (Jefe)
+ * @version 1.0
+ * @since 1.0
  */
 @RestController
 @RequestMapping("/api/instrumento")
@@ -22,7 +27,8 @@ public class InstrumentoController {
 
     /**
      * Lista los insumos disponibles en el stock actual de la clínica.
-     * @return Lista de instrumentos con stock > 0.
+     * 
+     * @return Lista de instrumentos con stock mayor a 0
      */
     @GetMapping("/disponibles")
     public List<InstrumentoMedico> listarDisponibles() {
@@ -31,8 +37,9 @@ public class InstrumentoController {
 
     /**
      * Busca un instrumento específico por su identificador.
-     * @param idInstrumento ID del insumo.
-     * @return Detalle del instrumento.
+     * 
+     * @param idInstrumento ID del insumo
+     * @return Detalle del instrumento
      */
     @GetMapping("/{idInstrumento}")
     public InstrumentoMedico obtenerPorId(@PathVariable int idInstrumento) {
@@ -41,9 +48,10 @@ public class InstrumentoController {
 
     /**
      * Registra el uso de un insumo durante una atención médica específica.
-     * @param idAtencionMedica Referencia de la atención.
-     * @param idInstrumento Referencia del insumo usado.
-     * @return true si el registro fue exitoso.
+     * 
+     * @param idAtencionMedica Referencia de la atención
+     * @param idInstrumento Referencia del insumo usado
+     * @return true si el registro fue exitoso
      */
     @PostMapping("/usar")
     public boolean registrarUso(
@@ -55,8 +63,9 @@ public class InstrumentoController {
 
     /**
      * Lista todos los instrumentos consumidos en una atención para el desglose de costos.
-     * @param idAtencionMedica ID de la consulta realizada.
-     * @return Lista de instrumentos asociados a la atención.
+     * 
+     * @param idAtencionMedica ID de la consulta realizada
+     * @return Lista de instrumentos asociados a la atención
      */
     @GetMapping("/atencion/{idAtencionMedica}")
     public List<InstrumentoMedico> listarUsadosPorAtencion(@PathVariable int idAtencionMedica) {

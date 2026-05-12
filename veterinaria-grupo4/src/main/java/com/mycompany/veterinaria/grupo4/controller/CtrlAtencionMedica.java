@@ -21,30 +21,42 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
-
+/**
+ * Controlador para la gestion de atenciones medicas.
+ * <p>
+ * Maneja el flujo completo de una atencion medica: desde la lista de citas
+ * pendientes hasta el registro de la atencion, prescripcion de medicamentos,
+ * uso de instrumentos y generacion de factura.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class CtrlAtencionMedica {
     private final PnlAtencionMedica pnlAtencion;
     private FormAtencionMedica form;
- 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String api = "http://localhost:8080/api";
- 
     private static final SimpleDateFormat FMT_HORA = new SimpleDateFormat("HH:mm");
  
-    // ─── Listas locales de prescripciones pendientes de guardar ───────────────
- 
-    /** Medicamento a recetar al crear la atención. */
+    /** Medicamento a recetar al crear la atencion. */
     private record MedReceta(int idMedicamento, String nombre,
                               String dosis, String frecuencia, String duracion) {}
  
-    /** Instrumento a registrar como usado al crear la atención. */
+    /** Instrumento a registrar como usado al crear la atencion. */
     private record InstrUsado(int idInstrumento, String nombre) {}
  
     private final List<MedReceta>  medicamentosReceta  = new ArrayList<>();
     private final List<InstrUsado> instrumentosUsados  = new ArrayList<>();
  
-    // ─── Constructor ──────────────────────────────────────────────────────────
- 
+    /**
+     * Constructor del controlador de atencion medica.
+     * 
+     * @param pnlAtencion panel que contiene la tabla de citas pendientes
+     */
     public CtrlAtencionMedica(PnlAtencionMedica pnlAtencion) {
         this.pnlAtencion = pnlAtencion;
         initTabla();
@@ -52,12 +64,13 @@ public class CtrlAtencionMedica {
         cargarTabla();
     }
  
-    // ─── Inicialización ───────────────────────────────────────────────────────
- 
+    /**
+     * Inicializa la estructura de la tabla de atenciones.
+     */
     private void initTabla() {
         pnlAtencion.getTblAtencionMedica().setModel(new DefaultTableModel(
             new Object[][]{},
-            new String[]{"Hora", "Mascota", "Dueño", "Veterinario", "Servicio", "Acción"}
+            new String[]{"Hora", "Mascota", "Dueño", "Veterinario", "Servicio", "Accion"}
         ) {
             @Override public boolean isCellEditable(int row, int col) { return col == 5; }
         });
@@ -72,14 +85,17 @@ public class CtrlAtencionMedica {
         pnlAtencion.getTblAtencionMedica().fixTable(pnlAtencion.getScrollPane());
     }
  
-    /** Configura el botón "Nuevo" como "Actualizar" para refrescar la lista. */
+    /**
+     * Configura el boton "Nuevo" como "Actualizar" para refrescar la lista.
+     */
     private void initPanel() {
         pnlAtencion.getBtnNuevo().setText("Actualizar");
         pnlAtencion.getBtnNuevo().addActionListener(e -> cargarTabla());
     }
  
-    // ─── Tabla ────────────────────────────────────────────────────────────────
- 
+    /**
+     * Carga las citas pendientes desde la API y las muestra en la tabla.
+     */
     private void cargarTabla() {
         try {
             List<Cita> pendientes = restTemplate.exchange(
@@ -94,6 +110,11 @@ public class CtrlAtencionMedica {
         }
     }
  
+    /**
+     * Llena la tabla con los datos de las citas pendientes.
+     * 
+     * @param citas lista de citas a mostrar
+     */
     private void llenarTabla(List<Cita> citas) {
         DefaultTableModel model = (DefaultTableModel)
             pnlAtencion.getTblAtencionMedica().getModel();
@@ -112,19 +133,13 @@ public class CtrlAtencionMedica {
  
             model.addRow(new Object[]{
                 hora, mascota, dueno, vet, servicio,
-                new ModelAction(
-                    () -> atender(c),   // botón principal → Atender
-                    null,
-                    null
-                )
+                new ModelAction(() -> atender(c), null, null)
             });
         }
     }
  
-    // ─── Formulario de atención ───────────────────────────────────────────────
- 
     /**
-     * Abre el formulario de atención médica para la cita seleccionada.
+     * Abre el formulario de atencion medica para la cita seleccionada.
      * Precarga medicamentos e instrumentos disponibles.
      *
      * @param cita cita pendiente a atender
@@ -139,7 +154,11 @@ public class CtrlAtencionMedica {
         form.setVisible(true);
     }
  
-    /** Carga los combos de medicamentos e instrumentos del formulario. */
+    /**
+     * Carga los combos de medicamentos e instrumentos del formulario.
+     * 
+     * @param form instancia del formulario de atencion medica
+     */
     private void cargarCombosForm(FormAtencionMedica form) {
         try {
             List<Medicamento> meds = restTemplate.exchange(
@@ -163,7 +182,7 @@ public class CtrlAtencionMedica {
     }
  
     /**
-     * Conecta los listeners del formulario de atención.
+     * Conecta los listeners del formulario de atencion.
      *
      * @param form instancia activa del formulario
      */
@@ -174,18 +193,15 @@ public class CtrlAtencionMedica {
             String err = validarDatos(form);
             if (err != null) {
                 JOptionPane.showMessageDialog(form, err,
-                    "Validación", JOptionPane.WARNING_MESSAGE);
+                    "Validacion", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             guardar(form);
         });
     }
  
-    // ─── Prescripciones ───────────────────────────────────────────────────────
- 
     /**
      * Agrega el medicamento seleccionado a la lista local de recetas.
-     * Valida que los campos de dosis, frecuencia y duración estén completos.
      *
      * @param form instancia activa del formulario
      */
@@ -201,7 +217,7 @@ public class CtrlAtencionMedica {
         String duracion   = form.getTxtDuracion().getText().trim();
         if (dosis.isEmpty() || frecuencia.isEmpty() || duracion.isEmpty()) {
             JOptionPane.showMessageDialog(form,
-                "Complete dosis, frecuencia y duración.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                "Complete dosis, frecuencia y duracion.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
  
@@ -213,7 +229,6 @@ public class CtrlAtencionMedica {
         int idx = medicamentosReceta.size() - 1;
         form.agregarMedicamentoRecetado(resumen, () -> medicamentosReceta.remove(idx));
  
-        // Limpiar campos de receta
         form.getCmbMedicamentos().setSelectedIndex(-1);
         form.getTxtDosis().setText("");
         form.getTxtFrecuencia().setText("");
@@ -226,8 +241,7 @@ public class CtrlAtencionMedica {
      * @param form instancia activa del formulario
      */
     private void agregarInstrumento(FormAtencionMedica form) {
-        InstrumentoMedico inst =
-            (InstrumentoMedico) form.getCmbInstrumentos().getSelectedItem();
+        InstrumentoMedico inst = (InstrumentoMedico) form.getCmbInstrumentos().getSelectedItem();
         if (inst == null) {
             JOptionPane.showMessageDialog(form,
                 "Seleccione un instrumento.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -242,52 +256,45 @@ public class CtrlAtencionMedica {
         form.getCmbInstrumentos().setSelectedIndex(-1);
     }
  
-    // ─── Validación ───────────────────────────────────────────────────────────
- 
     /**
      * Valida los campos obligatorios antes de guardar.
      *
      * @param form instancia activa del formulario
-     * @return mensaje de error o {@code null} si todo es válido
+     * @return mensaje de error o null si todo es valido
      */
     private String validarDatos(FormAtencionMedica form) {
         if (form.getTxtDiagnostico().getText().trim().isEmpty())
-            return "El diagnóstico es obligatorio.";
+            return "El diagnostico es obligatorio.";
         if (form.getTxtTratamiento().getText().trim().isEmpty())
             return "El tratamiento es obligatorio.";
         return null;
     }
  
-    // ─── Guardar — flujo completo ─────────────────────────────────────────────
- 
     /**
-     * Ejecuta el flujo completo de cierre de atención:
+     * Ejecuta el flujo completo de cierre de atencion:
      * <ol>
-     *   <li>Crea el registro de {@code ATENCION_MEDICA}.</li>
+     *   <li>Crea el registro de ATENCION_MEDICA.</li>
      *   <li>Persiste cada medicamento recetado.</li>
      *   <li>Persiste cada instrumento usado.</li>
-     *   <li>El trigger cambia el estado de la cita a {@code REALIZADA} automáticamente.</li>
-     *   <li>Solicita el método de pago y genera la factura.</li>
+     *   <li>El trigger cambia el estado de la cita a REALIZADA.</li>
+     *   <li>Solicita el metodo de pago y genera la factura.</li>
      * </ol>
      *
      * @param form instancia activa del formulario
      */
     private void guardar(FormAtencionMedica form) {
         try {
-            // 1. Crear registro de atención médica
             AtencionMedica atencion = buildAtencion(form);
             int idAtencion = Optional.ofNullable(
-                restTemplate.postForObject(
-                    api + "/atencion-medica/crear", atencion, Integer.class)
+                restTemplate.postForObject(api + "/atencion-medica/crear", atencion, Integer.class)
             ).orElse(-1);
  
             if (idAtencion <= 0) {
                 JOptionPane.showMessageDialog(form,
-                    "No se pudo crear la atención médica.", "Error", JOptionPane.ERROR_MESSAGE);
+                    "No se pudo crear la atencion medica.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
  
-            // 2. Prescribir medicamentos
             for (MedReceta r : medicamentosReceta) {
                 restTemplate.postForObject(
                     api + "/medicamento/recetar"
@@ -299,7 +306,6 @@ public class CtrlAtencionMedica {
                     null, Boolean.class);
             }
  
-            // 3. Registrar instrumentos
             for (InstrUsado i : instrumentosUsados) {
                 restTemplate.postForObject(
                     api + "/instrumento/usar"
@@ -308,18 +314,15 @@ public class CtrlAtencionMedica {
                     null, Boolean.class);
             }
  
-            // 4. El trigger TR_ACTUALIZAR_ESTADO_CITA cambia la cita a REALIZADA automáticamente.
- 
-            // 5. Seleccionar método de pago y generar factura
             int idFactura = solicitarPagoYFacturar(form, idAtencion);
  
             if (idFactura > 0) {
                 JOptionPane.showMessageDialog(pnlAtencion,
-                    "Atención registrada correctamente.\nFactura Nº " + idFactura + " generada.",
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    "Atencion registrada correctamente.\nFactura Nº " + idFactura + " generada.",
+                    "Exito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(pnlAtencion,
-                    "Atención registrada. No se generó factura.",
+                    "Atencion registrada. No se genero factura.",
                     "Aviso", JOptionPane.WARNING_MESSAGE);
             }
  
@@ -328,25 +331,25 @@ public class CtrlAtencionMedica {
  
         } catch (Exception e) {
             JOptionPane.showMessageDialog(form,
-                "Error al guardar la atención: " + e.getMessage(),
+                "Error al guardar la atencion: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
  
     /**
-     * Muestra un diálogo para seleccionar el método de pago y llama al endpoint
-     * de generación de factura.
+     * Muestra un dialogo para seleccionar el metodo de pago y llama al endpoint
+     * de generacion de factura.
      *
-     * @param form        formulario activo (para posicionamiento del diálogo)
-     * @param idAtencion  ID de la atención recién creada
-     * @return ID de la factura generada, o {@code -1} si se canceló
+     * @param form        formulario activo (para posicionamiento del dialogo)
+     * @param idAtencion  ID de la atencion recien creada
+     * @return ID de la factura generada, o -1 si se cancelo
      */
     private int solicitarPagoYFacturar(FormAtencionMedica form, int idAtencion) {
         String[] metodos = {"EFECTIVO", "TRANSFERENCIA BANCARIA"};
         JComboBox<String> cmbMetodo = new JComboBox<>(metodos);
  
         int opcion = JOptionPane.showConfirmDialog(form,
-            new Object[]{"Método de pago:", cmbMetodo},
+            new Object[]{"Metodo de pago:", cmbMetodo},
             "Generar Factura", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
  
         if (opcion != JOptionPane.OK_OPTION) return -1;
@@ -368,9 +371,7 @@ public class CtrlAtencionMedica {
             if (cuentaOrigen  != null) url += "&cuentaOrigen="  + cuentaOrigen;
             if (cuentaDestino != null) url += "&cuentaDestino=" + cuentaDestino;
  
-            return Optional.ofNullable(
-                restTemplate.postForObject(url, null, Integer.class)
-            ).orElse(-1);
+            return Optional.ofNullable(restTemplate.postForObject(url, null, Integer.class)).orElse(-1);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(form,
                 "Error al generar factura: " + e.getMessage(),
@@ -379,13 +380,11 @@ public class CtrlAtencionMedica {
         }
     }
  
-    // ─── Construcción de entidad ──────────────────────────────────────────────
- 
     /**
-     * Construye el objeto {@link AtencionMedica} desde el formulario y la cita activa.
+     * Construye el objeto AtencionMedica desde el formulario y la cita activa.
      *
      * @param form instancia activa del formulario
-     * @return atención lista para enviar a la API
+     * @return atencion lista para enviar a la API
      */
     private AtencionMedica buildAtencion(FormAtencionMedica form) {
         Cita cita = form.getCita();
@@ -397,8 +396,11 @@ public class CtrlAtencionMedica {
         return a;
     }
  
-    // ─── Utilidades ───────────────────────────────────────────────────────────
- 
+    /**
+     * Devuelve el Frame padre del panel de atenciones.
+     * 
+     * @return Frame contenedor del panel
+     */
     private Frame parentFrame() {
         return (Frame) SwingUtilities.getWindowAncestor(pnlAtencion);
     }

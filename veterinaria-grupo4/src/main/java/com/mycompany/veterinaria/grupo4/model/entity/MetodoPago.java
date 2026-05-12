@@ -1,5 +1,18 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
-
+/**
+ * Entidad que representa un metodo de pago utilizado en facturacion.
+ * <p>
+ * Contiene la informacion del metodo de pago empleado para una transaccion,
+ * incluyendo el tipo de metodo (efectivo, transferencia), el valor total,
+ * y los datos de cuenta origen y destino para transferencias bancarias.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+ * @version 1.0
+ * @since 1.0
+ */
 public class MetodoPago {
     private int idMetodoPago;
     private String metodo;
