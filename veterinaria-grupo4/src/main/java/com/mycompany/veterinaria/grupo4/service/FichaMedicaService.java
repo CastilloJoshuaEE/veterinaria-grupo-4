@@ -49,11 +49,31 @@ public class FichaMedicaService {
      * @return true si la actualizacion fue exitosa
      */
     public boolean actualizar(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) {
+        // Validacion basica
+        if (idMascota <= 0) {
+            throw new IllegalArgumentException("ID de mascota invalido: " + idMascota);
+        }
+        
         try {
-            return fichaMedicaDAO.actualizar(idMascota, alergias, enfermedadesCronicas, observaciones);
+            // Verificar si la mascota existe
+            MascotaService mascotaService = new MascotaService();
+            if (mascotaService.obtenerPorId(idMascota) == null) {
+                throw new IllegalArgumentException("La mascota con ID " + idMascota + " no existe");
+            }
+            
+            boolean resultado = fichaMedicaDAO.actualizar(idMascota, alergias, enfermedadesCronicas, observaciones);
+            
+            // Verificar post-actualizacion si se guardo correctamente
+            FichaMedica ficha = obtenerPorMascota(idMascota);
+            if (ficha == null) {
+                System.err.println("ADVERTENCIA: No se pudo encontrar la ficha medica despues de actualizar");
+                return false;
+            }
+            
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            throw new RuntimeException("Error al actualizar ficha medica para mascota " + idMascota, e);
         }
     }
 }
