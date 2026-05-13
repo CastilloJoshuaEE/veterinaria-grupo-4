@@ -5,6 +5,8 @@ import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.view.servicio.FormServicio;
 import com.mycompany.veterinaria.grupo4.view.servicio.PnlServicio;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +70,11 @@ public class CtrlServicio {
         col.getColumn(3).setPreferredWidth(80);
         col.getColumn(4).setPreferredWidth(80);
         col.getColumn(5).setPreferredWidth(100);
+        
+        int colAccion = 5; // El índice de la columna "Accion"
+        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+        col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
         pnlServicio.getTblServicio().fixTable(pnlServicio.getScrollPane());
     }
 
@@ -122,10 +129,10 @@ public class CtrlServicio {
                 s.getPrecio(),
                 s.getDuracionEstimada(),
                 s.isEstado() ? "Activo" : "Inactivo",
-                new ModelAction(
-                    () -> editar(s),
-                    () -> ver(s),
-                    () -> eliminar(s)
+                new ModelAction()
+                    .add(ModelAction.Tipo.EDITAR,   () -> editar(s))
+                    .add(ModelAction.Tipo.VER,      () -> ver(s))
+                    .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(s)
                 )
             });
         }

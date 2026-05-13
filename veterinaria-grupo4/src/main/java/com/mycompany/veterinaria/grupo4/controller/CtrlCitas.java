@@ -10,6 +10,8 @@ import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.view.cita.FormRegistroCita;
 import com.mycompany.veterinaria.grupo4.view.cita.PnlCita;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -77,13 +79,19 @@ public class CtrlCitas {
         ) {
             @Override public boolean isCellEditable(int r, int c) { return c == 6; }
         });
-        pnlCita.getTblCita().getColumnModel().getColumn(0).setMaxWidth(40);
-        pnlCita.getTblCita().getColumnModel().getColumn(1).setPreferredWidth(130);
-        pnlCita.getTblCita().getColumnModel().getColumn(2).setPreferredWidth(120);
-        pnlCita.getTblCita().getColumnModel().getColumn(3).setPreferredWidth(120);
-        pnlCita.getTblCita().getColumnModel().getColumn(4).setPreferredWidth(120);
-        pnlCita.getTblCita().getColumnModel().getColumn(5).setPreferredWidth(90);
-        pnlCita.getTblCita().getColumnModel().getColumn(6).setPreferredWidth(110);
+        var col = pnlCita.getTblCita().getColumnModel();
+        col.getColumn(0).setMaxWidth(40);
+        col.getColumn(1).setPreferredWidth(130);
+        col.getColumn(2).setPreferredWidth(120);
+        col.getColumn(3).setPreferredWidth(120);
+        col.getColumn(4).setPreferredWidth(120);
+        col.getColumn(5).setPreferredWidth(90);
+        col.getColumn(6).setPreferredWidth(110);
+        
+        int colAccion = 6; // El índice de la columna "Accion"
+        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+        col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
         pnlCita.getTblCita().fixTable(pnlCita.getScrollPane());
     }
  
@@ -157,10 +165,10 @@ public class CtrlCitas {
                 nombreServicio,
                 sdf.format(c.getFechaHora()),
                 estado,
-                new ModelAction(
-                    () -> editar(c),
-                    () -> ver(c),
-                    () -> cancelar(c)
+                new ModelAction()
+                    .add(ModelAction.Tipo.EDITAR,   () -> editar(c))
+                    .add(ModelAction.Tipo.VER,      () -> ver(c))
+                    .add(ModelAction.Tipo.ELIMINAR, () -> cancelar(c)
                 )
             });
         }

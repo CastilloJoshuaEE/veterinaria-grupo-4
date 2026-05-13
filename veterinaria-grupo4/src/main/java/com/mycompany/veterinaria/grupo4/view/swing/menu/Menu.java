@@ -26,7 +26,7 @@ public class Menu extends JPanel {
 
     private final String menuItems[][] = {
         {"~PRINCIPAL~"},
-            {"Dashboard"},               //  Resumen general, gráficos. Citas del dia
+            {"Bienvenida"},               //  Resumen general, gráficos. Citas del dia
             {"Citas Médicas"
                 //,"Agendar"             //  Nueva Cita Medica
                 //,"Ver todas"

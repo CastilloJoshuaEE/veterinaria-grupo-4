@@ -104,7 +104,9 @@ public class AppController {
         bg.setLayout(new BorderLayout());
         bg.add(main, BorderLayout.CENTER);
         bg.revalidate();      
-        bg.repaint(); 
+        bg.repaint();
+        //Temporalemente mistrare el dashborad
+        mostrarDashboard();
     }
     
     /**

@@ -9,6 +9,8 @@ import com.mycompany.veterinaria.grupo4.view.mascota.PnlMascota;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelProfile;
 import com.mycompany.veterinaria.grupo4.view.swing.table.Table;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -90,17 +92,19 @@ public class CtrlMascotas {
         ) {
             @Override public boolean isCellEditable(int row, int col) { return col == 6; }
         });
-
-        tblMascota.getColumnModel().getColumn(0).setPreferredWidth(140);
-        tblMascota.getColumnModel().getColumn(1).setPreferredWidth(80);
-        tblMascota.getColumnModel().getColumn(2).setPreferredWidth(80);
-        tblMascota.getColumnModel().getColumn(3).setPreferredWidth(60);
-        tblMascota.getColumnModel().getColumn(4).setPreferredWidth(60);
-        tblMascota.getColumnModel().getColumn(5).setPreferredWidth(90);
-        tblMascota.getColumnModel().getColumn(6).setPreferredWidth(220);
-        tblMascota.getColumnModel().getColumn(6).setMinWidth(200);
-        tblMascota.getColumnModel().getColumn(6).setMaxWidth(300);
-
+        var col = pnlMascota.getTblMascota().getColumnModel();
+        col.getColumn(0).setPreferredWidth(140);
+        col.getColumn(1).setPreferredWidth(80);
+        col.getColumn(2).setPreferredWidth(80);
+        col.getColumn(3).setPreferredWidth(60);
+        col.getColumn(4).setPreferredWidth(60);
+        col.getColumn(5).setPreferredWidth(90);
+        col.getColumn(6).setPreferredWidth(220);
+        
+        int colAccion = 6; // El índice de la columna "Accion"
+        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+        col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
         tblMascota.fixTable(pnlMascota.getScrollPane());
     }
  
@@ -214,12 +218,12 @@ public class CtrlMascotas {
                 m.getSexo() == 'M' ? "Macho" : "Hembra",
                 m.getPeso() != null ? m.getPeso() + " kg" : "-",
                 Estado.ACTIVO,
-                new ModelAction(
-                    () -> editar(m),
-                    () -> ver(m),
-                    () -> eliminar(m),
-                    () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre()),
-                    () -> mostrarHistorialMedico(m.getIdMascota(), m.getNombre())
+                new ModelAction()
+                    .add(ModelAction.Tipo.EDITAR,    () -> editar(m))
+                    .add(ModelAction.Tipo.VER,       () -> ver(m))
+                    //.add(ModelAction.Tipo.ATENCION,  () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre()))
+                    .add(ModelAction.Tipo.HISTORIAL, () -> mostrarHistorialMedico(m.getIdMascota(), m.getNombre()))
+                    .add(ModelAction.Tipo.ELIMINAR,  () -> eliminar(m)
                 )
             });
         }
