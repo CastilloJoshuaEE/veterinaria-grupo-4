@@ -9,6 +9,8 @@ import com.mycompany.veterinaria.grupo4.view.atencionMedica.PnlAtencionMedica;
 import com.mycompany.veterinaria.grupo4.view.factura.frmDetalleFactura;
 import com.mycompany.veterinaria.grupo4.view.factura.frmMetodoPago;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -83,6 +85,11 @@ public class CtrlAtencionMedica {
         col.getColumn(3).setPreferredWidth(140);
         col.getColumn(4).setPreferredWidth(120);
         col.getColumn(5).setPreferredWidth(110);
+        
+        int colAccion = 5; // El índice de la columna "Accion"
+        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+        col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
         pnlAtencion.getTblAtencionMedica().fixTable(pnlAtencion.getScrollPane());
     }
  
@@ -134,7 +141,7 @@ public class CtrlAtencionMedica {
  
             model.addRow(new Object[]{
                 hora, mascota, dueno, vet, servicio,
-                new ModelAction(() -> atender(c), null, null)
+                new ModelAction().add(ModelAction.Tipo.ATENCION,()-> atender(c))
             });
         }
     }

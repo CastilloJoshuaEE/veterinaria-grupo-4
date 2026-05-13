@@ -1,37 +1,37 @@
 package com.mycompany.veterinaria.grupo4.view.swing.table;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
+ * Modelo de acciones para una celda de tabla.
+ * Usa builder fluido: se agregan solo las acciones necesarias,
+ * en el orden en que deben aparecer visualmente.
  *
- * @author Juan 
+ * @author Juan
  */
 public class ModelAction {
-    
-    private final Runnable onEdit;
-    private final Runnable onView;
-    private final Runnable onDelete;
-    private final Runnable onMedicalRecord;  // Nueva acción para ficha médica
-    private final Runnable onHistorial;
-    // Constructor para 3 acciones (para las otras tablas)
-    public ModelAction(Runnable onEdit, Runnable onView, Runnable onDelete) {
-        this(onEdit, onView, onDelete, null, null);
+
+    public enum Tipo {
+        EDITAR,
+        VER,
+        ELIMINAR,
+        ATENCION,
+        HISTORIAL,
+        ATENDER
     }
-    // Constructor para 4 acciones (mascotas)
-    public ModelAction(Runnable onEdit, Runnable onView, Runnable onDelete, Runnable onMedicalRecord) {
-        this(onEdit, onView, onDelete, onMedicalRecord, null);
+
+    private final Map<Tipo, Runnable> acciones = new LinkedHashMap<>();
+
+    public ModelAction add(Tipo tipo, Runnable accion) {
+        if (tipo != null && accion != null) {
+            acciones.put(tipo, accion);
+        }
+        return this;
     }
-    // Constructor con 5 acciones (para mascotas)
-    public ModelAction(Runnable onEdit, Runnable onView, Runnable onDelete, Runnable onMedicalRecord, Runnable onHistorial) {
-        this.onEdit   = onEdit;
-        this.onView   = onView;
-        this.onDelete = onDelete;
-        this.onMedicalRecord = onMedicalRecord;
-        this.onHistorial = onHistorial;
-        
+
+    public Map<Tipo, Runnable> getAcciones() {
+        return Collections.unmodifiableMap(acciones);
     }
-    
-    public Runnable getOnEdit()   { return onEdit;   }
-    public Runnable getOnView()   { return onView;   }
-    public Runnable getOnDelete() { return onDelete; }
-    public Runnable getOnMedicalRecord() { return onMedicalRecord; }
-    public Runnable getOnHistorial() { return onHistorial; }
 }

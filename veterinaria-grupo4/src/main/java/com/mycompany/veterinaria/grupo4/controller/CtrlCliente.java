@@ -96,10 +96,10 @@ public class CtrlCliente {
                         c.getTelefono(),
                         c.getCorreoElectronico(),
                         Estado.ACTIVO,
-                        new ModelAction(
-                            () -> editar(c),
-                            () -> ver(c),
-                            () -> eliminar(c)
+                        new ModelAction()
+                            .add(ModelAction.Tipo.EDITAR,   () -> editar(c))
+                            .add(ModelAction.Tipo.VER,      () -> ver(c))
+                            .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(c)
                         )
                     });
                 }
@@ -139,10 +139,10 @@ public class CtrlCliente {
                         c.getTelefono(),
                         c.getCorreoElectronico(),
                         Estado.ACTIVO,
-                        new ModelAction(
-                            () -> editar(c),
-                            () -> ver(c),
-                            () -> eliminar(c)
+                        new ModelAction()
+                            .add(ModelAction.Tipo.EDITAR,   () -> editar(c))
+                            .add(ModelAction.Tipo.VER,      () -> ver(c))
+                            .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(c)
                         )
                     });
                 }
