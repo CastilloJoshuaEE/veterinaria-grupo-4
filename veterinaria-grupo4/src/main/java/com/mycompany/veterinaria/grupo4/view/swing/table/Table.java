@@ -80,7 +80,7 @@ public class Table extends JTable {
 
                 // Celda de ACCIÓN (botones)
                 if (o instanceof ModelAction) {
-                    Action cell = new Action();
+                    CellAction cell = new CellAction();
                     cell.setOpaque(true);
                     cell.setBackground(bg);
                     return cell;

@@ -6,6 +6,8 @@ import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.FormVeterinario;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,6 +81,11 @@ public class CtrlVeterinario {
         col.getColumn(2).setPreferredWidth(130);
         col.getColumn(3).setPreferredWidth(100);
         col.getColumn(4).setPreferredWidth(120);
+        
+        int colAccion = 4; // El índice de la columna "Accion"
+        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+        col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
         pnlVeterinario.getTblVeterinario().fixTable(pnlVeterinario.getScrollPane());
     }
  
@@ -135,10 +142,10 @@ public class CtrlVeterinario {
                 v.getCedula(),
                 especialidad,
                 v.getTelefono(),
-                new ModelAction(
-                    () -> editar(v),
-                    () -> ver(v),
-                    () -> eliminar(v)
+                new ModelAction()
+                    .add(ModelAction.Tipo.EDITAR,   () -> editar(v))
+                    .add(ModelAction.Tipo.VER,      () -> ver(v))
+                    .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(v)
                 )
             });
         }
