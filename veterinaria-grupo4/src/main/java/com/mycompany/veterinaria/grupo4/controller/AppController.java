@@ -327,7 +327,7 @@ private void mostrarAcercaDe() {
         --------------------------------
         • Java 17
         • Spring Boot 3.1.5
-        • SQL Server
+        • SQL Server/MYSQL
         • FlatLaf (UI)
         
         © 2026 - Todos los derechos reservados

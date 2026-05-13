@@ -1,7 +1,7 @@
 -- ============================================================
 --  MÓDULO 3 | SPs de Mascotas y Citas
 -- ============================================================
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 -- ════════════════════════════════════════════════════════════
@@ -62,7 +62,7 @@ BEGIN
     END CATCH
 END;
 GO
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 CREATE OR ALTER PROCEDURE SP_ELIMINAR_MASCOTA

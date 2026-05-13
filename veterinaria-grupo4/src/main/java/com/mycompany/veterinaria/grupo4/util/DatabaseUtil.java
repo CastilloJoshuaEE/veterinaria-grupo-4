@@ -8,16 +8,49 @@ import java.util.List;
  * <p>
  * Proporciona metodos estaticos para ejecutar procedimientos almacenados
  * que retornan datos (SELECT) o que realizan operaciones de manipulacion
- * (INSERT, UPDATE, DELETE) en la base de datos SQL Server.
+ * (INSERT, UPDATE, DELETE) en la base de datos.
+ * Soporta tanto SQL Server como MySQL.
  * </p>
  * 
  * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
  * 
  * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 1.0
+ * @version 2.0 (Soporta SQL Server y MySQL)
  * @since 1.0
  */
 public class DatabaseUtil {
+
+    /**
+     * Obtiene la sintaxis correcta para llamar a un procedimiento almacenado.
+     * SQL Server usa {call nombreSP(?)} mientras que MySQL usa CALL nombreSP(?)
+     *
+     * @param nombreSP nombre del procedimiento almacenado
+     * @param numParams numero de parametros
+     * @return sintaxis correcta para llamar al SP
+     */
+    private static String getCallSyntax(String nombreSP, int numParams) {
+        if (DatabaseConnection.isMySQL()) {
+            StringBuilder sb = new StringBuilder("CALL ");
+            sb.append(nombreSP);
+            sb.append("(");
+            if (numParams > 0) {
+                sb.append("?,".repeat(Math.max(0, numParams)));
+                sb.setLength(sb.length() - 1);
+            }
+            sb.append(")");
+            return sb.toString();
+        } else {
+            StringBuilder sb = new StringBuilder("{call ");
+            sb.append(nombreSP);
+            sb.append("(");
+            if (numParams > 0) {
+                sb.append("?,".repeat(Math.max(0, numParams)));
+                sb.setLength(sb.length() - 1);
+            }
+            sb.append(")}");
+            return sb.toString();
+        }
+    }
 
     /**
      * Ejecuta un procedimiento almacenado que retorna datos (SELECT).
@@ -33,13 +66,8 @@ public class DatabaseUtil {
         
         try {
             conn = DatabaseConnection.getConnection();
-            String sql = "{call " + nombreSP + "(";
-            
-            if (parametros != null && !parametros.isEmpty()) {
-                sql += "?,".repeat(parametros.size());
-                sql = sql.substring(0, sql.length() - 1);
-            }
-            sql += ")}";
+            int numParams = (parametros != null) ? parametros.size() : 0;
+            String sql = getCallSyntax(nombreSP, numParams);
             
             stmt = conn.prepareStatement(sql);
             
@@ -70,7 +98,8 @@ public class DatabaseUtil {
         
         try {
             conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareCall("{call " + nombreSP + "}");
+            String sql = getCallSyntax(nombreSP, (parametros != null) ? parametros.size() : 0);
+            stmt = conn.prepareCall(sql);
             
             if (parametros != null) {
                 for (Parametro p : parametros) {
@@ -78,12 +107,16 @@ public class DatabaseUtil {
                 }
             }
             
-            stmt.registerOutParameter("ReturnVal", Types.INTEGER);
-            
-            stmt.execute();
-            int returnValue = stmt.getInt("ReturnVal");
-            
-            return returnValue == 1;
+            // Para SQL Server, manejar ReturnVal
+            if (DatabaseConnection.isSQLServer()) {
+                stmt.registerOutParameter("ReturnVal", Types.INTEGER);
+                stmt.execute();
+                int returnValue = stmt.getInt("ReturnVal");
+                return returnValue == 1;
+            } else {
+                // MySQL no usa ReturnVal, ejecuta directamente
+                return stmt.execute();
+            }
             
         } catch (SQLException e) {
             System.err.println("Error en ejecutarSPNonQuery: " + e.getMessage());
@@ -91,7 +124,6 @@ public class DatabaseUtil {
         } finally {
             try {
                 if (stmt != null) stmt.close();
-                if (conn != null) DatabaseConnection.closeConnection();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -108,7 +140,9 @@ public class DatabaseUtil {
      */
     public static ResultSet ejecutarSPQueryConCierre(String nombreSP, List<Parametro> parametros) throws SQLException {
         Connection conn = DatabaseConnection.getConnection();
-        CallableStatement stmt = conn.prepareCall("{call " + nombreSP + "}");
+        int numParams = (parametros != null) ? parametros.size() : 0;
+        String sql = getCallSyntax(nombreSP, numParams);
+        CallableStatement stmt = conn.prepareCall(sql);
         
         if (parametros != null) {
             for (Parametro p : parametros) {

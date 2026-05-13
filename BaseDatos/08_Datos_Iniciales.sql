@@ -1,7 +1,7 @@
 -- ============================================================
 --  MÓDULO 8 | Datos Iniciales (Seed)
 -- ============================================================
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 -- ─── Usuarios ────────────────────────────────────────────────
@@ -194,7 +194,7 @@ BEGIN
 END
 GO
 CREATE LOGIN veterinaria_user WITH PASSWORD = '123456';
-USE DB_VidaAnimal;
+USE db_veterinaria;
 CREATE USER veterinaria_user FOR LOGIN veterinaria_user;
 ALTER ROLE db_owner ADD MEMBER veterinaria_user; 
 GO
