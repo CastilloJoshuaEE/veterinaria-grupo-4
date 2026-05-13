@@ -2,17 +2,12 @@ package mascota.api.controller;
 
 import com.mycompany.veterinaria.grupo4.api.controller.MascotaController;
 import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
-import com.mycompany.veterinaria.grupo4.model.entity.FichaMedica;
 import com.mycompany.veterinaria.grupo4.service.MascotaService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -25,9 +20,6 @@ import static org.mockito.Mockito.*;
  * <ul>
  *   <li>RF-07: Gestion de ficha medica de mascota</li>
  * </ul>
- * 
- * <p><b>Nota:</b> Las operaciones de ficha médica están expuestas en MascotaController,
- * no en un controlador separado.</p>
  * 
  * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
  * @version 1.0
@@ -44,11 +36,6 @@ public class FichaMedicaControllerTest {
     private MascotaController mascotaController;
 
     private static final int TEST_MASCOTA_ID = 34;
-    private static final int TEST_CLIENTE_ID = 100;
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // CASO DE ÉXITO: GUARDAR FICHA MÉDICA
-    // ═══════════════════════════════════════════════════════════════════════
 
     @Test
     @Order(1)
@@ -80,10 +67,6 @@ public class FichaMedicaControllerTest {
             eq("Requiere dieta especial y ejercicio diario")
         );
     }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // CASO DE ERROR: GUARDAR FICHA MÉDICA CON MASCOTA INEXISTENTE
-    // ═══════════════════════════════════════════════════════════════════════
 
     @Test
     @Order(2)
@@ -117,10 +100,6 @@ public class FichaMedicaControllerTest {
         );
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // CASO DE ÉXITO: OBTENER FICHA MÉDICA
-    // ═══════════════════════════════════════════════════════════════════════
-
     @Test
     @Order(3)
     @DisplayName("CP-CTRL-FM-03: Obtener ficha médica de mascota existente - ÉXITO")
@@ -146,13 +125,9 @@ public class FichaMedicaControllerTest {
         verify(mascotaService, times(1)).obtenerFichaMedica(TEST_MASCOTA_ID);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // CASO DE ERROR: OBTENER FICHA MÉDICA DE MASCOTA INEXISTENTE
-    // ═══════════════════════════════════════════════════════════════════════
-
     @Test
     @Order(4)
-    @DisplayName("CP-CTRL-FM-04: Obtener ficha médica de mascota inexistente - ERROR (null)")
+    @DisplayName("CP-CTRL-FM-04: Obtener ficha médica de mascota inexistente - ERROR")
     void testObtenerFichaMedicaMascotaInexistente() {
         // Arrange
         int idMascotaInexistente = -1;
@@ -165,5 +140,4 @@ public class FichaMedicaControllerTest {
         assertNull(resultado);
         verify(mascotaService, times(1)).obtenerFichaMedica(idMascotaInexistente);
     }
-
 }

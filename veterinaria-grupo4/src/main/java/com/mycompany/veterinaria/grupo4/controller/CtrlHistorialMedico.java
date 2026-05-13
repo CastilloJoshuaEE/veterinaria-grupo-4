@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * Controlador para la gestion del historial medico de mascotas.
@@ -214,52 +215,44 @@ public class CtrlHistorialMedico {
      * 
      * @param idMascota identificador de la mascota
      */
-    private void cargarHistorialMedico(int idMascota) {
-    try {
-        List<HistorialMedico> historial = restTemplate.exchange(
-            apiBaseUrl + "/historial/mascota/" + idMascota,
-            HttpMethod.GET, null,
-            new ParameterizedTypeReference<List<HistorialMedico>>() {}
-        ).getBody();
-        
-        javax.swing.table.DefaultTableModel model = 
-            (javax.swing.table.DefaultTableModel) view.getTblAtenciones().getModel();
-        model.setRowCount(0);
-        
-        Set<String> serviciosUnicos = new HashSet<>();
-        
-        if (historial != null) {
-            for (HistorialMedico h : historial) {
-                String fecha = h.getFecha() != null ? sdfFecha.format(h.getFecha()) : "-";
-                String servicio = h.getNombreServicio() != null ? h.getNombreServicio() : "-";
-                String veterinario = h.getNombreVeterinario() != null ? h.getNombreVeterinario() : "-";
-                
-                // Obtener instrumentos y medicamentos
-                String instrumentos = h.getInstrumentosUsados() != null && !h.getInstrumentosUsados().isEmpty() 
-                    ? h.getInstrumentosUsados() : "-";
-                String medicamentos = h.getMedicamentosRecetados() != null && !h.getMedicamentosRecetados().isEmpty() 
-                    ? h.getMedicamentosRecetados() : "-";
-                
-                serviciosUnicos.add(servicio);
-                
-                model.addRow(new Object[]{
-                    fecha, servicio, veterinario,
-                    instrumentos,  // ← Instrumentos
-                    medicamentos,  // ← Medicamentos
-                    h.getDiagnostico() != null ? h.getDiagnostico() : "-",
-                    h.getTratamiento() != null ? h.getTratamiento() : "-"
-                });
-            }
-        }
-        
-        view.getLblTotalAtenciones().setText("Total atenciones: " + (historial != null ? historial.size() : 0));
-        view.getLblServiciosUnicos().setText("Servicios únicos: " + serviciosUnicos.size());
-        
-    } catch (Exception e) {
-        System.err.println("Error al cargar historial: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
+    private void cargarHistorialMedico(int idMascota) {                    // Nodo 1
+        try {                                                              // Nodo 2
+            List<HistorialMedico> historial = restTemplate.exchange(       // Nodo 3
+                apiBaseUrl + "/historial/mascota/" + idMascota,
+                HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<HistorialMedico>>() {}
+            ).getBody();
+
+            DefaultTableModel model = (DefaultTableModel) view.getTblAtenciones().getModel(); // Nodo 4
+            model.setRowCount(0);                                          // Nodo 5
+            Set<String> serviciosUnicos = new HashSet<>();                 // Nodo 6
+
+            if (historial != null) {                                       // Nodo 7 (Predicado - NP1)
+                for (HistorialMedico h : historial) {                      // Nodo 8 (Predicado - NP2 - ciclo)
+                    String fecha = h.getFecha() != null ? sdfFecha.format(h.getFecha()) : "-"; // Nodo 9
+                    String servicio = h.getNombreServicio() != null ? h.getNombreServicio() : "-"; // Nodo 10
+                    String veterinario = h.getNombreVeterinario() != null ? h.getNombreVeterinario() : "-"; // Nodo 11
+                    String instrumentos = h.getInstrumentosUsados() != null && !h.getInstrumentosUsados().isEmpty() // Nodo 12
+                        ? h.getInstrumentosUsados() : "-";
+                    String medicamentos = h.getMedicamentosRecetados() != null && !h.getMedicamentosRecetados().isEmpty() // Nodo 13
+                        ? h.getMedicamentosRecetados() : "-";
+
+                    serviciosUnicos.add(servicio);                         // Nodo 14
+                    model.addRow(new Object[]{fecha, servicio, veterinario, instrumentos, medicamentos, // Nodo 15
+                        h.getDiagnostico() != null ? h.getDiagnostico() : "-",
+                        h.getTratamiento() != null ? h.getTratamiento() : "-"});
+                }                                                          // Nodo 16 (vuelve a Nodo8)
+            }                                                              // Nodo 17
+
+            view.getLblTotalAtenciones().setText("Total atenciones: " + (historial != null ? historial.size() : 0)); // Nodo 18
+            view.getLblServiciosUnicos().setText("Servicios únicos: " + serviciosUnicos.size()); // Nodo 19
+
+        } catch (Exception e) {                                            // Nodo 20 (Predicado implícito - NP3)
+            System.err.println("Error al cargar historial: " + e.getMessage()); // Nodo 21
+            e.printStackTrace();                                           // Nodo 22
+        }                                                                  // Nodo 23
+
+    }                                                                      // Nodo 24 (Fin)
     
     /**
      * Carga las vacunas aplicadas a la mascota.
