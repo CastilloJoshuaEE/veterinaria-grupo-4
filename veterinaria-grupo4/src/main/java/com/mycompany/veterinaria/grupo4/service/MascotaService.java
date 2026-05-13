@@ -96,11 +96,31 @@ public class MascotaService {
      * @return ID de la mascota creada o -1 si hay error
      */
     public int crear(Mascota mascota) {
+
+        if (mascota == null) {
+            throw new IllegalArgumentException("La mascota no puede ser nula");
+        }
+
+        if (mascota.getIdCliente() <= 0) {
+            throw new IllegalArgumentException("Cliente inválido");
+        }
+
+        if (mascota.getNombre() == null || mascota.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre es obligatorio");
+        }
+
+        if (mascota.getEspecie() == null || mascota.getEspecie().trim().isEmpty()) {
+            throw new IllegalArgumentException("La especie es obligatoria");
+        }
+
+        if (mascota.getSexo() != 'M' && mascota.getSexo() != 'F') {
+            throw new IllegalArgumentException("Sexo inválido");
+        }
+
         try {
             return mascotaDAO.insertar(mascota);
         } catch (SQLException e) {
-            e.printStackTrace();
-            return -1;
+            throw new RuntimeException("Error al registrar mascota", e);
         }
     }
 
@@ -112,8 +132,30 @@ public class MascotaService {
      */
     public boolean actualizar(Mascota mascota) {
         try {
-            return mascotaDAO.actualizar(mascota);
+
+            if (mascota == null) {
+                System.err.println("ERROR: Mascota es null");
+                return false;
+            }
+
+            if (mascota.getIdMascota() <= 0) {
+                System.err.println("ERROR: ID de mascota inválido");
+                return false;
+            }
+
+            boolean resultado = mascotaDAO.actualizar(mascota);
+
+            if (!resultado) {
+                System.err.println("ERROR: No se actualizó la mascota. Posibles causas:");
+                System.err.println("- ID inexistente en BD");
+                System.err.println("- No hubo filas afectadas en UPDATE");
+                System.err.println("- Datos no coinciden con registros existentes");
+            }
+
+            return resultado;
+
         } catch (SQLException e) {
+            System.err.println("ERROR SQL al actualizar mascota ID=" + mascota.getIdMascota());
             e.printStackTrace();
             return false;
         }

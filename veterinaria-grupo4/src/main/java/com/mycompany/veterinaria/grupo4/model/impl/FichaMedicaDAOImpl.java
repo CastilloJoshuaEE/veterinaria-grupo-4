@@ -72,7 +72,31 @@ public class FichaMedicaDAOImpl implements IFichaMedicaDAO {
             stmt.setString(2, alergias);
             stmt.setString(3, enfermedadesCronicas);
             stmt.setString(4, observaciones);
-            return stmt.execute();
+            
+            // El SP retorna 1 si se ejecuta correctamente (INSERT o UPDATE)
+            // Usamos execute() que retorna true si hay ResultSet, false si no
+            boolean hasResultSet = stmt.execute();
+            
+            // Si hay ResultSet, significa que el SP retornó algo
+            if (hasResultSet) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    return rs.getInt(1) == 1;
+                }
+                return true; // Si hay resultset pero no específico, asumimos éxito
+            }
+            
+            // Si no hay ResultSet, verificamos si hubo error con getUpdateCount
+            int updateCount = stmt.getUpdateCount();
+            if (updateCount == -1) {
+                // No hubo operación de actualización
+                return true; // SP ejecutado correctamente (sin resultados)
+            }
+            return updateCount >= 0;
+        } catch (SQLException e) {
+            System.err.println("Error en actualizar ficha medica para mascota " + idMascota);
+            System.err.println("Mensaje: " + e.getMessage());
+            throw e;
         }
     }
 }
