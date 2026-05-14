@@ -4,14 +4,15 @@ import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import com.mycompany.veterinaria.grupo4.service.MascotaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Controlador REST para la gestión de mascotas del sistema veterinario.
@@ -174,14 +175,29 @@ public class MascotaController {
      * Elimina una mascota del sistema.
      * 
      * @param idMascota identificador de la mascota a eliminar
-     * @throws ResponseStatusException si la mascota tiene citas médicas realizadas
+     * @return ResponseEntity con el mensaje de resultado
      */
     @DeleteMapping("/eliminar/{idMascota}")
-    public void eliminar(@PathVariable int idMascota) {
-        boolean resultado = mascotaService.eliminar(idMascota);
-        if (!resultado) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, 
-                "La mascota ya posee una cita médica realizada. No se puede eliminar.");
+    public ResponseEntity<?> eliminar(@PathVariable int idMascota) {
+        try {
+            boolean resultado = mascotaService.eliminar(idMascota);
+            if (resultado) {
+                return ResponseEntity.ok().body("Mascota eliminada correctamente.");
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("No se pudo eliminar la mascota. Verifique que no tenga citas o atenciones asociadas.");
+            }
+        } catch (RuntimeException e) {
+            String mensaje = e.getMessage();
+            if (mensaje != null && mensaje.contains("cita médica realizada")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("La mascota ya posee una cita médica realizada. No se puede eliminar.");
+            } else if (mensaje != null && mensaje.contains("citas pendientes")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("La mascota tiene citas pendientes. No se puede eliminar.");
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al eliminar la mascota: " + mensaje);
         }
     }
 

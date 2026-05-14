@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -39,7 +40,17 @@ public class CtrlVeterinario {
     private FormVeterinario form;
     private final RestTemplate restTemplate = new RestTemplate();
     private final String api = "http://localhost:8080/api";
- 
+    
+    // Constantes para las columnas
+    private static final int COL_NOMBRE = 0;
+    private static final int COL_CEDULA = 1;
+    private static final int COL_ESPECIALIDAD = 2;
+    private static final int COL_TELEFONO = 3;
+    private static final int COL_ACCION = 4;
+    
+    // Nombres de las columnas
+    private static final String[] COLUMN_NAMES = {"Veterinario", "Cedula", "Especialidad", "Telefono", "Accion"};
+    
     /**
      * Mapa de servicios actualmente asignados al veterinario en el formulario.
      * Clave: idServicioVeterinario (FK de la tabla intermedia).
@@ -68,41 +79,65 @@ public class CtrlVeterinario {
      * Inicializa la estructura de la tabla de veterinarios.
      */
     private void initTabla() {
-        pnlVeterinario.getTblVeterinario().setModel(new DefaultTableModel(
-            new Object[][]{},
-            new String[]{"Veterinario", "Cedula", "Especialidad", "Telefono", "Accion"}
-        ) {
-            @Override public boolean isCellEditable(int row, int col) { return col == 4; }
+        var tblVeterinario = pnlVeterinario.getTblVeterinario();
+        if (tblVeterinario == null) {
+            System.err.println("ERROR: La tabla de veterinarios es null");
+            return;
+        }
+        
+        tblVeterinario.setModel(new DefaultTableModel(new Object[][]{}, COLUMN_NAMES) {
+            @Override 
+            public boolean isCellEditable(int row, int col) { 
+                return col == COL_ACCION; 
+            }
+            
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == COL_ACCION) {
+                    return ModelAction.class;
+                }
+                return String.class;
+            }
         });
  
-        var col = pnlVeterinario.getTblVeterinario().getColumnModel();
-        col.getColumn(0).setPreferredWidth(160);
-        col.getColumn(1).setPreferredWidth(90);
-        col.getColumn(2).setPreferredWidth(130);
-        col.getColumn(3).setPreferredWidth(100);
-        col.getColumn(4).setPreferredWidth(120);
+        var col = tblVeterinario.getColumnModel();
+        if (col.getColumnCount() > COL_NOMBRE) col.getColumn(COL_NOMBRE).setPreferredWidth(160);
+        if (col.getColumnCount() > COL_CEDULA) col.getColumn(COL_CEDULA).setPreferredWidth(90);
+        if (col.getColumnCount() > COL_ESPECIALIDAD) col.getColumn(COL_ESPECIALIDAD).setPreferredWidth(130);
+        if (col.getColumnCount() > COL_TELEFONO) col.getColumn(COL_TELEFONO).setPreferredWidth(100);
+        if (col.getColumnCount() > COL_ACCION) {
+            col.getColumn(COL_ACCION).setPreferredWidth(120);
+            col.getColumn(COL_ACCION).setCellRenderer(new TableCellRender());
+            col.getColumn(COL_ACCION).setCellEditor(new TableCellAction());
+        }
         
-        int colAccion = 4; // El índice de la columna "Accion"
-        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
-        col.getColumn(colAccion).setCellEditor(new TableCellAction());
-        
-        pnlVeterinario.getTblVeterinario().fixTable(pnlVeterinario.getScrollPane());
+        if (pnlVeterinario.getScrollPane() != null) {
+            tblVeterinario.fixTable(pnlVeterinario.getScrollPane());
+        }
     }
  
     /**
      * Configura el hint del campo de busqueda.
      */
     private void initBusqueda() {
-        pnlVeterinario.getTxtBusqueda().setHint("Buscar por cedula o nombre...");
+        if (pnlVeterinario.getTxtBusqueda() != null) {
+            pnlVeterinario.getTxtBusqueda().setHint("Buscar por cedula o nombre...");
+        }
     }
  
     /**
      * Registra los listeners del panel principal.
      */
     private void addListeners() {
-        pnlVeterinario.getBtnBuscar().addActionListener(e -> buscar());
-        pnlVeterinario.getTxtBusqueda().addActionListener(e -> buscar());
-        pnlVeterinario.getBtnNuevo().addActionListener(e -> nuevo());
+        if (pnlVeterinario.getBtnBuscar() != null) {
+            pnlVeterinario.getBtnBuscar().addActionListener(e -> buscar());
+        }
+        if (pnlVeterinario.getTxtBusqueda() != null) {
+            pnlVeterinario.getTxtBusqueda().addActionListener(e -> buscar());
+        }
+        if (pnlVeterinario.getBtnNuevo() != null) {
+            pnlVeterinario.getBtnNuevo().addActionListener(e -> nuevo());
+        }
     }
  
     /**
@@ -119,6 +154,7 @@ public class CtrlVeterinario {
             JOptionPane.showMessageDialog(pnlVeterinario,
                 "Error al cargar veterinarios: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
@@ -128,25 +164,28 @@ public class CtrlVeterinario {
      * @param lista lista de veterinarios a mostrar
      */
     private void llenarTabla(List<Veterinario> lista) {
-        DefaultTableModel model = (DefaultTableModel)
-            pnlVeterinario.getTblVeterinario().getModel();
+        var tblVeterinario = pnlVeterinario.getTblVeterinario();
+        if (tblVeterinario == null) return;
+        
+        DefaultTableModel model = (DefaultTableModel) tblVeterinario.getModel();
         model.setRowCount(0);
-        if (lista == null) return;
+        if (lista == null || lista.isEmpty()) return;
  
         for (Veterinario v : lista) {
-            String especialidad = v.getEspecialidad() != null
+            String especialidad = (v.getEspecialidad() != null && v.getEspecialidad().getNombreEspecialidad() != null)
                 ? v.getEspecialidad().getNombreEspecialidad() : "—";
  
+            ModelAction acciones = new ModelAction()
+                .add(ModelAction.Tipo.EDITAR,   () -> editar(v))
+                .add(ModelAction.Tipo.VER,      () -> ver(v))
+                .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(v));
+            
             model.addRow(new Object[]{
                 v.getNombre() + " " + v.getApellido(),
                 v.getCedula(),
                 especialidad,
                 v.getTelefono(),
-                new ModelAction()
-                    .add(ModelAction.Tipo.EDITAR,   () -> editar(v))
-                    .add(ModelAction.Tipo.VER,      () -> ver(v))
-                    .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(v)
-                )
+                acciones
             });
         }
     }
@@ -156,7 +195,10 @@ public class CtrlVeterinario {
      */
     private void buscar() {
         String termino = pnlVeterinario.getTxtBusqueda().getText().trim();
-        if (termino.isEmpty()) { cargarTabla(); return; }
+        if (termino.isEmpty()) { 
+            cargarTabla(); 
+            return; 
+        }
         try {
             List<Veterinario> lista = restTemplate.exchange(
                 api + "/veterinario/buscar?termino=" + termino,
@@ -168,6 +210,7 @@ public class CtrlVeterinario {
             JOptionPane.showMessageDialog(pnlVeterinario,
                 "Error al buscar: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
@@ -176,6 +219,7 @@ public class CtrlVeterinario {
      */
     private void nuevo() {
         serviciosAsignados.clear();
+        pendientesAlta.clear();
         form = new FormVeterinario(parentFrame());
         cargarCombos(form);
         conectarForm(form);
@@ -190,11 +234,13 @@ public class CtrlVeterinario {
      */
     private void editar(Veterinario v) {
         serviciosAsignados.clear();
+        pendientesAlta.clear();
         form = new FormVeterinario(parentFrame(), v);
         cargarCombos(form);
         form.rellenarCampos(v);
-        if (v.getEspecialidad() != null)
+        if (v.getEspecialidad() != null && v.getEspecialidad().getIdEspecialidad() > 0) {
             form.preseleccionarEspecialidad(v.getEspecialidad().getIdEspecialidad());
+        }
         cargarServiciosAsignados(form, v.getIdVeterinario());
         conectarForm(form);
         form.setVisible(true);
@@ -206,12 +252,16 @@ public class CtrlVeterinario {
      * @param form instancia activa del formulario
      */
     private void cargarCombos(FormVeterinario form) {
+        if (form == null) return;
+        
         try {
             List<EspecialidadVeterinaria> especialidades = restTemplate.exchange(
                 api + "/especialidad/listar", HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<EspecialidadVeterinaria>>() {}
             ).getBody();
-            if (especialidades != null) form.cargarEspecialidades(especialidades);
+            if (especialidades != null && !especialidades.isEmpty()) {
+                form.cargarEspecialidades(especialidades);
+            }
         } catch (Exception e) {
             System.err.println("Error al cargar especialidades: " + e.getMessage());
         }
@@ -221,7 +271,9 @@ public class CtrlVeterinario {
                 api + "/servicio/activos", HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<Servicio>>() {}
             ).getBody();
-            if (servicios != null) form.cargarServiciosDisponibles(servicios);
+            if (servicios != null && !servicios.isEmpty()) {
+                form.cargarServiciosDisponibles(servicios);
+            }
         } catch (Exception e) {
             System.err.println("Error al cargar servicios: " + e.getMessage());
         }
@@ -234,6 +286,8 @@ public class CtrlVeterinario {
      * @param idVeterinario ID del veterinario en edicion
      */
     private void cargarServiciosAsignados(FormVeterinario form, int idVeterinario) {
+        if (form == null) return;
+        
         try {
             List<Servicio> asignados = restTemplate.exchange(
                 api + "/servicio/veterinario/" + idVeterinario,
@@ -241,7 +295,7 @@ public class CtrlVeterinario {
                 new ParameterizedTypeReference<List<Servicio>>() {}
             ).getBody();
  
-            if (asignados == null) return;
+            if (asignados == null || asignados.isEmpty()) return;
  
             form.limpiarServiciosAsignados();
             serviciosAsignados.clear();
@@ -249,8 +303,10 @@ public class CtrlVeterinario {
             for (Servicio s : asignados) {
                 int idAsignacion = s.getIdServicio();
                 serviciosAsignados.put(idAsignacion, s.getNombreServicio());
+                int finalIdAsignacion = idAsignacion;
+                int finalIdServicio = s.getIdServicio();
                 form.agregarServicioAsignado(s.getNombreServicio(),
-                    () -> eliminarAsignacion(form, idAsignacion, s.getIdServicio()));
+                    () -> eliminarAsignacion(form, finalIdAsignacion, finalIdServicio));
             }
         } catch (Exception e) {
             System.err.println("Error al cargar servicios asignados: " + e.getMessage());
@@ -263,18 +319,24 @@ public class CtrlVeterinario {
      * @param form instancia activa del formulario
      */
     private void conectarForm(FormVeterinario form) {
-        form.getBtnAgregarServicio().addActionListener(e -> agregarServicio(form));
+        if (form == null) return;
+        
+        if (form.getBtnAgregarServicio() != null) {
+            form.getBtnAgregarServicio().addActionListener(e -> agregarServicio(form));
+        }
  
-        form.getBtnAccion().addActionListener(e -> {
-            String err = validarDatos(form);
-            if (err != null) {
-                JOptionPane.showMessageDialog(form, err,
-                    "Validacion", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            if (form.isModoEdicion()) actualizar(form);
-            else                      registrar(form);
-        });
+        if (form.getBtnAccion() != null) {
+            form.getBtnAccion().addActionListener(e -> {
+                String err = validarDatos(form);
+                if (err != null) {
+                    JOptionPane.showMessageDialog(form, err,
+                        "Validacion", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (form.isModoEdicion()) actualizar(form);
+                else registrar(form);
+            });
+        }
     }
  
     /**
@@ -283,6 +345,8 @@ public class CtrlVeterinario {
      * @param form instancia activa del formulario
      */
     private void agregarServicio(FormVeterinario form) {
+        if (form == null) return;
+        
         Servicio seleccionado = (Servicio) form.getCmbServiciosDisponibles().getSelectedItem();
         if (seleccionado == null) {
             JOptionPane.showMessageDialog(form,
@@ -305,8 +369,9 @@ public class CtrlVeterinario {
             int claveTemp = -(serviciosAsignados.size() + 1);
             serviciosAsignados.put(claveTemp, seleccionado.getNombreServicio());
             pendientesAlta.put(claveTemp, seleccionado.getIdServicio());
+            int finalClaveTemp = claveTemp;
             form.agregarServicioAsignado(seleccionado.getNombreServicio(),
-                () -> eliminarLocal(form, claveTemp));
+                () -> eliminarLocal(form, finalClaveTemp));
         }
  
         form.getCmbServiciosDisponibles().setSelectedIndex(-1);
@@ -317,14 +382,19 @@ public class CtrlVeterinario {
      */
     private void asignarServicioApi(FormVeterinario form, int idServicio,
                                     int idVeterinario, String nombreServicio) {
+        if (form == null) return;
+        
         try {
-            boolean ok = Boolean.TRUE.equals(restTemplate.postForObject(
+            Boolean ok = restTemplate.postForObject(
                 api + "/servicio/asignar-veterinario?idServicio=" + idServicio
                     + "&idVeterinario=" + idVeterinario,
-                null, Boolean.class));
+                null, Boolean.class);
  
-            if (ok) {
+            if (Boolean.TRUE.equals(ok)) {
                 cargarServiciosAsignados(form, idVeterinario);
+                JOptionPane.showMessageDialog(form,
+                    "Servicio '" + nombreServicio + "' asignado correctamente.",
+                    "Exito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(form,
                     "El servicio ya estaba asignado.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -333,6 +403,7 @@ public class CtrlVeterinario {
             JOptionPane.showMessageDialog(form,
                 "Error al asignar servicio: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
@@ -344,14 +415,25 @@ public class CtrlVeterinario {
      * @param idServicio ID del servicio (para refrescar la lista)
      */
     private void eliminarAsignacion(FormVeterinario form, int idAsignacion, int idServicio) {
+        if (form == null) return;
+        
+        int confirm = JOptionPane.showConfirmDialog(form,
+            "¿Desea eliminar este servicio del veterinario?",
+            "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+        
         try {
             restTemplate.delete(api + "/servicio/eliminar-asignacion/" + idAsignacion);
             serviciosAsignados.remove(idAsignacion);
             cargarServiciosAsignados(form, form.getVeterinarioActual().getIdVeterinario());
+            JOptionPane.showMessageDialog(form,
+                "Servicio eliminado correctamente.",
+                "Exito", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(form,
                 "Error al eliminar asignacion: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
@@ -359,6 +441,8 @@ public class CtrlVeterinario {
      * Elimina un servicio de la lista local en modo alta (sin persistir).
      */
     private void eliminarLocal(FormVeterinario form, int claveTemp) {
+        if (form == null) return;
+        
         serviciosAsignados.remove(claveTemp);
         pendientesAlta.remove(claveTemp);
         form.limpiarServiciosAsignados();
@@ -376,8 +460,12 @@ public class CtrlVeterinario {
      * @return mensaje de error, o null si todo es valido
      */
     private String validarDatos(FormVeterinario form) {
+        if (form == null) return "Formulario invalido";
+        
         if (form.getTxtCedula().getText().trim().isEmpty())
             return "La cedula es obligatoria.";
+        if (form.getTxtCedula().getText().trim().length() != 10)
+            return "La cedula debe tener 10 digitos";
         if (form.getTxtNombre().getText().trim().isEmpty())
             return "El nombre es obligatorio.";
         if (form.getTxtApellido().getText().trim().isEmpty())
@@ -407,13 +495,19 @@ public class CtrlVeterinario {
  
         String pago = form.getTxtPagoMensual().getText().trim();
         if (!pago.isEmpty()) {
-            try { v.setPagoMensual(Double.parseDouble(pago)); }
-            catch (NumberFormatException ignored) {}
+            try { 
+                double pagoValue = Double.parseDouble(pago);
+                if (pagoValue >= 0) {
+                    v.setPagoMensual(pagoValue);
+                }
+            } catch (NumberFormatException ignored) {}
         }
  
         EspecialidadVeterinaria esp =
             (EspecialidadVeterinaria) form.getCmbEspecialidad().getSelectedItem();
-        if (esp != null) v.setEspecialidad(esp);
+        if (esp != null && esp.getIdEspecialidad() > 0) {
+            v.setEspecialidad(esp);
+        }
  
         return v;
     }
@@ -425,17 +519,24 @@ public class CtrlVeterinario {
      */
     private void registrar(FormVeterinario form) {
         try {
-            boolean ok = Boolean.TRUE.equals(restTemplate.postForObject(
-                api + "/veterinario/crear", buildVeterinario(form), Boolean.class));
+            Boolean ok = restTemplate.postForObject(
+                api + "/veterinario/crear", buildVeterinario(form), Boolean.class);
  
-            if (ok) {
-                Veterinario nuevo = restTemplate.getForObject(
-                    api + "/veterinario/cedula/" + form.getTxtCedula().getText().trim(),
-                    Veterinario.class);
+            if (Boolean.TRUE.equals(ok)) {
+                // Buscar el veterinario recien creado por su cedula
+                Veterinario nuevo = null;
+                try {
+                    nuevo = restTemplate.getForObject(
+                        api + "/veterinario/cedula/" + form.getTxtCedula().getText().trim(),
+                        Veterinario.class);
+                } catch (Exception ex) {
+                    System.err.println("Error al obtener veterinario creado: " + ex.getMessage());
+                }
  
                 if (nuevo != null && !pendientesAlta.isEmpty()) {
-                    pendientesAlta.forEach((clave, idServicio) ->
-                        asignarServicioSilencioso(idServicio, nuevo.getIdVeterinario()));
+                    for (Map.Entry<Integer, Integer> entry : pendientesAlta.entrySet()) {
+                        asignarServicioSilencioso(entry.getValue(), nuevo.getIdVeterinario());
+                    }
                 }
                 pendientesAlta.clear();
  
@@ -451,29 +552,37 @@ public class CtrlVeterinario {
             JOptionPane.showMessageDialog(form,
                 "Error al registrar: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
     /**
-     * Actualiza un veterinario existente.
+     * Actualiza un veterinario existente usando PUT.
      * 
      * @param form formulario de veterinario
      */
     private void actualizar(FormVeterinario form) {
         try {
-            boolean ok = Boolean.TRUE.equals(restTemplate.postForObject(
-                api + "/veterinario/actualizar", buildVeterinario(form), Boolean.class));
+            Veterinario veterinario = buildVeterinario(form);
+            
+            // Usar exchange con PUT en lugar de postForObject
+            restTemplate.exchange(
+                api + "/veterinario/actualizar",
+                HttpMethod.PUT,
+                new HttpEntity<>(veterinario),
+                Boolean.class
+            );
  
-            if (ok) {
-                JOptionPane.showMessageDialog(pnlVeterinario,
-                    "Veterinario actualizado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
-                form.dispose();
-                cargarTabla();
-            }
+            JOptionPane.showMessageDialog(pnlVeterinario,
+                "Veterinario actualizado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
+            form.dispose();
+            cargarTabla();
+            
         } catch (Exception e) {
             JOptionPane.showMessageDialog(form,
                 "Error al actualizar: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
@@ -497,8 +606,24 @@ public class CtrlVeterinario {
      * @param v veterinario a visualizar
      */
     private void ver(Veterinario v) {
-        // TODO: panel de detalle de veterinario
-        System.out.println("Ver: " + v.getNombre());
+        StringBuilder mensaje = new StringBuilder();
+        mensaje.append("ID: ").append(v.getIdVeterinario()).append("\n");
+        mensaje.append("Nombre: ").append(v.getNombre()).append(" ").append(v.getApellido()).append("\n");
+        mensaje.append("Cedula: ").append(v.getCedula()).append("\n");
+        mensaje.append("Telefono: ").append(v.getTelefono()).append("\n");
+        mensaje.append("Especialidad: ");
+        if (v.getEspecialidad() != null) {
+            mensaje.append(v.getEspecialidad().getNombreEspecialidad());
+        } else {
+            mensaje.append("No especificada");
+        }
+        mensaje.append("\n");
+        mensaje.append("Pago Mensual: $").append(v.getPagoMensual()).append("\n");
+        mensaje.append("Email: ").append(v.getCorreoElectronico() != null ? v.getCorreoElectronico() : "No registrado").append("\n");
+        mensaje.append("Direccion: ").append(v.getDireccion() != null ? v.getDireccion() : "No registrada");
+        
+        JOptionPane.showMessageDialog(pnlVeterinario, mensaje.toString(),
+            "Detalle del Veterinario", JOptionPane.INFORMATION_MESSAGE);
     }
  
     /**
@@ -514,11 +639,14 @@ public class CtrlVeterinario {
         if (confirm != JOptionPane.YES_OPTION) return;
         try {
             restTemplate.delete(api + "/veterinario/eliminar/" + v.getIdVeterinario());
+            JOptionPane.showMessageDialog(pnlVeterinario,
+                "Veterinario eliminado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
             cargarTabla();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(pnlVeterinario,
                 "Error al eliminar: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  

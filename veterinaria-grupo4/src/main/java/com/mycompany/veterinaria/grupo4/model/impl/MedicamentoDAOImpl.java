@@ -12,20 +12,21 @@ import java.util.List;
  * <p>
  * Esta clase implementa la interfaz IMedicamentoDAO y proporciona la logica
  * de acceso a datos para la entidad Medicamento utilizando procedimientos
- * almacenados de SQL Server. Permite obtener medicamentos disponibles,
+ * almacenados. Permite obtener medicamentos disponibles,
  * buscar por ID, registrar recetas y listar medicamentos recetados.
  * </p>
  * 
  * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
  * 
  * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 1.0
+ * @version 2.0 (Compatibilidad con MySQL)
  * @since 1.0
  */
 public class MedicamentoDAOImpl implements IMedicamentoDAO {
 
     /**
-     * Obtiene los medicamentos disponibles (stock > 0).
+     * Obtiene los medicamentos disponibles (estado activo).
+     * Para MySQL usa SP_OBTENER_MEDICAMENTOS_DISPONIBLES
      *
      * @return lista de medicamentos disponibles
      * @throws SQLException si ocurre un error en la base de datos
@@ -33,7 +34,13 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
     @Override
     public List<Medicamento> obtenerDisponibles() throws SQLException {
         List<Medicamento> lista = new ArrayList<>();
-        String sql = "{call SP_OBTENER_MEDICAMENTOS_DISPONIBLES}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_OBTENER_MEDICAMENTOS_DISPONIBLES()";
+        } else {
+            sql = "{call SP_OBTENER_MEDICAMENTOS_DISPONIBLES}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql);
@@ -43,8 +50,10 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
                 Medicamento m = new Medicamento();
                 m.setIdMedicamento(rs.getInt("ID_MEDICAMENTO"));
                 m.setNombre(rs.getString("NOMBRE"));
-                m.setDescripcion(rs.getString("DESCRIPCION"));
-                m.setPrecio(rs.getDouble("PRECIO"));
+                try { m.setDescripcion(rs.getString("DESCRIPCION")); } catch (SQLException e) { m.setDescripcion(""); }
+                try { m.setPrecio(rs.getDouble("PRECIO")); } catch (SQLException e) { m.setPrecio(0.0); }
+                m.setEstado(true);
+                m.setStock(0);
                 lista.add(m);
             }
         }
@@ -53,6 +62,7 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
 
     /**
      * Obtiene un medicamento por su identificador.
+     * Adaptado para MySQL donde el SP no retorna STOCK ni ESTADO.
      *
      * @param idMedicamento identificador del medicamento
      * @return objeto Medicamento encontrado
@@ -60,7 +70,13 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
      */
     @Override
     public Medicamento obtenerPorId(int idMedicamento) throws SQLException {
-        String sql = "{call SP_OBTENER_MEDICAMENTO_POR_ID(?)}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_OBTENER_MEDICAMENTO_POR_ID(?)";
+        } else {
+            sql = "{call SP_OBTENER_MEDICAMENTO_POR_ID(?)}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
@@ -71,10 +87,11 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
                 Medicamento m = new Medicamento();
                 m.setIdMedicamento(rs.getInt("ID_MEDICAMENTO"));
                 m.setNombre(rs.getString("NOMBRE"));
-                m.setDescripcion(rs.getString("DESCRIPCION"));
-                m.setPrecio(rs.getDouble("PRECIO"));
-                m.setStock(rs.getInt("STOCK"));
-                m.setEstado(rs.getBoolean("ESTADO"));
+                try { m.setDescripcion(rs.getString("DESCRIPCION")); } catch (SQLException e) { m.setDescripcion(""); }
+                try { m.setPrecio(rs.getDouble("PRECIO")); } catch (SQLException e) { m.setPrecio(0.0); }
+                // MySQL no retorna STOCK ni ESTADO en este SP, asignar valores por defecto
+                m.setStock(0);
+                m.setEstado(true);
                 return m;
             }
             return null;
@@ -94,7 +111,13 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
      */
     @Override
     public boolean insertarRecetado(int idAtencionMedica, int idMedicamento, String dosis, String frecuencia, String duracion) throws SQLException {
-        String sql = "{call SP_INSERTAR_MEDICAMENTO_RECETADO(?, ?, ?, ?, ?)}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_INSERTAR_MEDICAMENTO_RECETADO(?, ?, ?, ?, ?)";
+        } else {
+            sql = "{call SP_INSERTAR_MEDICAMENTO_RECETADO(?, ?, ?, ?, ?)}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
@@ -117,7 +140,13 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
     @Override
     public List<Medicamento> obtenerRecetadosPorAtencion(int idAtencionMedica) throws SQLException {
         List<Medicamento> lista = new ArrayList<>();
-        String sql = "{call SP_OBTENER_MEDICAMENTOS_POR_ATENCION(?)}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_OBTENER_MEDICAMENTOS_POR_ATENCION(?)";
+        } else {
+            sql = "{call SP_OBTENER_MEDICAMENTOS_POR_ATENCION(?)}";
+        }
 
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
@@ -126,11 +155,11 @@ public class MedicamentoDAOImpl implements IMedicamentoDAO {
 
             while (rs.next()) {
                 Medicamento m = new Medicamento();
-                m.setNombre(rs.getString("NOMBRE"));
-                m.setPrecio(rs.getDouble("PRECIO"));
-                m.setDosis(rs.getString("DOSIS"));
-                m.setFrecuencia(rs.getString("FRECUENCIA"));
-                m.setDuracion(rs.getString("DURACION"));
+                try { m.setNombre(rs.getString("NOMBRE")); } catch (SQLException e) { m.setNombre(""); }
+                try { m.setPrecio(rs.getDouble("PRECIO")); } catch (SQLException e) { m.setPrecio(0.0); }
+                try { m.setDosis(rs.getString("DOSIS")); } catch (SQLException e) { m.setDosis(""); }
+                try { m.setFrecuencia(rs.getString("FRECUENCIA")); } catch (SQLException e) { m.setFrecuencia(""); }
+                try { m.setDuracion(rs.getString("DURACION")); } catch (SQLException e) { m.setDuracion(""); }
                 lista.add(m);
             }
         }

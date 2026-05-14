@@ -30,7 +30,7 @@ veterinaria-grupo4/
 
 │       │                   ├── Main.java
 
-│       │                   │   ← Punto de entrada (Spring Boot + Swing)
+│       │                   │    Punto de entrada (Spring Boot + Swing)
 
 │       │
 
@@ -38,7 +38,7 @@ veterinaria-grupo4/
 
 │       │                   │   └── DatabaseConfig.java
 
-│       │                   │       ← Configuración de conexión a SQL Server
+│       │                   │        Configuración de conexión a SQL Server
 
 │       │
 
@@ -46,7 +46,7 @@ veterinaria-grupo4/
 
 │       │                   │   ├── controller/
 
-│       │                   │   │   ← Controladores REST
+│       │                   │   │    Controladores REST
 
 │       │                   │   │   ├── AuthController.java
 
@@ -72,7 +72,7 @@ veterinaria-grupo4/
 
 │       │                   │   └── dto/
 
-│       │                   │       ← Objetos de transferencia (JSON)
+│       │                   │        Objetos de transferencia (JSON)
 
 │       │                   │       ├── LoginRequest.java
 
@@ -84,7 +84,7 @@ veterinaria-grupo4/
 
 │       │                   ├── service/
 
-│       │                   │   ← Lógica de negocio
+│       │                   │    Lógica de negocio
 
 │       │                   │   ├── EspecialidadService.java
 
@@ -122,7 +122,7 @@ veterinaria-grupo4/
 
 │       │                   │   ├── entity/
 
-│       │                   │   │   ← Entidades del sistema
+│       │                   │   │    Entidades del sistema
 
 │       │                   │   │   ├── Usuario.java
 
@@ -160,7 +160,7 @@ veterinaria-grupo4/
 
 │       │                   │   ├── dao/
 
-│       │                   │   │   ← Interfaces DAO
+│       │                   │   │    Interfaces DAO
 
 │       │                   │   │   ├── IVacunaDAO.java
 
@@ -192,7 +192,7 @@ veterinaria-grupo4/
 
 │       │                   │   └── impl/
 
-│       │                   │       ← Implementaciones DAO
+│       │                   │        Implementaciones DAO
 
 │       │                   │       ├── UsuarioDAOImpl.java
 
@@ -226,7 +226,7 @@ veterinaria-grupo4/
 
 │       │                   ├── view/
 
-│       │                   │   ← Interfaz gráfica Swing
+│       │                   │    Interfaz gráfica Swing
 
 │       │                   │   ├── frmComputadora.java
 
@@ -282,7 +282,7 @@ veterinaria-grupo4/
 
 │       │                   └── util/
 
-│       │                       ← Clases utilitarias
+│       │                        Clases utilitarias
 
 │       │                       ├── DatabaseConnection.java
 
@@ -298,7 +298,7 @@ veterinaria-grupo4/
 
 │           ├── application.properties
 
-│           │   ← Configuración Spring Boot (puerto, BD, etc.)
+│           │    Configuración Spring Boot (puerto, BD, etc.)
 
 │           │
 

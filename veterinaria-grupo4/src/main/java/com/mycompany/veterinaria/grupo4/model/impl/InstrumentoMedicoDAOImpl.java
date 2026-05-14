@@ -12,20 +12,20 @@ import java.util.List;
  * <p>
  * Esta clase implementa la interfaz IInstrumentoMedicoDAO y proporciona la logica
  * de acceso a datos para la entidad InstrumentoMedico utilizando procedimientos
- * almacenados de SQL Server. Permite obtener instrumentos disponibles,
+ * almacenados. Permite obtener instrumentos disponibles,
  * registrar su uso en atenciones medicas y listar los utilizados.
  * </p>
  * 
  * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
  * 
  * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 1.0
+ * @version 2.0 (Compatibilidad con MySQL)
  * @since 1.0
  */
 public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
 
     /**
-     * Obtiene los instrumentos medicos disponibles (stock > 0).
+     * Obtiene los instrumentos medicos disponibles (estado activo).
      *
      * @return lista de instrumentos disponibles
      * @throws SQLException si ocurre un error en la base de datos
@@ -33,7 +33,13 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
     @Override
     public List<InstrumentoMedico> obtenerDisponibles() throws SQLException {
         List<InstrumentoMedico> lista = new ArrayList<>();
-        String sql = "{call SP_OBTENER_INSTRUMENTOS_DISPONIBLES}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_OBTENER_INSTRUMENTOS_DISPONIBLES()";
+        } else {
+            sql = "{call SP_OBTENER_INSTRUMENTOS_DISPONIBLES}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql);
@@ -41,10 +47,11 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
             
             while (rs.next()) {
                 InstrumentoMedico i = new InstrumentoMedico();
-                i.setIdInstrumento(rs.getInt("ID_INSTRUMENTO"));
-                i.setNombre(rs.getString("NOMBRE"));
-                i.setDescripcion(rs.getString("DESCRIPCION"));
-                i.setCostoUso(rs.getDouble("COSTO_USO"));
+                try { i.setIdInstrumento(rs.getInt("ID_INSTRUMENTO")); } catch (SQLException e) { i.setIdInstrumento(0); }
+                try { i.setNombre(rs.getString("NOMBRE")); } catch (SQLException e) { i.setNombre(""); }
+                try { i.setDescripcion(rs.getString("DESCRIPCION")); } catch (SQLException e) { i.setDescripcion(""); }
+                try { i.setCostoUso(rs.getDouble("COSTO_USO")); } catch (SQLException e) { i.setCostoUso(0.0); }
+                i.setEstado(true);
                 lista.add(i);
             }
         }
@@ -53,6 +60,7 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
 
     /**
      * Obtiene un instrumento por su identificador.
+     * Adaptado para MySQL donde el SP no retorna ESTADO.
      *
      * @param idInstrumento identificador del instrumento
      * @return objeto InstrumentoMedico encontrado
@@ -60,7 +68,13 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
      */
     @Override
     public InstrumentoMedico obtenerPorId(int idInstrumento) throws SQLException {
-        String sql = "{call SP_OBTENER_INSTRUMENTO_POR_ID(?)}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_OBTENER_INSTRUMENTO_POR_ID(?)";
+        } else {
+            sql = "{call SP_OBTENER_INSTRUMENTO_POR_ID(?)}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
@@ -69,11 +83,12 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
             
             if (rs.next()) {
                 InstrumentoMedico i = new InstrumentoMedico();
-                i.setIdInstrumento(rs.getInt("ID_INSTRUMENTO"));
-                i.setNombre(rs.getString("NOMBRE"));
-                i.setDescripcion(rs.getString("DESCRIPCION"));
-                i.setCostoUso(rs.getDouble("COSTO_USO"));
-                i.setEstado(rs.getBoolean("ESTADO"));
+                i.setIdInstrumento(idInstrumento);
+                try { i.setNombre(rs.getString("NOMBRE")); } catch (SQLException e) { i.setNombre(""); }
+                try { i.setDescripcion(rs.getString("DESCRIPCION")); } catch (SQLException e) { i.setDescripcion(""); }
+                try { i.setCostoUso(rs.getDouble("COSTO_USO")); } catch (SQLException e) { i.setCostoUso(0.0); }
+                // MySQL no retorna ESTADO, asumimos activo por defecto
+                i.setEstado(true);
                 return i;
             }
             return null;
@@ -90,7 +105,13 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
      */
     @Override
     public boolean insertarUsado(int idAtencionMedica, int idInstrumento) throws SQLException {
-        String sql = "{call SP_INSERTAR_INSTRUMENTO_USADO(?, ?)}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_INSERTAR_INSTRUMENTO_USADO(?, ?)";
+        } else {
+            sql = "{call SP_INSERTAR_INSTRUMENTO_USADO(?, ?)}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
@@ -110,7 +131,13 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
     @Override
     public List<InstrumentoMedico> obtenerUsadosPorAtencion(int idAtencionMedica) throws SQLException {
         List<InstrumentoMedico> lista = new ArrayList<>();
-        String sql = "{call SP_OBTENER_INSTRUMENTOS_POR_ATENCION(?)}";
+        String sql;
+        
+        if (DatabaseConnection.isMySQL()) {
+            sql = "CALL SP_OBTENER_INSTRUMENTOS_POR_ATENCION(?)";
+        } else {
+            sql = "{call SP_OBTENER_INSTRUMENTOS_POR_ATENCION(?)}";
+        }
         
         try (Connection conn = DatabaseConnection.getConnection();
              CallableStatement stmt = conn.prepareCall(sql)) {
@@ -119,8 +146,8 @@ public class InstrumentoMedicoDAOImpl implements IInstrumentoMedicoDAO {
             
             while (rs.next()) {
                 InstrumentoMedico i = new InstrumentoMedico();
-                i.setNombre(rs.getString("NOMBRE"));
-                i.setCostoUso(rs.getDouble("COSTO_USO"));
+                try { i.setNombre(rs.getString("NOMBRE")); } catch (SQLException e) { i.setNombre(""); }
+                try { i.setCostoUso(rs.getDouble("COSTO_USO")); } catch (SQLException e) { i.setCostoUso(0.0); }
                 lista.add(i);
             }
         }
