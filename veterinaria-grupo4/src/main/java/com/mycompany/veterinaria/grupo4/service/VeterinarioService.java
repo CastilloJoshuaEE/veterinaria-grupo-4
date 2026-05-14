@@ -43,8 +43,20 @@ public class VeterinarioService {
     private static final double PAGO_MINIMO = 400.0;
     private static final double PAGO_MAXIMO = 5000.0;
     
-    private IVeterinarioDAO veterinarioDAO = new VeterinarioDAOImpl();
+    private IVeterinarioDAO veterinarioDAO;
+    /** Constructor por defecto (usado por Spring) */
+    public VeterinarioService() {
+        this.veterinarioDAO = new VeterinarioDAOImpl();
+    }
 
+    /**
+     * Constructor para inyección de dependencias (usado en pruebas unitarias).
+     *
+     * @param veterinarioDAO DAO de veterinarios mockeado
+     */
+    public VeterinarioService(IVeterinarioDAO veterinarioDAO) {
+        this.veterinarioDAO = veterinarioDAO;
+    }
     /**
      * Lista todos los veterinarios registrados.
      *
@@ -149,13 +161,11 @@ public class VeterinarioService {
             throw new IllegalArgumentException("ID de veterinario invalido para actualizar");
         }
         
-        // Validar que el veterinario exista
         Veterinario existente = obtenerPorId(veterinario.getIdVeterinario());
         if (existente == null) {
             throw new IllegalArgumentException("No existe un veterinario con ID: " + veterinario.getIdVeterinario());
         }
         
-        // Validar que la cedula no este siendo usada por otro veterinario
         Veterinario porCedula = obtenerPorCedula(veterinario.getCedula());
         if (porCedula != null && porCedula.getIdVeterinario() != veterinario.getIdVeterinario()) {
             throw new IllegalArgumentException("La cedula " + veterinario.getCedula() + " ya esta registrada por otro veterinario");
@@ -289,7 +299,7 @@ public class VeterinarioService {
     }
     
     /**
-     * Valida la estructura de la cedula ecuatoriana.
+     * Valida la estructura de la cedula .
      *
      * @param cedula cedula a validar
      * @throws IllegalArgumentException si la cedula es invalida
@@ -301,30 +311,7 @@ public class VeterinarioService {
         if (!PATRON_CEDULA.matcher(cedula).matches()) {
             throw new IllegalArgumentException("La cedula debe contener exactamente 10 digitos numericos");
         }
-        
-        // Validacion del digito verificador para cedulas ecuatorianas
-        try {
-            int provincia = Integer.parseInt(cedula.substring(0, 2));
-            if (provincia < 1 || provincia > 24) {
-                throw new IllegalArgumentException("Los primeros dos digitos de la cedula deben representar una provincia valida (01-24)");
-            }
-            
-            int[] coeficientes = {2, 1, 2, 1, 2, 1, 2, 1, 2};
-            int suma = 0;
-            for (int i = 0; i < 9; i++) {
-                int valor = Integer.parseInt(cedula.substring(i, i + 1)) * coeficientes[i];
-                suma += (valor > 9) ? valor - 9 : valor;
-            }
-            int digitoVerificador = Integer.parseInt(cedula.substring(9));
-            int residuo = suma % 10;
-            int digitoCalculado = (residuo == 0) ? 0 : 10 - residuo;
-            
-            if (digitoCalculado != digitoVerificador) {
-                throw new IllegalArgumentException("El digito verificador de la cedula es incorrecto");
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("La cedula debe contener solo digitos numericos");
-        }
+       
     }
     
     /**
