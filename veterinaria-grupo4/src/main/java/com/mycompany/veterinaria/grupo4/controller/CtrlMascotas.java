@@ -601,51 +601,66 @@ public class CtrlMascotas {
         panel.add(val, gbc);
     }
  
-    /**
-     * Elimina una mascota del sistema.
-     * 
-     * @param m mascota a eliminar
-     */
-    private void eliminar(Mascota m) {                                    // Nodo 1
-        int confirm = JOptionPane.showConfirmDialog(pnlMascota,           // Nodo 2
-            "¿Esta seguro de eliminar a " + m.getNombre() + "? ...",
-            "Confirmar", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+/**
+ * Elimina una mascota del sistema.
+ * 
+ * @param m mascota a eliminar
+ */
+private void eliminar(Mascota m) {
+    int confirm = JOptionPane.showConfirmDialog(pnlMascota,
+        "¿Esta seguro de eliminar a " + m.getNombre() + "?\n" +
+        "Esta accion no se puede deshacer.",
+        "Confirmar eliminacion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-        if (confirm != JOptionPane.YES_OPTION) return;                    // Nodo 3 (Predicado - NP1)
+    if (confirm != JOptionPane.YES_OPTION) return;
 
-        try {                                                             // Nodo 4
-            restTemplate.delete(apiBaseUrl + "/mascota/eliminar/" + m.getIdMascota()); // Nodo 5
-            JOptionPane.showMessageDialog(pnlMascota, "Mascota eliminada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE); // Nodo 6
-            cargarTabla();                                                // Nodo 7
-
-            if (pnlMascota.getCmbClientes().getSelectedItem() != null) {  // Nodo 8 (Predicado - NP2)
-                cargarMascotasPorCliente();                               // Nodo 9
-            }                                                             // Nodo 10
-
-        } catch (org.springframework.web.client.HttpClientErrorException e) { // Nodo 11
-            String mensajeError = "No se puede eliminar la mascota.";     // Nodo 12
-
-            try {                                                         // Nodo 13
-                String responseBody = e.getResponseBodyAsString();        // Nodo 14
-
-                if (responseBody != null && responseBody.contains("cita medica")) { // Nodo 15 (Predicado - NP3)
-                    mensajeError = "No se puede eliminar la mascota porque ya posee un antecedente clinico..."; // Nodo 16
-                } else if (responseBody != null && responseBody.contains("pendiente")) { // Nodo 17 (Predicado - NP4)
-                    mensajeError = "No se puede eliminar la mascota porque tiene citas pendientes..."; // Nodo 18
-                }                                                         // Nodo 19
-
-            } catch (Exception ex) {                                      // Nodo 20
-                mensajeError = e.getMessage();                            // Nodo 21
-            }                                                             // Nodo 22
-
-            JOptionPane.showMessageDialog(pnlMascota, mensajeError, "Eliminacion no permitida", JOptionPane.ERROR_MESSAGE); // Nodo 23
-
-        } catch (Exception e) {                                           // Nodo 24
-            JOptionPane.showMessageDialog(pnlMascota, "Error al eliminar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); // Nodo 25
-        }                                                                 // Nodo 26
-
-    }                                                                     // Nodo 27 (Fin)
- 
+    try {
+        // Usar exchange para obtener la respuesta completa
+        ResponseEntity<String> response = restTemplate.exchange(
+            apiBaseUrl + "/mascota/eliminar/" + m.getIdMascota(),
+            HttpMethod.DELETE,
+            null,
+            String.class
+        );
+        
+        if (response.getStatusCode().is2xxSuccessful()) {
+            JOptionPane.showMessageDialog(pnlMascota, 
+                "Mascota eliminada correctamente.", 
+                "Exito", JOptionPane.INFORMATION_MESSAGE);
+            cargarTabla();
+            
+            // Refrescar filtro por cliente si está activo
+            if (pnlMascota.getCmbClientes().getSelectedItem() != null) {
+                cargarMascotasPorCliente();
+            }
+        }
+        
+    } catch (org.springframework.web.client.HttpClientErrorException e) {
+        // Error 4xx (incluye CONFLICT 409)
+        String mensajeError;
+        try {
+            // Intentar obtener el mensaje del cuerpo de la respuesta
+            mensajeError = e.getResponseBodyAsString();
+            // Limpiar comillas si vienen en el JSON
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
+            }
+        } catch (Exception ex) {
+            mensajeError = e.getMessage();
+        }
+        
+        JOptionPane.showMessageDialog(pnlMascota, 
+            mensajeError, 
+            "No se puede eliminar", 
+            JOptionPane.ERROR_MESSAGE);
+            
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(pnlMascota,
+            "Error al eliminar: " + e.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    }
+}
     /**
      * Obtiene el cliente propietario de una mascota dado su ID.
      *

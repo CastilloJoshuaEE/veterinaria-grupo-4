@@ -270,14 +270,24 @@ public class CtrlAtencionMedica {
      * @param form instancia activa del formulario
      * @return mensaje de error o null si todo es valido
      */
-    private String validarDatos(FormAtencionMedica form) {
-        if (form.getTxtDiagnostico().getText().trim().isEmpty())
-            return "El diagnostico es obligatorio.";
-        if (form.getTxtTratamiento().getText().trim().isEmpty())
-            return "El tratamiento es obligatorio.";
-        return null;
+private String validarDatos(FormAtencionMedica form) {
+    String diagnostico = form.getTxtDiagnostico().getText().trim();
+    if (diagnostico.isEmpty()) {
+        return "El diagnostico es obligatorio.";
     }
- 
+    if (diagnostico.length() < 3) {
+        return "El diagnostico debe tener al menos 3 caracteres.";
+    }
+    
+    String tratamiento = form.getTxtTratamiento().getText().trim();
+    if (tratamiento.isEmpty()) {
+        return "El tratamiento es obligatorio.";
+    }
+    if (tratamiento.length() < 3) {
+        return "El tratamiento debe tener al menos 3 caracteres.";
+    }
+    return null;
+}
     /**
      * Ejecuta el flujo completo de cierre de atencion:
      * <ol>

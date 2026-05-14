@@ -35,7 +35,6 @@ import org.springframework.web.client.RestTemplate;
 public class CtrlCliente {
 
     private PnlCliente pnlCliente;
-    private Table tblCliente;
     private RestTemplate restTemplate = new RestTemplate();
     private String apiBaseUrl = "http://localhost:8080/api/cliente";
     private Cliente clienteSeleccionado;
@@ -56,39 +55,65 @@ public class CtrlCliente {
      * Registra los listeners de los botones del panel.
      */
     private void addListeners() {
-        pnlCliente.getBtnBuscar().addActionListener(e -> buscar());
-        pnlCliente.getBtnNuevo().addActionListener(e -> nuevo());
+        if (pnlCliente.getBtnBuscar() != null) {
+            pnlCliente.getBtnBuscar().addActionListener(e -> buscar());
+        }
+        if (pnlCliente.getBtnNuevo() != null) {
+            pnlCliente.getBtnNuevo().addActionListener(e -> nuevo());
+        }
     }
     
     /**
-     * Inicializa la estructura de la tabla de mascotas.
+     * Inicializa la estructura de la tabla de clientes.
      */
     private void initTabla() {
-        pnlCliente.getTblCliente().setModel(new DefaultTableModel(
-                new Object[][]{},
-                new String[]{"ID", "Nombre", "Cedula", "Telefono", "Email", "Estado", "Accion"}
-            ) {
-                @Override
-                public boolean isCellEditable(int row, int col) {
-                    return col == 6;
-                }
-            });
-            var col = pnlCliente.getTblCliente().getColumnModel();
-            col.getColumn(0).setMaxWidth(50);
-            col.getColumn(5).setPreferredWidth(90);
-            col.getColumn(6).setPreferredWidth(120);
-            
-            int colAccion = 6; // El índice de la columna "Accion"
-            col.getColumn(colAccion).setCellRenderer(new TableCellRender());
-            col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        Table tblCliente = pnlCliente.getTblCliente();
+        if (tblCliente == null) {
+            System.err.println("ERROR: La tabla de clientes es null");
+            return;
+        }
         
-        tblCliente.fixTable(pnlCliente.getScrollPane());
+        tblCliente.setModel(new DefaultTableModel(
+            new Object[][]{},
+            new String[]{"ID", "Nombre", "Cedula", "Telefono", "Email", "Estado", "Accion"}
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return col == 6;
+            }
+        });
+        
+        var col = tblCliente.getColumnModel();
+        if (col.getColumnCount() > 0) {
+            col.getColumn(0).setMaxWidth(50);
+            if (col.getColumnCount() > 5) {
+                col.getColumn(5).setPreferredWidth(90);
+            }
+            if (col.getColumnCount() > 6) {
+                col.getColumn(6).setPreferredWidth(120);
+                
+                int colAccion = 6;
+                col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+                col.getColumn(colAccion).setCellEditor(new TableCellAction());
+            }
+        }
+        
+        // Ajustar la tabla en el scroll pane
+        if (pnlCliente.getScrollPane() != null) {
+            tblCliente.fixTable(pnlCliente.getScrollPane());
+        }
     }
 
     /**
      * Carga todos los clientes en la tabla.
      */
     private void cargarTabla() {
+        Table tblCliente = pnlCliente.getTblCliente();
+        if (tblCliente == null) {
+            System.err.println("ERROR: No se puede cargar la tabla porque es null");
+            return;
+        }
+        
         try {
             ResponseEntity<List<Cliente>> response = restTemplate.exchange(
                 apiBaseUrl + "/listar",
@@ -102,18 +127,17 @@ public class CtrlCliente {
    
             if (clientes != null) {
                 for (Cliente c : clientes) {
-                    tblCliente.addRow(new Object[]{
+                    model.addRow(new Object[]{
                         c.getIdCliente(),
                         c.getNombre() + " " + c.getApellido(),
                         c.getCedula(),
                         c.getTelefono(),
-                        c.getCorreoElectronico(),
+                        c.getCorreoElectronico() != null ? c.getCorreoElectronico() : "",
                         Estado.ACTIVO,
                         new ModelAction()
                             .add(ModelAction.Tipo.EDITAR,   () -> editar(c))
                             .add(ModelAction.Tipo.VER,      () -> ver(c))
-                            .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(c)
-                        )
+                            .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(c))
                     });
                 }
             }
@@ -121,6 +145,7 @@ public class CtrlCliente {
             JOptionPane.showMessageDialog(pnlCliente,
                 "Error al cargar clientes: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
@@ -128,6 +153,9 @@ public class CtrlCliente {
      * Realiza la busqueda de clientes por nombre.
      */
     private void buscar() {
+        Table tblCliente = pnlCliente.getTblCliente();
+        if (tblCliente == null) return;
+        
         String texto = pnlCliente.getTxtBusqueda().getText().trim();
         if (texto.isEmpty()) {
             cargarTabla();
@@ -141,27 +169,29 @@ public class CtrlCliente {
                 new ParameterizedTypeReference<List<Cliente>>() {}
             );
             List<Cliente> clientes = response.getBody();
-            DefaultTableModel model = (DefaultTableModel) pnlCliente.getTblCliente().getModel();
+            DefaultTableModel model = (DefaultTableModel) tblCliente.getModel();
             model.setRowCount(0);
             if (clientes != null) {
                 for (Cliente c : clientes) {
-                    pnlCliente.getTblCliente().addRow(new Object[]{
+                    model.addRow(new Object[]{
                         c.getIdCliente(),
                         c.getNombre() + " " + c.getApellido(),
                         c.getCedula(),
                         c.getTelefono(),
-                        c.getCorreoElectronico(),
+                        c.getCorreoElectronico() != null ? c.getCorreoElectronico() : "",
                         Estado.ACTIVO,
                         new ModelAction()
                             .add(ModelAction.Tipo.EDITAR,   () -> editar(c))
                             .add(ModelAction.Tipo.VER,      () -> ver(c))
-                            .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(c)
-                        )
+                            .add(ModelAction.Tipo.ELIMINAR, () -> eliminar(c))
                     });
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(pnlCliente,
+                "Error al buscar clientes: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -169,9 +199,15 @@ public class CtrlCliente {
      * Abre el formulario para registrar un nuevo cliente.
      */
     private void nuevo() {
-        FormRegistroCliente form = new FormRegistroCliente(
-            (Frame) SwingUtilities.getWindowAncestor(pnlCliente)
-        );
+        Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(pnlCliente);
+        if (parentFrame == null) {
+            JOptionPane.showMessageDialog(pnlCliente,
+                "Error: No se puede determinar la ventana padre",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        FormRegistroCliente form = new FormRegistroCliente(parentFrame);
         form.getBtnAccion().addActionListener(e -> {
             String error = validarDatos(form);
             if (error != null) {
@@ -191,9 +227,15 @@ public class CtrlCliente {
      * @param c cliente a editar
      */
     private void editar(Cliente c) {
-        FormRegistroCliente form = new FormRegistroCliente(
-            (Frame) SwingUtilities.getWindowAncestor(pnlCliente), c
-        );
+        Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(pnlCliente);
+        if (parentFrame == null) {
+            JOptionPane.showMessageDialog(pnlCliente,
+                "Error: No se puede determinar la ventana padre",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        FormRegistroCliente form = new FormRegistroCliente(parentFrame, c);
         form.getBtnAccion().addActionListener(e -> {
             String error = validarDatos(form);
             if (error != null) {
@@ -213,8 +255,16 @@ public class CtrlCliente {
      * @param c cliente a visualizar
      */
     private void ver(Cliente c) {
-        // TODO: abrir panel de detalle
-        System.out.println("Ver: " + c.getNombre());
+        StringBuilder mensaje = new StringBuilder();
+        mensaje.append("ID: ").append(c.getIdCliente()).append("\n");
+        mensaje.append("Nombre: ").append(c.getNombre()).append(" ").append(c.getApellido()).append("\n");
+        mensaje.append("Cedula: ").append(c.getCedula()).append("\n");
+        mensaje.append("Telefono: ").append(c.getTelefono()).append("\n");
+        mensaje.append("Email: ").append(c.getCorreoElectronico()).append("\n");
+        mensaje.append("Direccion: ").append(c.getDireccion() != null ? c.getDireccion() : "No registrada").append("\n");
+        
+        JOptionPane.showMessageDialog(pnlCliente, mensaje.toString(),
+            "Detalle del Cliente", JOptionPane.INFORMATION_MESSAGE);
     }
     
     /**
@@ -224,12 +274,22 @@ public class CtrlCliente {
      */
     private void registrar(Cliente c) {
         try {
-            restTemplate.postForObject(apiBaseUrl + "/crear", c, Boolean.class);
-            cargarTabla();
+            Boolean resultado = restTemplate.postForObject(apiBaseUrl + "/crear", c, Boolean.class);
+            if (Boolean.TRUE.equals(resultado)) {
+                JOptionPane.showMessageDialog(pnlCliente,
+                    "Cliente registrado correctamente",
+                    "Exito", JOptionPane.INFORMATION_MESSAGE);
+                cargarTabla();
+            } else {
+                JOptionPane.showMessageDialog(pnlCliente,
+                    "Error al registrar el cliente",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(pnlCliente,
                 "Error al registrar: " + ex.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 
@@ -241,11 +301,15 @@ public class CtrlCliente {
     private void actualizar(Cliente c) {
         try {
             restTemplate.put(apiBaseUrl + "/actualizar", c);
+            JOptionPane.showMessageDialog(pnlCliente,
+                "Cliente actualizado correctamente",
+                "Exito", JOptionPane.INFORMATION_MESSAGE);
             cargarTabla();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(pnlCliente,
                 "Error al actualizar: " + ex.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
     
@@ -256,16 +320,21 @@ public class CtrlCliente {
      */
     private void eliminar(Cliente c) {
         int confirm = JOptionPane.showConfirmDialog(pnlCliente,
-            "¿Eliminar a " + c.getNombre() + " " + c.getApellido() + "?",
-            "Confirmar", JOptionPane.YES_NO_OPTION);
+            "¿Eliminar a " + c.getNombre() + " " + c.getApellido() + "?\n" +
+            "Se eliminaran tambien sus mascotas asociadas.",
+            "Confirmar", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 restTemplate.delete(apiBaseUrl + "/eliminar/" + c.getIdCliente());
+                JOptionPane.showMessageDialog(pnlCliente,
+                    "Cliente eliminado correctamente",
+                    "Exito", JOptionPane.INFORMATION_MESSAGE);
                 cargarTabla();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(pnlCliente,
                     "Error al eliminar: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
             }
         }
     }
@@ -313,7 +382,8 @@ public class CtrlCliente {
         c.setApellido(form.getTxtApellido().getText().trim());
         c.setTelefono(form.getTxtTelefono().getText().trim());
         c.setCorreoElectronico(form.getTxtEmail().getText().trim());
-        c.setDireccion(form.getTxtDireccion().getText().trim());
+        String direccion = form.getTxtDireccion().getText().trim();
+        c.setDireccion(direccion.isEmpty() ? null : direccion);
         return c;
     }
 }
