@@ -16,15 +16,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
 /**
- * Pruebas unitarias para la capa de SERVICIO - ClienteService.
+ * Pruebas unitarias para la capa de SERVICIO (La capa de control).
  * 
- * <p><b>MÓDULO: CLIENTE</b></p>
- * 
- * @author CASTRO AVILA JONATHAN XAVIER – MODULO: CLIENTE
- * @version 2.0
- * @since 1.0
+ * @author CASTRO AVILA – MODULO: CLIENTE
  */
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -54,24 +49,22 @@ public class ClienteServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // Usar el constructor con inyección de dependencias para pruebas
         clienteService = new ClienteService(clienteDAO);
 
-        // Configuración común para mocks
         lenient().when(clienteDAO.obtenerPorId(TEST_CLIENTE_ID)).thenReturn(clientePrueba);
         lenient().when(clienteDAO.obtenerPorId(999)).thenReturn(null);
         lenient().when(clienteDAO.obtenerPorCedula(TEST_CEDULA_VALIDA)).thenReturn(clientePrueba);
         lenient().when(clienteDAO.obtenerPorCedula(TEST_CEDULA_UNICA)).thenReturn(null);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // PRUEBAS PARA EL MÉTODO buscarPorNombre() - COMPLEJIDAD CICLOMÁTICA M=2
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // PRUEBAS PARA buscarPorNombre() - COMPLEJIDAD CICLOMÁTICA M=2
+    // ═══════════════════════════════════════════════════════
 
     @Test
     @Order(1)
     @DisplayName("CP-BUS-NOM-01: Buscar - Nombre null - ERROR")
-    void testBuscarPorNombreNull() {
+    void testBuscarPorNombreNull() throws SQLException {    
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             clienteService.buscarPorNombre(null);
         });
@@ -85,7 +78,7 @@ public class ClienteServiceTest {
     @Test
     @Order(2)
     @DisplayName("CP-BUS-NOM-02: Buscar - Nombre vacío - ERROR")
-    void testBuscarPorNombreVacio() {
+    void testBuscarPorNombreVacio() throws SQLException {    
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             clienteService.buscarPorNombre("");
         });
@@ -99,7 +92,7 @@ public class ClienteServiceTest {
     @Test
     @Order(3)
     @DisplayName("CP-BUS-NOM-03: Buscar - Nombre con 1 caracter - ERROR")
-    void testBuscarPorNombreUnCaracter() {
+    void testBuscarPorNombreUnCaracter() throws SQLException {    
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             clienteService.buscarPorNombre("J");
         });
@@ -158,14 +151,14 @@ public class ClienteServiceTest {
         System.out.println("CP-BUS-NOM-06: Error SQL - retorna null correctamente");
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     // PRUEBAS PARA CREAR CLIENTE (VALIDACIÓN)
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
 
     @Test
     @Order(7)
     @DisplayName("CP-VAL-CLI-01: Validar - Cliente nulo - ERROR")
-    void testValidarClienteNulo() {
+    void testValidarClienteNulo() throws SQLException {    
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             clienteService.crear(null);
         });
@@ -179,7 +172,7 @@ public class ClienteServiceTest {
     @Test
     @Order(8)
     @DisplayName("CP-VAL-CLI-02: Validar - Nombre nulo - ERROR")
-    void testValidarNombreNulo() {
+    void testValidarNombreNulo() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
         clienteInvalido.setNombre(null);
@@ -199,7 +192,7 @@ public class ClienteServiceTest {
     @Test
     @Order(9)
     @DisplayName("CP-VAL-CLI-03: Validar - Nombre vacío - ERROR")
-    void testValidarNombreVacio() {
+    void testValidarNombreVacio() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
         clienteInvalido.setNombre("");
@@ -219,7 +212,7 @@ public class ClienteServiceTest {
     @Test
     @Order(10)
     @DisplayName("CP-VAL-CLI-04: Validar - Nombre excede 50 caracteres - ERROR")
-    void testValidarNombreExcedeLongitud() {
+    void testValidarNombreExcedeLongitud() throws SQLException {    
         String nombreLargo = "Este nombre es extremadamente largo y supera los cincuenta caracteres permitidos";
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
@@ -240,7 +233,7 @@ public class ClienteServiceTest {
     @Test
     @Order(11)
     @DisplayName("CP-VAL-CLI-05: Validar - Apellido nulo - ERROR")
-    void testValidarApellidoNulo() {
+    void testValidarApellidoNulo() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
         clienteInvalido.setNombre("Juan");
@@ -260,7 +253,7 @@ public class ClienteServiceTest {
     @Test
     @Order(12)
     @DisplayName("CP-VAL-CLI-06: Validar - Apellido vacío - ERROR")
-    void testValidarApellidoVacio() {
+    void testValidarApellidoVacio() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
         clienteInvalido.setNombre("Juan");
@@ -280,7 +273,7 @@ public class ClienteServiceTest {
     @Test
     @Order(13)
     @DisplayName("CP-VAL-CLI-07: Validar - Apellido excede 50 caracteres - ERROR")
-    void testValidarApellidoExcedeLongitud() {
+    void testValidarApellidoExcedeLongitud() throws SQLException {    
         String apellidoLargo = "Este apellido es extremadamente largo y supera los cincuenta caracteres";
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
@@ -301,7 +294,7 @@ public class ClienteServiceTest {
     @Test
     @Order(14)
     @DisplayName("CP-VAL-CLI-08: Validar - Cédula inválida (formato) - ERROR")
-    void testValidarCedulaInvalidaFormato() {
+    void testValidarCedulaInvalidaFormato() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula("123");
         clienteInvalido.setNombre("Juan");
@@ -321,7 +314,7 @@ public class ClienteServiceTest {
     @Test
     @Order(15)
     @DisplayName("CP-VAL-CLI-09: Validar - Teléfono inválido - ERROR")
-    void testValidarTelefonoInvalido() {
+    void testValidarTelefonoInvalido() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
         clienteInvalido.setNombre("Juan");
@@ -341,7 +334,7 @@ public class ClienteServiceTest {
     @Test
     @Order(16)
     @DisplayName("CP-VAL-CLI-10: Validar - Email inválido - ERROR")
-    void testValidarEmailInvalido() {
+    void testValidarEmailInvalido() throws SQLException {    
         Cliente clienteInvalido = new Cliente();
         clienteInvalido.setCedula(TEST_CEDULA_VALIDA);
         clienteInvalido.setNombre("Juan");
