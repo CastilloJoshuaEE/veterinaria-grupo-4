@@ -1,5 +1,5 @@
 -- ============================================================
---  DB_VidaAnimal  |  ARCHIVO PRINCIPAL DE DESPLIEGUE
+--  db_veterinaria  |  ARCHIVO PRINCIPAL DE DESPLIEGUE
 --  GRUPO 4
 -- ============================================================
 USE master;
@@ -22,16 +22,16 @@ GO
 -- ============================================================
 --  CREAR BASE DE DATOS (solo si no existe)
 -- ============================================================
-IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'DB_VidaAnimal')
+IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'db_veterinaria')
 BEGIN
-    CREATE DATABASE DB_VidaAnimal;
-    PRINT 'Base de datos DB_VidaAnimal creada.';
+    CREATE DATABASE db_veterinaria;
+    PRINT 'Base de datos db_veterinaria creada.';
 END
 ELSE
-    PRINT 'Base de datos DB_VidaAnimal ya existe.';
+    PRINT 'Base de datos db_veterinaria ya existe.';
 GO
 
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 -- ============================================================
@@ -83,5 +83,5 @@ PRINT '>> Ejecutando: 08_Datos_Iniciales.sql';
 :r $(BasePath)08_Datos_Iniciales.sql
 
 -- ============================================================
-PRINT '>> Despliegue completo de DB_VidaAnimal finalizado.';
+PRINT '>> Despliegue completo de db_veterinaria finalizado.';
 GO

@@ -300,10 +300,10 @@ public class ServicioDAOImpl implements IServicioDAO {
     public List<Veterinario> obtenerTodosConEspecialidad() throws SQLException {
         List<Veterinario> lista = new ArrayList<>();
         String sql = "SELECT V.ID_VETERINARIO, V.CEDULA, V.NOMBRE, V.APELLIDO, V.TELEFONO, " +
-                     "E.NOMBRE_ESPECIALIDAD AS NOMBRE_ESPECIALIDAD " +
-                     "FROM VETERINARIO V LEFT JOIN ESPECIALIDAD_VETERINARIA E " +
+                     "E.NOMBRE_ESPECIALIDAD " +
+                     "FROM VETERINARIO V " +
+                     "LEFT JOIN ESPECIALIDAD_VETERINARIA E " +
                      "ON V.ID_ESPECIALIDAD = E.ID_ESPECIALIDAD";
-
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {

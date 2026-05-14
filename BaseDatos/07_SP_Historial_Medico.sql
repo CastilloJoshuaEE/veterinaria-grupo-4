@@ -1,7 +1,7 @@
 -- ============================================================
 --  MÓDULO 7 | SPs de Historial Médico
 -- ============================================================
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 CREATE PROCEDURE SP_REGISTRAR_HISTORIAL
