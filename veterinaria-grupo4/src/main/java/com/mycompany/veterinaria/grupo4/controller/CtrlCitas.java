@@ -10,6 +10,8 @@ import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.view.cita.FormRegistroCita;
 import com.mycompany.veterinaria.grupo4.view.cita.PnlCita;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,10 +29,17 @@ import org.springframework.web.client.RestTemplate;
 /**
  * Controlador de la vista de Citas.
  * <p>
- * Coordina la carga de datos, el formulario de registro/edición
- * y las operaciones REST sobre el recurso {@code /api/cita}.
- *
- * @author juan
+ * Coordina la carga de datos, el formulario de registro/edicion
+ * y las operaciones REST sobre el recurso /api/cita.
+ * Gestiona la programacion de citas, asignacion de veterinarios,
+ * y el flujo completo de agenda de mascotas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
+ * @version 1.0
+ * @since 1.0
  */
 public class CtrlCitas {
  
@@ -44,11 +53,14 @@ public class CtrlCitas {
     private final String apiServicio    = "http://localhost:8080/api/servicio";
     private final String apiVeterinario = "http://localhost:8080/api/veterinario";
  
-    /** Caché de servicios reutilizado en cada instancia del formulario. */
+    /** Cache de servicios reutilizado en cada instancia del formulario. */
     private List<Servicio> servicios = new ArrayList<>();
  
-    // ─── Constructor ──────────────────────────────────────────────────────────
- 
+    /**
+     * Constructor del controlador de citas.
+     * 
+     * @param pnlCita panel principal de citas
+     */
     public CtrlCitas(PnlCita pnlCita) {
         this.pnlCita = pnlCita;
         initTabla();
@@ -57,31 +69,43 @@ public class CtrlCitas {
         addListeners();
     }
  
-    // ─── Inicialización ───────────────────────────────────────────────────────
- 
+    /**
+     * Inicializa la estructura de la tabla de citas.
+     */
     private void initTabla() {
         pnlCita.getTblCita().setModel(new DefaultTableModel(
             new Object[][]{},
-            new String[]{"ID", "Cliente", "Mascota", "Servicio", "Fecha", "Estado", "Acción"}
+            new String[]{"ID", "Cliente", "Mascota", "Servicio", "Fecha", "Estado", "Accion"}
         ) {
             @Override public boolean isCellEditable(int r, int c) { return c == 6; }
         });
-        pnlCita.getTblCita().getColumnModel().getColumn(0).setMaxWidth(40);
-        pnlCita.getTblCita().getColumnModel().getColumn(1).setPreferredWidth(130);
-        pnlCita.getTblCita().getColumnModel().getColumn(2).setPreferredWidth(120);
-        pnlCita.getTblCita().getColumnModel().getColumn(3).setPreferredWidth(120);
-        pnlCita.getTblCita().getColumnModel().getColumn(4).setPreferredWidth(120);
-        pnlCita.getTblCita().getColumnModel().getColumn(5).setPreferredWidth(90);
-        pnlCita.getTblCita().getColumnModel().getColumn(6).setPreferredWidth(110);
+        var col = pnlCita.getTblCita().getColumnModel();
+        col.getColumn(0).setMaxWidth(40);
+        col.getColumn(1).setPreferredWidth(130);
+        col.getColumn(2).setPreferredWidth(120);
+        col.getColumn(3).setPreferredWidth(120);
+        col.getColumn(4).setPreferredWidth(120);
+        col.getColumn(5).setPreferredWidth(90);
+        col.getColumn(6).setPreferredWidth(110);
+        
+        int colAccion = 6; // El índice de la columna "Accion"
+        col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+        col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
         pnlCita.getTblCita().fixTable(pnlCita.getScrollPane());
     }
  
+    /**
+     * Registra los listeners del panel principal.
+     */
     private void addListeners() {
         pnlCita.getBtnBuscar().addActionListener(e -> cargarTabla());
         pnlCita.getBtnNuevo().addActionListener(e -> nuevo());
     }
  
-    /** Obtiene los servicios disponibles y los almacena en caché. */
+    /**
+     * Obtiene los servicios disponibles y los almacena en cache.
+     */
     private void cargarServicios() {
         try {
             List<Servicio> res = restTemplate.exchange(
@@ -94,8 +118,9 @@ public class CtrlCitas {
         }
     }
  
-    // ─── Tabla ────────────────────────────────────────────────────────────────
- 
+    /**
+     * Carga todas las citas desde la API y las muestra en la tabla.
+     */
     private void cargarTabla() {
         try {
             List<Cita> citas = restTemplate.exchange(
@@ -110,6 +135,11 @@ public class CtrlCitas {
         }
     }
  
+    /**
+     * Llena la tabla con los datos de las citas.
+     * 
+     * @param citas lista de citas a mostrar
+     */
     private void llenarTabla(List<Cita> citas) {
         DefaultTableModel model = (DefaultTableModel) pnlCita.getTblCita().getModel();
         model.setRowCount(0);
@@ -135,46 +165,52 @@ public class CtrlCitas {
                 nombreServicio,
                 sdf.format(c.getFechaHora()),
                 estado,
-                new ModelAction(
-                    () -> editar(c),
-                    () -> ver(c),
-                    () -> cancelar(c)
+                new ModelAction()
+                    .add(ModelAction.Tipo.EDITAR,   () -> editar(c))
+                    .add(ModelAction.Tipo.VER,      () -> ver(c))
+                    .add(ModelAction.Tipo.ELIMINAR, () -> cancelar(c)
                 )
             });
         }
     }
  
-    // ─── Formulario ───────────────────────────────────────────────────────────
- 
-    /** Abre el formulario en modo alta con todos los campos vacíos. */
+    /**
+     * Abre el formulario en modo alta con todos los campos vacios.
+     */
     private void nuevo() {
         form = new FormRegistroCita(parentFrame(), servicios);
         conectarForm(form);
         form.setVisible(true);
     }
  
-    /** Abre el formulario en modo edición precargado con los datos de {@code cita}. */
+    /**
+     * Abre el formulario en modo edicion precargado con los datos de la cita.
+     * 
+     * @param cita cita a editar
+     */
     private void editar(Cita cita) {
         Cliente cliente = cita.getCliente();
         form = new FormRegistroCita(parentFrame(), cita, cliente, servicios);
- 
+        // Deshabilitar busqueda       
+        form.getBtnBuscarCliente().setVisible(false);
+        form.getTxtCedula().setText(cliente.getCedula());
+        form.getTxtCedula().setEnabled(false);
+        // Cargar Mascotas
         List<Mascota> mascotas = obtenerMascotasPorCliente(
             cliente != null ? cliente.getIdCliente() : -1);
         form.cargarMascotasDisponibles(mascotas);
- 
         if (cita.getMascota() != null) {
             form.preseleccionarMascota(cita.getMascota().getIdMascota());
         }
- 
+        filtrarVeterinariosPorServicio(form);
         conectarForm(form);
         form.setVisible(true);
     }
  
     /**
      * Registra los listeners del formulario dado.
-     * <p>
      * Debe llamarse cada vez que se crea una nueva instancia del formulario,
-     * tanto en modo alta como en modo edición.
+     * tanto en modo alta como en modo edicion.
      *
      * @param form instancia activa del formulario
      */
@@ -191,7 +227,7 @@ public class CtrlCitas {
         form.getBtnAccion().addActionListener(e -> {
             String err = validarDatos(form);
             if (err != null) {
-                JOptionPane.showMessageDialog(form, err, "Validación", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(form, err, "Validacion", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if (form.isModoEdicion()) actualizar(form);
@@ -200,25 +236,14 @@ public class CtrlCitas {
     }
  
     /**
-     * Restablece todos los campos del formulario activo a su estado inicial.
-     * Útil si se desea reutilizar la misma instancia entre operaciones.
+     * Busca un cliente por cedula y carga sus mascotas en el combo correspondiente.
+     * 
+     * @param cedula numero de cedula del cliente
      */
-    private void limpiarForm() {
-        form.getTxtCedula().setText("");
-        form.setClienteSeleccionado(null);
-        form.cargarMascotasDisponibles(new ArrayList<>());
-        form.getCmbServicio().setSelectedIndex(-1);
-        form.getCmbVeterinario().removeAllItems();
-        form.getSpnHora().setValue(new Date());
-        form.getTxtObservaciones().setText("");
-    }
- 
-    /** Busca un cliente por cédula y carga sus mascotas en el combo correspondiente. */
     private void buscarClientePorCedula(String cedula) {
-        
         if (cedula.isEmpty()) {
             JOptionPane.showMessageDialog(form,
-                "Ingrese la cédula del cliente.", "Búsqueda", JOptionPane.WARNING_MESSAGE);
+                "Ingrese la cedula del cliente.", "Busqueda", JOptionPane.WARNING_MESSAGE);
             return;
         }
         try {
@@ -237,11 +262,9 @@ public class CtrlCitas {
         }
     }
  
-    // ─── Veterinario ──────────────────────────────────────────────────────────
- 
     /**
-     * Actualiza el combo de veterinarios en función del servicio seleccionado.
-     * En modo edición, reintenta preseleccionar al veterinario original.
+     * Actualiza el combo de veterinarios en funcion del servicio seleccionado.
+     * En modo edicion, reintenta preseleccionar al veterinario original.
      *
      * @param form instancia activa del formulario
      */
@@ -257,14 +280,35 @@ public class CtrlCitas {
                 HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<Veterinario>>() {}
             ).getBody();
- 
-            cargarVeterinarios(filtrados != null ? filtrados : new ArrayList<>());
- 
+
+            if (filtrados != null && !filtrados.isEmpty()) {
+                cargarVeterinarios(filtrados);
+            } else {
+                form.getCmbVeterinario().removeAllItems();
+                Veterinario sinVeterinarios = new Veterinario();
+                sinVeterinarios.setIdVeterinario(-1);
+                sinVeterinarios.setNombre(" No hay veterinarios disponibles");
+                sinVeterinarios.setApellido("para este servicio");
+                form.getCmbVeterinario().addItem(sinVeterinarios);
+                form.getCmbVeterinario().setEnabled(false);
+
+                JOptionPane.showMessageDialog(form,
+                    "No hay veterinarios disponibles para el servicio seleccionado.\n" +
+                    "Por favor, seleccione otro servicio o contacte al administrador.",
+                    "Sin veterinarios", JOptionPane.WARNING_MESSAGE);
+            }
+
             if (form.isModoEdicion() && form.getCitaActual().getVeterinario() != null) {
-                preseleccionarVeterinario(form.getCitaActual().getVeterinario().getIdVeterinario());
+                int idServicioOriginal = form.getCitaActual().getServicio().getIdServicio();
+                if (idServicioOriginal == seleccionado.getIdServicio()) {
+                    preseleccionarVeterinario(form.getCitaActual().getVeterinario().getIdVeterinario());
+                }
             }
         } catch (Exception e) {
             System.err.println("Error al filtrar veterinarios: " + e.getMessage());
+            JOptionPane.showMessageDialog(form,
+                "Error al cargar veterinarios: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
  
@@ -275,15 +319,24 @@ public class CtrlCitas {
      */
     private void cargarVeterinarios(List<Veterinario> lista) {
         form.getCmbVeterinario().removeAllItems();
+        form.getCmbVeterinario().setEnabled(true);
         for (Veterinario v : lista) {
             form.getCmbVeterinario().addItem(v);
+        }
+        if (lista.isEmpty()) {
+            Veterinario sinVeterinarios = new Veterinario();
+            sinVeterinarios.setIdVeterinario(-1);
+            sinVeterinarios.setNombre("No hay veterinarios");
+            sinVeterinarios.setApellido("disponibles");
+            form.getCmbVeterinario().addItem(sinVeterinarios);
+            form.getCmbVeterinario().setEnabled(false);
         }
         form.getCmbVeterinario().setSelectedIndex(-1);
     }
  
     /**
      * Preselecciona en el combo de veterinarios del formulario activo
-     * el elemento cuyo ID coincida con {@code idVeterinario}.
+     * el elemento cuyo ID coincida con el parametro.
      *
      * @param idVeterinario identificador del veterinario a seleccionar
      */
@@ -297,17 +350,15 @@ public class CtrlCitas {
         }
     }
  
-    // ─── Validación y construcción ────────────────────────────────────────────
- 
     /**
      * Valida los datos del formulario antes de enviarlos a la API.
      *
      * @param form instancia activa del formulario
-     * @return mensaje de error, o {@code null} si todo es correcto
+     * @return mensaje de error, o null si todo es correcto
      */
     private String validarDatos(FormRegistroCita form) {
         if (form.getClienteSeleccionado() == null)
-            return "Ingrese la cédula y busque al cliente.";
+            return "Ingrese la cedula y busque al cliente.";
         if (form.getCmbServicio().getSelectedItem() == null)
             return "Seleccione un servicio.";
         if (form.getCmbMascota().getSelectedItem() == null)
@@ -319,7 +370,12 @@ public class CtrlCitas {
         return null;
     }
  
-    /** Combina la fecha del calendario y la hora del spinner en un único {@link Date}. */
+    /**
+     * Combina la fecha del calendario y la hora del spinner en un unico Date.
+     * 
+     * @param form instancia activa del formulario
+     * @return fecha y hora combinadas
+     */
     private Date getFechaHoraCombinada(FormRegistroCita form) {
         Calendar cf = Calendar.getInstance();
         Calendar ch = Calendar.getInstance();
@@ -332,10 +388,8 @@ public class CtrlCitas {
     }
  
     /**
-     * Construye (o actualiza) el objeto {@link Cita} a partir del estado actual del formulario.
-     * <p>
-     * Cuando la cita es nueva ({@code getCitaActual() == null}), inicializa las entidades
-     * anidadas para evitar {@link NullPointerException}.
+     * Construye (o actualiza) el objeto Cita a partir del estado actual del formulario.
+     * Cuando la cita es nueva, inicializa las entidades anidadas.
      *
      * @param form instancia activa del formulario
      * @return cita lista para enviar a la API
@@ -363,8 +417,11 @@ public class CtrlCitas {
         return c;
     }
  
-    // ─── API ──────────────────────────────────────────────────────────────────
-    
+    /**
+     * Registra una nueva cita en el sistema.
+     * 
+     * @param form instancia activa del formulario
+     */
     private void registrar(FormRegistroCita form) {
         try {
             CitaRequest req = new CitaRequest();
@@ -376,10 +433,15 @@ public class CtrlCitas {
             JOptionPane.showMessageDialog(pnlCita,
                 "Error al registrar: " + ex.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
-            System.out.println(ex); //botrar despues
+            System.out.println(ex);
         }
     }
  
+    /**
+     * Actualiza una cita existente en el sistema.
+     * 
+     * @param form instancia activa del formulario
+     */
     private void actualizar(FormRegistroCita form) {
         try {
             CitaRequest req = new CitaRequest();
@@ -394,13 +456,23 @@ public class CtrlCitas {
         }
     }
  
+    /**
+     * Muestra los detalles de una cita.
+     * 
+     * @param c cita a visualizar
+     */
     private void ver(Cita c) {
         // TODO: panel de detalle de cita
         System.out.println("Ver cita: " + c.getIdCita());
     }
  
+    /**
+     * Cancela una cita existente.
+     * 
+     * @param c cita a cancelar
+     */
     private void cancelar(Cita c) {
-        String motivo = JOptionPane.showInputDialog(pnlCita, "Motivo de cancelación:");
+        String motivo = JOptionPane.showInputDialog(pnlCita, "Motivo de cancelacion:");
         if (motivo == null || motivo.trim().isEmpty()) return;
         try {
             restTemplate.put(apiCita + "/cancelar/" + c.getIdCita()
@@ -413,13 +485,11 @@ public class CtrlCitas {
         }
     }
  
-    // ─── Utilidades ───────────────────────────────────────────────────────────
- 
     /**
      * Obtiene las mascotas registradas para un cliente.
      *
      * @param idCliente identificador del cliente
-     * @return lista de mascotas, o lista vacía si falla la llamada
+     * @return lista de mascotas, o lista vacia si falla la llamada
      */
     private List<Mascota> obtenerMascotasPorCliente(int idCliente) {
         if (idCliente < 0) return new ArrayList<>();
@@ -435,7 +505,11 @@ public class CtrlCitas {
         }
     }
  
-    /** Devuelve el {@link Frame} padre del panel de citas. */
+    /**
+     * Devuelve el Frame padre del panel de citas.
+     * 
+     * @return Frame contenedor del panel
+     */
     private Frame parentFrame() {
         return (Frame) SwingUtilities.getWindowAncestor(pnlCita);
     }

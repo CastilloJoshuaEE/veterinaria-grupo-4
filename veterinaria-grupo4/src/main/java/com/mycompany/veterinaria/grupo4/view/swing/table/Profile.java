@@ -4,6 +4,9 @@
  */
 package com.mycompany.veterinaria.grupo4.view.swing.table;
 
+import com.formdev.flatlaf.FlatClientProperties;
+import javax.swing.border.EmptyBorder;
+
 /**
  *
  * @author juan
@@ -18,6 +21,9 @@ public class Profile extends javax.swing.JPanel {
         initComponents();
         pic.setIcon(data.getIcon());
         lblName.setText(data.getName());
+        setOpaque(true);
+        putClientProperty(FlatClientProperties.STYLE, "background:$Panel.background");
+        setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
     /**

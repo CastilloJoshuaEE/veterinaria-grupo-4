@@ -2,6 +2,21 @@ package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
 
+/**
+ * Entidad que representa el historial medico de una mascota.
+ * <p>
+ * Registra todas las interacciones clinicas de una mascota con la veterinaria,
+ * incluyendo referencias a citas y atenciones medicas. Proporciona informacion
+ * adicional como el nombre del servicio, el veterinario atendiente,
+ * diagnostico y tratamiento para facilitar consultas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+ * @version 1.0
+ * @since 1.0
+ */
 public class HistorialMedico {
     private int idHistorial;
     private int idMascota;
@@ -14,7 +29,8 @@ public class HistorialMedico {
     private String nombreVeterinario;
     private String diagnostico;
     private String tratamiento;
-
+    private String instrumentosUsados;    
+    private String medicamentosRecetados;
     public HistorialMedico() {}
 
     // Getters y Setters
@@ -36,4 +52,9 @@ public class HistorialMedico {
     public void setDiagnostico(String diagnostico) { this.diagnostico = diagnostico; }
     public String getTratamiento() { return tratamiento; }
     public void setTratamiento(String tratamiento) { this.tratamiento = tratamiento; }
+        public String getInstrumentosUsados() { return instrumentosUsados; }
+    public void setInstrumentosUsados(String instrumentosUsados) { this.instrumentosUsados = instrumentosUsados; }
+    public String getMedicamentosRecetados() { return medicamentosRecetados; }
+    public void setMedicamentosRecetados(String medicamentosRecetados) { this.medicamentosRecetados = medicamentosRecetados; }
+
 }

@@ -26,29 +26,37 @@ public class Menu extends JPanel {
 
     private final String menuItems[][] = {
         {"~PRINCIPAL~"},
-            {"Dashboard"},               //  Resumen general, gráficos. Citas del dia
-            {"Citas Médicas", 
-                //"Agendar",             //  Nueva Cita Medica
-                "Ver todas"},            //  Citas Medicas tabla
+            {"Bienvenida"},               //  Resumen general, gráficos. Citas del dia
+            {"Citas Médicas"
+                //,"Agendar"             //  Nueva Cita Medica
+                //,"Ver todas"
+            },            //  Citas Medicas tabla
         {"~CLÍNICA~"},
             {"Atención Médica"},         //  Tabla unificada: Fichas médicas e Historial
             {"Mascotas",
                 //"Nuevo",
-                "Ver todos"},            //  Tabla unificada: Directorio de pacientes y sus dueños
-            {"Clientes",
-                //"Nuevo",
-                "Ver todos"},
+                "Ver todos",
+                "Historial Médico"},
+            
+            
+            //  Tabla unificada: Directorio de pacientes y sus dueños
+            {"Clientes"
+                //,"Ver todos"
+            },
         {"~ADMINISTRACIÓN~"},
             {"Inventario",
                 "Medicamentos",          //  Tabla Medicamentos
                 "Instrumentos",          //  Tabla Instrumentos
                 "Servicios"},            //  Tabla Servicios
-            {"Facturación"},             //  Facturas
-            {"Personal Veterinario"},    //  CRUD de Medicos
+        {"Facturación"},             //  Facturas
+        {"Personal Veterinario"},    //  CRUD de Medicos
         {"~SISTEMA~"},
-            {"Configuración"},           //  Ajustes del sistema y computadora
-            {"Cerrar Sesión"}
-    };
+        {"Configuracion"},
+        {"Ayuda",           
+            "Ver Documentacion",
+            "Acerca de"},
+        {"Cerrar Sesion"}
+};
 
     public boolean isMenuFull() {
         return menuFull;

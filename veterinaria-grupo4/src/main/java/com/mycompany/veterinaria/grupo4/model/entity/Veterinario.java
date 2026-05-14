@@ -1,7 +1,21 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
-
+/**
+ * Entidad que representa a un veterinario que labora en la clinica.
+ * <p>
+ * Contiene la informacion profesional y personal del personal veterinario,
+ * incluyendo cedula, nombre, apellido, telefono, pago mensual, direccion,
+ * correo electronico, especialidad y fecha de registro. Permite gestionar
+ * al equipo de profesionales que atienden las mascotas.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author BESILLA TOMALA ANGEL KALED – MODULO: VETERINARIO
+ * @version 1.0
+ * @since 1.0
+ */
 public class Veterinario {
     private int idVeterinario;
     private String cedula;

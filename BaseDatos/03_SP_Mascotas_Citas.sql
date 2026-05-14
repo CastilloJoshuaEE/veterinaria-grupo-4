@@ -1,7 +1,7 @@
 -- ============================================================
 --  MÓDULO 3 | SPs de Mascotas y Citas
 -- ============================================================
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 -- ════════════════════════════════════════════════════════════
@@ -62,20 +62,62 @@ BEGIN
     END CATCH
 END;
 GO
+USE db_veterinaria;
+GO
 
-CREATE PROCEDURE SP_ELIMINAR_MASCOTA
+CREATE OR ALTER PROCEDURE SP_ELIMINAR_MASCOTA
     @ID_MASCOTA INT
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     BEGIN TRY
         BEGIN TRANSACTION;
+
+        -- Verificar si la mascota tiene atenciones médicas (antecedentes clínicos)
+        IF EXISTS (
+    SELECT 1
+    FROM ATENCION_MEDICA AM
+    INNER JOIN CITA C 
+        ON AM.ID_CITA = C.ID_CITA
+    WHERE C.ID_MASCOTA = @ID_MASCOTA
+)
+        BEGIN
+            -- Lanzar error con RAISERROR para que sea capturable
+            RAISERROR('La mascota ya posee una cita médica realizada. No se puede eliminar.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN 0;
+        END
+
+        -- Verificar si la mascota tiene citas pendientes
+        IF EXISTS (SELECT 1 FROM CITA WHERE ID_MASCOTA = @ID_MASCOTA AND ESTADO = 'PENDIENTE')
+        BEGIN
+            RAISERROR('La mascota tiene citas pendientes. No se puede eliminar.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN 0;
+        END
+
+        -- Eliminar ficha médica
         DELETE FROM FICHA_MEDICA WHERE ID_MASCOTA = @ID_MASCOTA;
-        DELETE FROM MASCOTA      WHERE ID_MASCOTA = @ID_MASCOTA;
+
+        -- Eliminar mascota
+        DELETE FROM MASCOTA WHERE ID_MASCOTA = @ID_MASCOTA;
+
         COMMIT TRANSACTION;
+        SELECT 1 AS RESULTADO;
         RETURN 1;
+
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        -- Re-lanzar el error
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
         RETURN 0;
     END CATCH
 END;
@@ -357,27 +399,44 @@ BEGIN
     WHERE C.ID_CITA = @ID_CITA;
 END;
 GO
-
 CREATE OR ALTER PROCEDURE SP_OBTENER_CITAS_PENDIENTES
 AS
 BEGIN
     SELECT C.ID_CITA,
-           CONCAT(CL.NOMBRE, ' ', CL.APELLIDO) AS CLIENTE,
+           C.ESTADO,                                           
+           C.FECHA_HORA,
+           C.OBSERVACIONES,
+           C.FECHA_REGISTRO,                                   
+
+           -- Cliente
+           CL.ID_CLIENTE,                                      
+           CONCAT(CL.NOMBRE, ' ', CL.APELLIDO) AS NOMBRE_CLIENTE, 
            CL.CEDULA AS CEDULA_CLIENTE,
-           M.NOMBRE  AS MASCOTA,
+
+           -- Mascota
+           M.ID_MASCOTA,                                       
+           M.NOMBRE AS NOMBRE_MASCOTA,
+           M.ESPECIE AS ESPECIE_MASCOTA,
+           
+           -- Servicio
+           S.ID_SERVICIO,                                      
            S.NOMBRE_SERVICIO,
-           C.ID_VETERINARIO, V.NOMBRE AS NOMBRE_VETERINARIO, V.APELLIDO AS APELLIDO_VETERINARIO,
-           C.FECHA_HORA, C.OBSERVACIONES,
+
+           -- Veterinario
+           V.ID_VETERINARIO,
+           V.NOMBRE  AS NOMBRE_VETERINARIO,
+           V.APELLIDO AS APELLIDO_VETERINARIO,
+
            CONCAT(S.NOMBRE_SERVICIO, ' - ',
                   FORMAT(C.FECHA_HORA, 'dd/MM/yyyy HH:mm'),
                   ' - ', M.NOMBRE, ' (Dr. ', V.APELLIDO, ')') AS DISPLAY_TEXT
     FROM CITA C
     INNER JOIN CLIENTE     CL ON C.ID_CLIENTE     = CL.ID_CLIENTE
     INNER JOIN MASCOTA     M  ON C.ID_MASCOTA     = M.ID_MASCOTA
-    INNER JOIN SERVICIO    S  ON C.ID_SERVICIO    = S.ID_SERVICIO
+    INNER JOIN SERVICIO     S  ON C.ID_SERVICIO    = S.ID_SERVICIO
     INNER JOIN VETERINARIO V  ON C.ID_VETERINARIO = V.ID_VETERINARIO
     WHERE C.ESTADO = 'PENDIENTE'
-    ORDER BY C.FECHA_HORA;
+    ORDER BY C.FECHA_HORA ASC;
 END;
 GO
 

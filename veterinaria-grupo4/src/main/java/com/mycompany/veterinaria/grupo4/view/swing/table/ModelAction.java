@@ -1,26 +1,37 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.veterinaria.grupo4.view.swing.table;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
+ * Modelo de acciones para una celda de tabla.
+ * Usa builder fluido: se agregan solo las acciones necesarias,
+ * en el orden en que deben aparecer visualmente.
  *
- * @author Juan 
+ * @author Juan
  */
 public class ModelAction {
-    
-    private final Runnable onEdit;
-    private final Runnable onView;
-    private final Runnable onDelete;
-    
-    public ModelAction(Runnable onEdit, Runnable onView, Runnable onDelete) {
-        this.onEdit   = onEdit;
-        this.onView   = onView;
-        this.onDelete = onDelete;
+
+    public enum Tipo {
+        EDITAR,
+        VER,
+        ELIMINAR,
+        ATENCION,
+        HISTORIAL,
+        ATENDER
     }
-    
-    public Runnable getOnEdit()   { return onEdit;   }
-    public Runnable getOnView()   { return onView;   }
-    public Runnable getOnDelete() { return onDelete; }
+
+    private final Map<Tipo, Runnable> acciones = new LinkedHashMap<>();
+
+    public ModelAction add(Tipo tipo, Runnable accion) {
+        if (tipo != null && accion != null) {
+            acciones.put(tipo, accion);
+        }
+        return this;
+    }
+
+    public Map<Tipo, Runnable> getAcciones() {
+        return Collections.unmodifiableMap(acciones);
+    }
 }

@@ -1,7 +1,21 @@
 package com.mycompany.veterinaria.grupo4.model.entity;
 
 import java.util.Date;
-
+/**
+ * Entidad que representa un recordatorio o notificacion del sistema.
+ * <p>
+ * Gestiona los avisos automaticos enviados a los usuarios sobre eventos
+ * como citas programadas, vacunas proximas a vencer, entre otros.
+ * Incluye informacion del tipo de recordatorio, mensaje, fecha de envio,
+ * contador de visualizaciones y estado de lectura.
+ * </p>
+ * 
+ * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
+ * 
+ * @author CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
+ * @version 1.0
+ * @since 1.0
+ */
 public class Recordatorio {
     private int idRecordatorio;
     private Integer idUsuario;
