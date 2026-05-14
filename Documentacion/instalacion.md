@@ -1,6 +1,14 @@
+## 1. Instalar XAAMP(si no esta instalado si desea usar el mysql workbench)
 
+Iniciar los modulos importantes:
+
+![1778718701468](image/instalacion/1778718701468.png)
 
 ## Instalar Maven (si no esta instalado)
+
+---
+
+
 
 ### 2.1 Verificar si Maven ya esta instalado
 
@@ -22,13 +30,11 @@ Descargar: **Binary zip archive** (ejemplo: apache-maven-3.9.x-bin.zip)
 
 Extraer en una ruta simple, por ejemplo:
 
-
 ```
 C:\maven
 ```
 
 Debe quedar asi:
-
 
 ```
 C:\maven\apache-maven-3.9.x\
@@ -49,7 +55,6 @@ Abrir: Buscar en Windows -> "Variables de entorno"
 
 Agregar esta ruta:
 
-
 ```
 C:\maven\apache-maven-3.9.x\bin
 ```
@@ -67,7 +72,6 @@ mvn -v
 ```
 
 Debe mostrar algo como:
-
 
 ```
 Apache Maven 3.9.x
@@ -130,7 +134,6 @@ Si funciona debe aparecer:
 
 Ejecutar el codigo ubicado en:
 
-
 ```
 BaseDatos/CODIGO_PARA_MYSQL/codigo_completo.sql
 ```
@@ -144,7 +147,6 @@ en su MySQL Workbench.
 ### 4.1 Ubicar archivo de configuracion
 
 El archivo se encuentra en:
-
 
 ```
 src/main/resources/database.properties
@@ -243,7 +245,6 @@ D:\Users\Usuario\Documents\octavo semestre\VERIFICACION Y VALIDACION DE SOFTWARE
 
 Abrir el navegador y acceder a:
 
-
 ```
 http://localhost:8080
 ```
@@ -251,7 +252,6 @@ http://localhost:8080
 ### 7.2 Probar un endpoint
 
 Ejemplo:
-
 
 ```
 POST http://localhost:8080/cliente/login
@@ -268,7 +268,6 @@ Si todo sale bien, en su motor de base de datos se mostrara:
 | TRIGGER        | 3        |
 
 En la consola del proyecto aparecera:
-
 
 ```
 ========================================
@@ -309,6 +308,38 @@ Conexion establecida con MYSQL (o SQLSERVER)
 3. Reiniciar el servicio SQL Server
 4. Probar conexion con `sqlcmd`
 
+## Configuración de puerto(solo si es necesario)
+
+Ir a:
+
+TCP/IP → IP Addresses → IPAll
+
+Configurar:
+
+TCP Dynamic Ports = (vacío)
+
+TCP Port = 1433
+
+![1775876064255](image/instalacion/1775876064255.png)
+
+## Reiniciar servicio SQL Server
+
+SQL Server Services
+
+→ SQL Server (MSSQLSERVER)
+
+→ Restart
+
+---
+
+## Probar conexión SQL Server por consola
+
+sqlcmd -S TU_SERVIDOR_SQL_SERVER,1433 -E -C
+
+Si funciona debe aparecer:
+
+1>
+
 ### Error de conexion a MySQL
 
 1. Verificar que el servicio MySQL esta corriendo
@@ -318,7 +349,6 @@ Conexion establecida con MYSQL (o SQLSERVER)
 ---
 
 ## 9. Estructura del Proyecto
-
 
 ```
 veterinaria-grupo4/
@@ -370,14 +400,7 @@ Ejecutar en orden:
 
 1. `00_MAIN.sql` - Crea toda la estructura de la base de datos
 
-
-
-
-
-
 ![1775881260894](image/instalacion/1775881260894.png)
-
-
 
 ### Para MySQL
 
@@ -388,171 +411,7 @@ BaseDatos/CODIGO_PARA_MYSQL/codigo_completo.sql
 ```
 
 
-Abre CMD o PowerShell en la carpeta del proyecto:
-
-cd "D:\Users\Usuario\Documents\octavo semestre\VERIFICACION Y VALIDACION DE SOFTWARE\UNIDAD 1\PROYECTO PRIMER PARCIAL\proyecto\veterinaria-grupo-4\veterinaria-grupo4"
-
----
-
-## 1. Verificar Maven
-
-mvn -v
-
----
-
-Si no funciona:
-
-## 1. Descargar Maven
-
-Ve a:
-
-[https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
-
-Descarga:
-
-Binary zip archive (ejemplo: apache-maven-3.9.x-bin.zip)
-
----
-
-## 2. Extraer Maven
-
-Extraer en una ruta simple, por ejemplo:
-
-C:\maven
-
-Debe quedar así:
-
-C:\maven\apache-maven-3.9.x\
-
----
-
-## 3. Configurar variables de entorno
-
-Abrir:
-
-Buscar en Windows → “Variables de entorno”
-
----
-
-### Crear variable MAVEN_HOME
-
-Nombre:
-
-MAVEN_HOME
-
-Valor:
-
-C:\maven\apache-maven-3.9.x
-
----
-
-### Editar variable PATH
-
-Agregar esta ruta:
-
-C:\maven\apache-maven-3.9.x\bin
-
----
-
-## 4. Reiniciar terminal
-
-Cerrar CMD o PowerShell y abrir uno nuevo
-
----
-
-## 5. Verificar instalación
-
-mvn -v
-
-Debe mostrar algo como:
-
-Apache Maven 3.9.x
-
-Java version: 17
-
----
-
-## 6. Descargar dependencias del proyecto
-
-En la carpeta del proyecto ejecutar:
-
-mvn clean install
-
----
-
-## 7. Ejecutar el proyecto Spring Boot
-
-mvn spring-boot:run
-
----
-
-## 7. Ejecutar la aplicación desde la carpeta raíz por línea de comandos de windows (opcional)
-
-mvn spring-boot:run
-
----
-
-## 8. URL de ejecución
-
-[http://localhost:8080](http://localhost:8080)
-
----
-
-## 9. Probar endpoint
-
-POST [http://localhost:8080/cliente/login](http://localhost:8080/cliente/login)
-
----
-
-## 10. Problemas de conexión con SQL Server
-
-Verificar en SQL Server Configuration Manager:
-
-SQL Server Network Configuration
-
-→ Protocols for MSSQLSERVER
-
-### Habilitar TCP/IP
-
-TCP/IP debe estar:
-
-Enabled
-
-## 11. Configuración de puerto
-
-Ir a:
-
-TCP/IP → IP Addresses → IPAll
-
-Configurar:
-
-TCP Dynamic Ports = (vacío)
-
-TCP Port = 1433
-
-![1775876064255](image/instalacion/1775876064255.png)
-
-## 12. Reiniciar servicio SQL Server
-
-SQL Server Services
-
-→ SQL Server (MSSQLSERVER)
-
-→ Restart
-
----
-
-## 13. Probar conexión SQL Server por consola
-
-sqlcmd -S TU_SERVIDOR_SQL_SERVER,1433 -E -C
-
-Si funciona debe aparecer:
-
-1>
-
----
-
-## 14. Ejecutar en NetBeans IDE 26
+## 12. Ejecutar en NetBeans IDE 26
 
 Usar botón verde (Run Project)
 
@@ -560,19 +419,14 @@ El proyecto debe ser ejecutado como proyecto Maven/Spring BooT como “Run File�
 
 ![1775880575906](image/instalacion/1775880575906.png)
 
-## 15. Comando final de ejecución manual en windows (Opcional) usar la carpeta raíz
+## 14.1. Comando final de ejecución manual en windows (Opcional) usar la carpeta raíz
 
 D:\Users\Usuario\Documents\octavo semestre\VERIFICACION Y VALIDACION DE SOFTWARE\UNIDAD 1\PROYECTO PRIMER PARCIAL\proyecto\veterinaria-grupo-4\veterinaria-grupo4> mvn spring-boot:run
 
-
-EN EL CASO DE TENER COMO BASE DE DATOS EL MYSQL WORKBENCH USAR EL CÓDIGO UBICADO EN LA CARPETA BaseDatos/CODIGO_PARA_MYSQL/codigo_completo.sql
-
-en su workbench mysql y modificar el db.type del database.properties de la carpeta src/main/resources/database.properties para usar ya sea sql server como mysql solo cambiando aquello
-
-Si todo sale bien saldrá en su resultados de su motor de base de datos:
+Si todo sale bien saldrá en su resultados de su motor de base de datos(mysql o sqlserver):
 
 PROCEDURE: 105
 
 TABLE: 21
 
-TRIGGER: 3
+TRIGGER: 3 y datos iniciales insertados correctamente.
