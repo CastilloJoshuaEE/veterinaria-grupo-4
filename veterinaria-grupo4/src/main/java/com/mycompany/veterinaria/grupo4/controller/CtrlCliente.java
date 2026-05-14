@@ -6,6 +6,8 @@ import com.mycompany.veterinaria.grupo4.view.cliente.FormRegistroCliente;
 import com.mycompany.veterinaria.grupo4.view.cliente.PnlCliente;
 import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
 import com.mycompany.veterinaria.grupo4.view.swing.table.Table;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
+import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -45,7 +47,7 @@ public class CtrlCliente {
      */
     public CtrlCliente(PnlCliente pnlCliente) {
         this.pnlCliente = pnlCliente;
-        this.tblCliente = pnlCliente.getTblCliente();
+        initTabla();
         cargarTabla();
         addListeners();
     }
@@ -56,6 +58,31 @@ public class CtrlCliente {
     private void addListeners() {
         pnlCliente.getBtnBuscar().addActionListener(e -> buscar());
         pnlCliente.getBtnNuevo().addActionListener(e -> nuevo());
+    }
+    
+    /**
+     * Inicializa la estructura de la tabla de mascotas.
+     */
+    private void initTabla() {
+        pnlCliente.getTblCliente().setModel(new DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Nombre", "Cedula", "Telefono", "Email", "Estado", "Accion"}
+            ) {
+                @Override
+                public boolean isCellEditable(int row, int col) {
+                    return col == 6;
+                }
+            });
+            var col = pnlCliente.getTblCliente().getColumnModel();
+            col.getColumn(0).setMaxWidth(50);
+            col.getColumn(5).setPreferredWidth(90);
+            col.getColumn(6).setPreferredWidth(120);
+            
+            int colAccion = 6; // El índice de la columna "Accion"
+            col.getColumn(colAccion).setCellRenderer(new TableCellRender());
+            col.getColumn(colAccion).setCellEditor(new TableCellAction());
+        
+        tblCliente.fixTable(pnlCliente.getScrollPane());
     }
 
     /**
@@ -72,21 +99,7 @@ public class CtrlCliente {
             List<Cliente> clientes = response.getBody();
             DefaultTableModel model = (DefaultTableModel) tblCliente.getModel();
             model.setRowCount(0);
-            
-            tblCliente.setModel(new DefaultTableModel(
-                new Object[][]{},
-                new String[]{"ID", "Nombre", "Cedula", "Telefono", "Email", "Estado", "Accion"}
-            ) {
-                @Override
-                public boolean isCellEditable(int row, int col) {
-                    return col == 6;
-                }
-            });
-
-            tblCliente.getColumnModel().getColumn(0).setMaxWidth(50);
-            tblCliente.getColumnModel().getColumn(5).setPreferredWidth(90);
-            tblCliente.getColumnModel().getColumn(6).setPreferredWidth(120);
-
+   
             if (clientes != null) {
                 for (Cliente c : clientes) {
                     tblCliente.addRow(new Object[]{
