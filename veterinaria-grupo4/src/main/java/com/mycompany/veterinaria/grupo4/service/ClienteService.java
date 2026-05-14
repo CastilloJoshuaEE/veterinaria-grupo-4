@@ -39,8 +39,24 @@ public class ClienteService {
     private static final Pattern PATRON_EMAIL = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     private static final Pattern PATRON_TELEFONO = Pattern.compile("^\\d{10}$");
     
-    private IClienteDAO clienteDAO = new ClienteDAOImpl();
+    private IClienteDAO clienteDAO;
+    /**
+     * Constructor por defecto (usado por Spring).
+     * Inicializa el DAO con la implementación por defecto.
+     */
+    public ClienteService() {
+        this.clienteDAO = new ClienteDAOImpl();
+    }
     
+    /**
+     * Constructor para inyección de dependencias (usado en pruebas unitarias).
+     * Permite mockear el DAO para pruebas aisladas.
+     *
+     * @param clienteDAO DAO de clientes (puede ser una implementación real o mock)
+     */
+    public ClienteService(IClienteDAO clienteDAO) {
+        this.clienteDAO = clienteDAO;
+    }    
     /**
      * Lista todos los clientes registrados.
      *
@@ -129,7 +145,7 @@ public class ClienteService {
      */
     public boolean crear(Cliente cliente) {
         validarCliente(cliente);
-        validarCedulaEstricta(cliente.getCedula());
+        validarCedula(cliente.getCedula());
         
         // Validar que la cedula no exista ya
         Cliente existente = obtenerPorCedula(cliente.getCedula());
@@ -251,43 +267,22 @@ public class ClienteService {
         // No se valida el digito verificador en consultas
     }
     
+    
     /**
-     * Validacion estricta de cedula para creacion y actualizacion.
-     * <p>
-     * Esta validacion incluye la verificacion del digito verificador
-     * y solo se aplica en operaciones criticas de escritura.
-     * </p>
+     * Valida la estructura de la cedula .
      *
      * @param cedula cedula a validar
      * @throws IllegalArgumentException si la cedula es invalida
      */
-    private void validarCedulaEstricta(String cedula) {
-        validarCedulaConsulta(cedula);
-        
-        try {
-            int provincia = Integer.parseInt(cedula.substring(0, 2));
-            if (provincia < 1 || provincia > 24) {
-                throw new IllegalArgumentException("Los primeros dos digitos de la cedula deben representar una provincia valida (01-24)");
-            }
-            
-            int[] coeficientes = {2, 1, 2, 1, 2, 1, 2, 1, 2};
-            int suma = 0;
-            for (int i = 0; i < 9; i++) {
-                int valor = Integer.parseInt(cedula.substring(i, i + 1)) * coeficientes[i];
-                suma += (valor > 9) ? valor - 9 : valor;
-            }
-            int digitoVerificador = Integer.parseInt(cedula.substring(9));
-            int residuo = suma % 10;
-            int digitoCalculado = (residuo == 0) ? 0 : 10 - residuo;
-            
-            if (digitoCalculado != digitoVerificador) {
-                throw new IllegalArgumentException("El digito verificador de la cedula es incorrecto");
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("La cedula debe contener solo digitos numericos");
+    private void validarCedula(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            throw new IllegalArgumentException("La cedula es obligatoria");
         }
+        if (!PATRON_CEDULA.matcher(cedula).matches()) {
+            throw new IllegalArgumentException("La cedula debe contener exactamente 10 digitos numericos");
+        }
+       
     }
-    
     /**
      * Valida el formato del correo electronico.
      *
@@ -342,7 +337,7 @@ public class ClienteService {
             throw new IllegalArgumentException("El apellido no puede exceder los 50 caracteres");
         }
         
-        validarCedulaEstricta(cliente.getCedula());
+        validarCedula(cliente.getCedula());
         validarTelefono(cliente.getTelefono());
         validarEmail(cliente.getCorreoElectronico());
     }
