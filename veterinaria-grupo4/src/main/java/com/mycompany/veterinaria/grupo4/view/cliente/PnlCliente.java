@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.mycompany.veterinaria.grupo4.view.swing.Button;
 import com.mycompany.veterinaria.grupo4.view.swing.MyTextField;
 import com.mycompany.veterinaria.grupo4.view.swing.table.Table;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -42,6 +43,10 @@ public class PnlCliente extends javax.swing.JPanel {
 
     public MyTextField getTxtBusqueda() {
         return txtBusqueda;
+    }
+
+    public JScrollPane getScrollPane() {
+        return jScrollPane1;
     }
     
     
