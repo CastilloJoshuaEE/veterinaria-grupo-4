@@ -1,7 +1,7 @@
 -- ============================================================
---  MÓDULO 1 | Esquema de Tablas — DB_VidaAnimal
+--  MÓDULO 1 | Esquema de Tablas — db_veterinaria
 -- ============================================================
-USE DB_VidaAnimal;
+USE db_veterinaria;
 GO
 
 -- ─── Usuarios del sistema ────────────────────────────────────
