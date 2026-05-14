@@ -20,7 +20,7 @@ import java.sql.SQLException;
  */
 public class DatabaseConnection {
 
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=DB_VidaAnimal;encrypt=true;trustServerCertificate=true;";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=db_veterinaria;encrypt=true;trustServerCertificate=true;";
     private static final String USER = "veterinaria_user";
     private static final String PASSWORD = "123456";
     private static Connection connection = null;
