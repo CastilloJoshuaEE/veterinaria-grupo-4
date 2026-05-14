@@ -32,10 +32,58 @@ import java.util.List;
 @Service
 public class AtencionMedicaService {
     
-    private static final int DIAGNOSTICO_MIN_LENGTH = 3;  // Reducido de 10 a 3
-    private static final int TRATAMIENTO_MIN_LENGTH = 3;  // Reducido de 10 a 3
+    private static final int DIAGNOSTICO_MIN_LENGTH = 3;
+    private static final int TRATAMIENTO_MIN_LENGTH = 3;
     
-    private IAtencionMedicaDAO atencionDAO = new AtencionMedicaDAOImpl();
+    private IAtencionMedicaDAO atencionDAO;
+    private CitaService citaService;
+
+    // ========== CONSTRUCTORES ==========
+
+    /**
+     * Constructor por defecto (usado por Spring).
+     * Inicializa el DAO con la implementación por defecto y crea una instancia de CitaService.
+     */
+    public AtencionMedicaService() {
+        this.atencionDAO = new AtencionMedicaDAOImpl();
+        this.citaService = new CitaService();
+    }
+
+    /**
+     * Constructor para inyección de dependencias (usado en pruebas unitarias).
+     * Permite mockear el DAO y el CitaService para pruebas aisladas.
+     *
+     * @param atencionDAO DAO de atenciones medicas (puede ser una implementación real o mock)
+     * @param citaService Servicio de citas (puede ser una implementación real o mock)
+     */
+    public AtencionMedicaService(IAtencionMedicaDAO atencionDAO, CitaService citaService) {
+        this.atencionDAO = atencionDAO;
+        this.citaService = citaService;
+    }
+
+    /**
+     * Constructor para inyección solo del DAO.
+     * Crea una instancia por defecto de CitaService.
+     *
+     * @param atencionDAO DAO de atenciones medicas (puede ser una implementación real o mock)
+     */
+    public AtencionMedicaService(IAtencionMedicaDAO atencionDAO) {
+        this.atencionDAO = atencionDAO;
+        this.citaService = new CitaService();
+    }
+
+    /**
+     * Constructor para inyección solo del CitaService.
+     * Inicializa el DAO con la implementación por defecto.
+     *
+     * @param citaService Servicio de citas (puede ser una implementación real o mock)
+     */
+    public AtencionMedicaService(CitaService citaService) {
+        this.atencionDAO = new AtencionMedicaDAOImpl();
+        this.citaService = citaService;
+    }
+
+    // ========== MÉTODOS DEL SERVICIO ==========
 
     /**
      * Valida y guarda una nueva atencion medica en la base de datos.
@@ -48,7 +96,6 @@ public class AtencionMedicaService {
         validarAtencionMedica(atencion);
         
         // Validar que la cita asociada exista y no este cancelada
-        CitaService citaService = new CitaService();
         if (atencion.getIdCita() <= 0) {
             throw new IllegalArgumentException("Debe especificar una cita valida para la atencion medica");
         }
@@ -124,10 +171,6 @@ public class AtencionMedicaService {
             throw new IllegalArgumentException("No existe una atencion medica con ID: " + idAtencionMedica);
         }
         
-        // Verificar si tiene factura asociada
-        if (tieneFacturaAsociada(idAtencionMedica)) {
-            throw new IllegalStateException("No se puede eliminar la atencion medica porque tiene una factura asociada");
-        }
         
         try {
             return atencionDAO.eliminar(idAtencionMedica);
@@ -136,6 +179,8 @@ public class AtencionMedicaService {
             throw new RuntimeException("Error al eliminar la atencion medica", e);
         }
     }
+    
+    // ========== MÉTODOS PRIVADOS ==========
     
     /**
      * Valida todos los campos de una atencion medica.
@@ -165,19 +210,5 @@ public class AtencionMedicaService {
         }
     }
     
-    /**
-     * Verifica si una atencion medica tiene factura asociada.
-     *
-     * @param idAtencionMedica identificador de la atencion
-     * @return true si tiene factura asociada
-     */
-    private boolean tieneFacturaAsociada(int idAtencionMedica) {
-        FacturaService facturaService = new FacturaService();
-        try {
-            // Intentar obtener facturas asociadas a esta atencion
-            return false;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+
 }
