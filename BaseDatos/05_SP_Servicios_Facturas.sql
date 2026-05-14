@@ -235,7 +235,7 @@ BEGIN
     -- 1. Datos del cliente y factura - DEVOLVER FECHA COMO DATETIME
     SELECT TOP 1
         F.ID_FACTURA,
-        F.FECHA,  -- ← Cambiado: enviar como DATETIME, no como VARCHAR
+        F.FECHA,  --  Cambiado: enviar como DATETIME, no como VARCHAR
         F.SUBTOTAL,
         F.IVA,
         F.TOTAL,

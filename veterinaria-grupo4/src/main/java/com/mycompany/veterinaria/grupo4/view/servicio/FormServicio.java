@@ -211,7 +211,7 @@ public class FormServicio extends JDialog {
         btnAsignar.setForeground(Color.WHITE);
         
         btnQuitar = new Button();
-        btnQuitar.setText("← Quitar ←");
+        btnQuitar.setText(" Quitar ");
         btnQuitar.setBackground(new Color(200, 60, 60));
         btnQuitar.setForeground(Color.WHITE);
         

@@ -130,7 +130,7 @@ public class FormRegistroMascota extends JDialog {
         addWindowFocusListener(new WindowFocusListener() {
             @Override public void windowGainedFocus(WindowEvent e) {}
             @Override public void windowLostFocus(WindowEvent e) {
-                if (seleccionandoFoto) return;      // ← no cerrar mientras el explorador está abierto
+                if (seleccionandoFoto) return;      //  no cerrar mientras el explorador está abierto
                 if (calendarPopup != null && e.getOppositeWindow() == calendarPopup) return;
                 if (calendarPopup != null) { calendarPopup.dispose(); calendarPopup = null; }
                 dispose();
