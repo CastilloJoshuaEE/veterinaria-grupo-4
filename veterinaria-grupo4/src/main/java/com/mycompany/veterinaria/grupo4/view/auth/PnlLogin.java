@@ -44,14 +44,14 @@ public class PnlLogin extends javax.swing.JLayeredPane {
     
     private void initRegister() {
         register.setLayout(new MigLayout("wrap", "push[center]push", "push[]25[]10[]10[]25[]push"));
-        JLabel label = new JLabel("Create Account");
+        JLabel label = new JLabel("Crea tu cuenta");
         label.setFont(new Font("sansserif", 1, 30));
         label.setForeground(new Color(255,178,39));
         register.add(label);
         
         txtUser = new MyTextField();
         txtUser.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/user.png")));
-        txtUser.setHint("Name");
+        txtUser.setHint("Nombre");
         register.add(txtUser, "w 60%");
         
         txtEmail = new MyTextField();
@@ -61,18 +61,18 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         
         txtPass = new MyPasswordField();
         txtPass.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/pass.png")));
-        txtPass.setHint("Password");
+        txtPass.setHint("Contraseña");
         register.add(txtPass, "w 60%");
         Button cmd = new Button();
         cmd.setBackground(new Color(255,178,39));
         cmd.setForeground(new Color(250, 250, 250));
-        cmd.setText("SIGN UP");
+        cmd.setText("Registrarse");
         register.add(cmd, "w 40%, h 40");
     }
     
     private void initLogin() {
         login.setLayout(new MigLayout("wrap", "push[center]push", "push[]25[]10[]10[]25[]push"));
-        JLabel label = new JLabel("Sign In");
+        JLabel label = new JLabel("Iniciar Sesión");
         label.setFont(new Font("sansserif", 1, 30));
         label.setForeground(new Color(255,178,39));
         login.add(label);
@@ -84,10 +84,10 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         
         txtPass = new MyPasswordField();
         txtPass.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/pass.png")));
-        txtPass.setHint("Password");
+        txtPass.setHint("Contraseña");
         login.add(txtPass, "w 60%");
         
-        cmdForget = new JButton("Forgot your password ?");
+        cmdForget = new JButton("Olvidaste tu contraseña?");
         cmdForget.setForeground(new Color(100, 100, 100));
         cmdForget.setFont(new Font("sansserif", 1, 12));
         cmdForget.setContentAreaFilled(false);
@@ -97,7 +97,7 @@ public class PnlLogin extends javax.swing.JLayeredPane {
         cmdLogin = new Button();
         cmdLogin.setBackground(new Color(255,178,39));
         cmdLogin.setForeground(Color.white);
-        cmdLogin.setText("SIGN IN");
+        cmdLogin.setText("Iniciar Sesión");
         login.add(cmdLogin, "w 40%, h 40");
     }
     

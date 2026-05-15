@@ -42,20 +42,20 @@ public class PanelCover extends javax.swing.JPanel {
     }
     
     private void init() {
-        title = new JLabel("Welcome Back!");
+        title = new JLabel("Bienvenido de Vuelta!");
         title.setFont(new Font("sansserif", 1, 30));
         title.setForeground(new Color(245, 245, 245));
         add(title);
-        description = new JLabel("To keep connected with us please");
+        description = new JLabel("Vuelve a ingresar al sistema");
         description.setForeground(new Color(245, 245, 245));
         add(description);
-        description1 = new JLabel("login with your personal info");
+        description1 = new JLabel("Utiliza tus contarseña");
         description1.setForeground(new Color(245, 245, 245));
         add(description1);
         button = new ButtonOutLine();
         button.setBackground(new Color(255, 255, 255));
         button.setForeground(new Color(255, 255, 255));
-        button.setText("SIGN IN");
+        button.setText("Iniciar Sesión");
         button.addActionListener((ActionEvent ae) -> {
             event.actionPerformed(ae);
         });
@@ -133,15 +133,15 @@ public class PanelCover extends javax.swing.JPanel {
     public void login(boolean login) {
         if (this.isLogin != login) {
             if (login) {
-                title.setText("hello, Friend!");
-                description.setText("Enter your personal details");
-                description1.setText("and start journey with us");
-                button.setText("SIGN UP");
+                title.setText("Hola, Amigo!");
+                description.setText("Ingresa tus datos personales");
+                description1.setText("e inicia una nueva cuenta");
+                button.setText("REGISTRARSE");
             } else {
-                title.setText("Welcome Back!");
-                description.setText("To keep connected with us please");
-                description1.setText("login with your personal info");
-                button.setText("SIGN IN");
+                title.setText("Bienvenido de vuelta!");
+                description.setText("Vuelve a ingresar al sistema");
+                description1.setText("Utiliza tus credenciales");
+                button.setText("INICIAR SESIÓN");
             }
             this.isLogin = login;
         }
