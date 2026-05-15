@@ -32,13 +32,33 @@ import java.util.List;
  */
 @Service
 public class CitaService {
-    
+
     private static final String ESTADO_PENDIENTE = "PENDIENTE";
     private static final String ESTADO_CANCELADA = "CANCELADA";
     private static final String ESTADO_REALIZADA = "REALIZADA";
-    
-    private ICitaDAO citaDAO = new CitaDAOImpl();
 
+    private ICitaDAO citaDAO;
+    private VeterinarioService veterinarioService;
+    private ServicioService servicioService;
+    private MascotaService mascotaService;
+
+    /** Constructor por defecto (usado por Spring) */
+    public CitaService() {
+        this.citaDAO = new CitaDAOImpl();
+        this.veterinarioService = new VeterinarioService();
+        this.servicioService = new ServicioService();
+        this.mascotaService = new MascotaService();
+    }
+
+    /** Constructor para inyección de dependencias (usado en pruebas) */
+    public CitaService(ICitaDAO citaDAO, VeterinarioService veterinarioService,
+                       ServicioService servicioService, MascotaService mascotaService) {
+        this.citaDAO = citaDAO;
+        this.veterinarioService = veterinarioService;
+        this.servicioService = servicioService;
+        this.mascotaService = mascotaService;
+    }
+    
     /**
      * Lista las citas programadas para una fecha especifica.
      *
@@ -113,21 +133,19 @@ public class CitaService {
      */
     public int agendar(Cita cita) {
         validarCita(cita);
-        
-        // Validar que la fecha sea futura
+
         Date ahora = new Date();
         if (cita.getFechaHora() != null && cita.getFechaHora().before(ahora)) {
             throw new IllegalArgumentException("No se puede agendar una cita en una fecha/hora pasada");
         }
-        
+
         // Validar que el veterinario exista
-        VeterinarioService veterinarioService = new VeterinarioService();
-        if (cita.getVeterinario() == null || veterinarioService.obtenerPorId(cita.getVeterinario().getIdVeterinario()) == null) {
+        if (cita.getVeterinario() == null ||
+                veterinarioService.obtenerPorId(cita.getVeterinario().getIdVeterinario()) == null) {
             throw new IllegalArgumentException("El veterinario especificado no existe");
         }
-        
-        // Validar que el servicio exista y este activo
-        ServicioService servicioService = new ServicioService();
+
+        // Validar que el servicio exista y esté activo
         var servicio = servicioService.obtenerPorId(cita.getServicio().getIdServicio());
         if (servicio == null) {
             throw new IllegalArgumentException("El servicio especificado no existe");
@@ -135,9 +153,8 @@ public class CitaService {
         if (!servicio.isEstado()) {
             throw new IllegalStateException("El servicio especificado no esta activo");
         }
-        
+
         // Validar que la mascota exista y pertenezca al cliente
-        MascotaService mascotaService = new MascotaService();
         var mascota = mascotaService.obtenerPorId(cita.getMascota().getIdMascota());
         if (mascota == null) {
             throw new IllegalArgumentException("La mascota especificada no existe");
@@ -145,7 +162,7 @@ public class CitaService {
         if (mascota.getIdCliente() != cita.getCliente().getIdCliente()) {
             throw new IllegalArgumentException("La mascota no pertenece al cliente especificado");
         }
-        
+
         try {
             return citaDAO.agendar(cita);
         } catch (SQLException e) {
@@ -153,7 +170,6 @@ public class CitaService {
             throw new RuntimeException("Error al agendar la cita", e);
         }
     }
-
     /**
      * Valida y actualiza los datos de una cita existente.
      *
