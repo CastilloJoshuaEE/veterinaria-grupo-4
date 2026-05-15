@@ -8,8 +8,6 @@ Iniciar los modulos importantes:
 
 ---
 
-
-
 ### 2.1 Verificar si Maven ya esta instalado
 
 **bash**
@@ -410,7 +408,6 @@ Ejecutar el archivo completo:
 BaseDatos/CODIGO_PARA_MYSQL/codigo_completo.sql
 ```
 
-
 ## 12. Ejecutar en NetBeans IDE 26
 
 Usar botón verde (Run Project)
@@ -419,7 +416,7 @@ El proyecto debe ser ejecutado como proyecto Maven/Spring BooT como “Run File�
 
 ![1775880575906](image/instalacion/1775880575906.png)
 
-## 14.1. Comando final de ejecución manual en windows (Opcional) usar la carpeta raíz
+## 13 Comando final de ejecución manual en windows (Opcional) usar la carpeta raíz
 
 D:\Users\Usuario\Documents\octavo semestre\VERIFICACION Y VALIDACION DE SOFTWARE\UNIDAD 1\PROYECTO PRIMER PARCIAL\proyecto\veterinaria-grupo-4\veterinaria-grupo4> mvn spring-boot:run
 
@@ -430,3 +427,12 @@ PROCEDURE: 105
 TABLE: 21
 
 TRIGGER: 3 y datos iniciales insertados correctamente.
+
+
+## 13 Comando para ejecutar test hechos en JUnit de ejecución manual en windows (Opcional) usar la carpeta raíz
+
+Ejecutar uno en específico:
+
+```
+mvn clean test -Dtest=CitaServiceTest
+```

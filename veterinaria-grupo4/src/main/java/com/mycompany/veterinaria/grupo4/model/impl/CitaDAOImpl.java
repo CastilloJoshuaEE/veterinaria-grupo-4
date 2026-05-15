@@ -417,7 +417,7 @@ public class CitaDAOImpl implements ICitaDAO {
         } catch (SQLException e) {
             vete.setNombre("");
         }
-        try { vete.setApellido(rs.getString("APELLIDO_VETERINARIO")); }  // ✅ nuevo
+        try { vete.setApellido(rs.getString("APELLIDO_VETERINARIO")); } 
         catch (SQLException e) { vete.setApellido(""); }
         cita.setVeterinario(vete);
 
