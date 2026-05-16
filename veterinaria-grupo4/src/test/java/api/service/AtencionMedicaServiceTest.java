@@ -65,7 +65,7 @@ public class AtencionMedicaServiceTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // PRUEBAS PARA EL MÉTODO guardar() - COMPLEJIDAD CICLOMÁTICA M=3
+    // PRUEBAS PARA EL MÉTODO guardar() - COMPLEJIDAD CICLOMÁTICA M=5
     // ═══════════════════════════════════════════════════════════════════════
 
     @Test
