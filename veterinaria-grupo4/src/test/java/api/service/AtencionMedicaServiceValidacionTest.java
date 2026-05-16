@@ -55,7 +55,7 @@ public class AtencionMedicaServiceValidacionTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // PRUEBAS PARA validarAtencionMedica() - COMPLEJIDAD CICLOMÁTICA M=2
+    // PRUEBAS PARA validarAtencionMedica() - COMPLEJIDAD CICLOMÁTICA M=6
     // ═══════════════════════════════════════════════════════════════════════
 
     @Test

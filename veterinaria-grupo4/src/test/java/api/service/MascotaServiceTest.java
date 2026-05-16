@@ -68,7 +68,7 @@ public class MascotaServiceTest {
     }
 
     // ═══════════════════════════════════════════════════════
-    // PRUEBAS PARA eliminar() - COMPLEJIDAD CICLOMÁTICA M=5
+    // PRUEBAS PARA eliminar() - COMPLEJIDAD CICLOMÁTICA M=3
     // ═══════════════════════════════════════════════════════
 
     @Test
@@ -165,7 +165,7 @@ public class MascotaServiceTest {
     }
 
     // ═══════════════════════════════════════════════════════
-    // PRUEBAS PARA actualizar() - COMPLEJIDAD CICLOMÁTICA M=3
+    // PRUEBAS PARA actualizar() - COMPLEJIDAD CICLOMÁTICA M=2
     // ═══════════════════════════════════════════════════════
 
     @Test

@@ -105,7 +105,7 @@ public class CitaServiceTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // PRUEBAS PARA listarPorServicioYVeterinario() - COMPLEJIDAD CICLOMÁTICA M=3
+    // PRUEBAS PARA listarPorServicioYVeterinario() - COMPLEJIDAD CICLOMÁTICA M=4
     // ═══════════════════════════════════════════════════════════════════════
 
     @Test
@@ -227,7 +227,7 @@ public class CitaServiceTest {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // PRUEBAS PARA agendar() - COMPLEJIDAD CICLOMÁTICA M=3
+    // PRUEBAS PARA agendar() - COMPLEJIDAD CICLOMÁTICA M=5
     // ═══════════════════════════════════════════════════════════════════════
 
     @Test
