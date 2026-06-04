@@ -347,23 +347,65 @@ public class CtrlMascotas {
             else registrar(form);
         });
     }
- 
     /**
      * Valida los campos obligatorios del formulario.
-     *
+     * 
      * @param form instancia activa del formulario
      * @return mensaje de error, o null si todo es valido
      */
     private String validarDatos(FormRegistroMascota form) {
-        if (form.getClienteSeleccionado() == null)
-            return "Busque y seleccione un cliente antes de continuar.";
-        if (form.getTxtNombre().getText().trim().isEmpty())
-            return "El nombre de la mascota es obligatorio.";
-        if (form.getTxtEspecie().getText().trim().isEmpty())
-            return "La especie es obligatoria.";
-        if (form.getCmbSexo().getSelectedIndex() < 0)
-            return "Seleccione el sexo de la mascota.";
-        return null;
+        // Validación de cliente
+        if (form.getClienteSeleccionado() == null) {
+            String msg = "Busque y seleccione un cliente antes de continuar.";
+            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+            return msg;
+        }
+
+        // Validación de nombre (obligatorio) - CORREGIDO
+        String nombre = form.getTxtNombre().getText().trim();
+        if (nombre.isEmpty()) {
+            String msg = "El nombre de la mascota es obligatorio.";
+            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+            return msg;
+        }
+
+        // Validación de especie (obligatorio)
+        String especie = form.getTxtEspecie().getText().trim();
+        if (especie.isEmpty()) {
+            String msg = "La especie es obligatoria.";
+            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+            return msg;
+        }
+
+        // Validación de sexo (obligatorio)
+        if (form.getCmbSexo().getSelectedIndex() < 0) {
+            String msg = "Seleccione el sexo de la mascota.";
+            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+            return msg;
+        }
+        // Validación de peso 
+        String pesoTxt = form.getTxtPeso().getText().trim();
+            if (!pesoTxt.isEmpty()) {
+                try {
+                    double peso = Double.parseDouble(pesoTxt);
+                    if (peso <= 0) {
+                        String msg = "El peso debe ser mayor a 0 kg.";
+                        JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+                        return msg;
+                    }
+                    if (peso > 200) {
+                        String msg = "El peso no puede exceder los 200 kg.";
+                        JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+                        return msg;
+                    }
+                } catch (NumberFormatException e) {
+                    String msg = "El peso debe ser un número válido (ej: 25.5).";
+                    JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
+                    return msg;
+                }
+            }
+  
+        return null; // Todo válido
     }
  
     /**

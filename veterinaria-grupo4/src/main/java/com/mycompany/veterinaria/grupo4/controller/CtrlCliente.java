@@ -272,26 +272,35 @@ public class CtrlCliente {
      * 
      * @param c cliente a registrar
      */
-    private void registrar(Cliente c) {
+private void registrar(Cliente c) {
+    try {
+        Boolean resultado = restTemplate.postForObject(apiBaseUrl + "/crear", c, Boolean.class);
+        if (Boolean.TRUE.equals(resultado)) {
+            JOptionPane.showMessageDialog(pnlCliente,
+                "Cliente registrado correctamente",
+                "Exito", JOptionPane.INFORMATION_MESSAGE);
+            cargarTabla();
+        }
+    } catch (org.springframework.web.client.HttpClientErrorException e) {
+        // Extraer mensaje del error 400/409
+        String mensajeError;
         try {
-            Boolean resultado = restTemplate.postForObject(apiBaseUrl + "/crear", c, Boolean.class);
-            if (Boolean.TRUE.equals(resultado)) {
-                JOptionPane.showMessageDialog(pnlCliente,
-                    "Cliente registrado correctamente",
-                    "Exito", JOptionPane.INFORMATION_MESSAGE);
-                cargarTabla();
-            } else {
-                JOptionPane.showMessageDialog(pnlCliente,
-                    "Error al registrar el cliente",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            mensajeError = e.getResponseBodyAsString();
+            // Limpiar comillas si vienen en JSON
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(pnlCliente,
-                "Error al registrar: " + ex.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            mensajeError = "Error al registrar el cliente";
         }
+        JOptionPane.showMessageDialog(pnlCliente, mensajeError, "Error", JOptionPane.ERROR_MESSAGE);
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(pnlCliente,
+            "Error al registrar: " + ex.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+        ex.printStackTrace();
     }
+}
 
     /**
      * Actualiza un cliente existente en la API.

@@ -1,389 +1,246 @@
 package com.mycompany.veterinaria.grupo4.service;
 
-import com.mycompany.veterinaria.grupo4.model.dao.ICitaDAO;
-import com.mycompany.veterinaria.grupo4.model.entity.Cita;
-import com.mycompany.veterinaria.grupo4.model.impl.CitaDAOImpl;
+import com.mycompany.veterinaria.grupo4.model.dao.IClienteDAO;
+import com.mycompany.veterinaria.grupo4.model.entity.Cliente;
+import com.mycompany.veterinaria.grupo4.model.impl.ClienteDAOImpl;
 import org.springframework.stereotype.Service;
+
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
- * Servicio para la gestion de citas medicas con validaciones de negocio.
+ * Servicio para la gestion de clientes con validaciones de negocio.
  * <p>
  * Proporciona la capa de servicios para las operaciones de negocio
- * relacionadas con el agendamiento, consulta, actualizacion y cancelacion
- * de citas medicas en el sistema veterinario.
+ * relacionadas con la gestion de clientes del sistema veterinario,
+ * incluyendo altas, bajas, modificaciones y consultas.
  * </p>
  * 
  * <p><b>Reglas de negocio implementadas:</b></p>
  * <ul>
- *   <li>No se pueden agendar citas en horarios ya ocupados por el mismo veterinario</li>
- *   <li>La fecha de la cita debe ser futura</li>
- *   <li>No se pueden modificar citas ya realizadas</li>
- *   <li>Los estados validos son: PENDIENTE, CANCELADA, REALIZADA</li>
+ *   <li>La cedula debe tener 10 digitos (validacion flexible para datos de prueba)</li>
+ *   <li>El correo electronico debe tener formato valido (opcional)</li>
+ *   <li>El telefono debe tener 10 digitos</li>
+ *   <li>No se pueden duplicar cedulas</li>
+ *   <li>No se puede eliminar un cliente con mascotas registradas</li>
  * </ul>
  * 
  * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
  * 
- * @author CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
+ * @author CASTRO AVILA JONATHAN XAVIER – MODULO: CLIENTE
  * @version 2.0
  * @since 1.0
  */
 @Service
-public class CitaService {
-
-    private static final String ESTADO_PENDIENTE = "PENDIENTE";
-    private static final String ESTADO_CANCELADA = "CANCELADA";
-    private static final String ESTADO_REALIZADA = "REALIZADA";
-
-    private ICitaDAO citaDAO;
-    private VeterinarioService veterinarioService;
-    private ServicioService servicioService;
-    private MascotaService mascotaService;
-
-    /** Constructor por defecto (usado por Spring) */
-    public CitaService() {
-        this.citaDAO = new CitaDAOImpl();
-        this.veterinarioService = new VeterinarioService();
-        this.servicioService = new ServicioService();
-        this.mascotaService = new MascotaService();
-    }
-
-    /** Constructor para inyección de dependencias (usado en pruebas) */
-    public CitaService(ICitaDAO citaDAO, VeterinarioService veterinarioService,
-                       ServicioService servicioService, MascotaService mascotaService) {
-        this.citaDAO = citaDAO;
-        this.veterinarioService = veterinarioService;
-        this.servicioService = servicioService;
-        this.mascotaService = mascotaService;
+public class ClienteService {
+    
+    private static final Pattern PATRON_CEDULA = Pattern.compile("^\\d{10}$");
+    private static final Pattern PATRON_EMAIL = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+    private static final Pattern PATRON_TELEFONO = Pattern.compile("^\\d{10}$");
+    
+    private IClienteDAO clienteDAO;
+    /**
+     * Constructor por defecto (usado por Spring).
+     * Inicializa el DAO con la implementación por defecto.
+     */
+    public ClienteService() {
+        this.clienteDAO = new ClienteDAOImpl();
     }
     
     /**
-     * Lista las citas programadas para una fecha especifica.
+     * Constructor para inyección de dependencias (usado en pruebas unitarias).
+     * Permite mockear el DAO para pruebas aisladas.
      *
-     * @param fecha fecha a consultar (no puede ser nula)
-     * @return lista de citas en la fecha
-     * @throws IllegalArgumentException si la fecha es nula
+     * @param clienteDAO DAO de clientes (puede ser una implementación real o mock)
      */
-    public List<Cita> listarPorFecha(Date fecha) {
-        if (fecha == null) {
-            throw new IllegalArgumentException("La fecha no puede ser nula");
-        }
+    public ClienteService(IClienteDAO clienteDAO) {
+        this.clienteDAO = clienteDAO;
+    }    
+    /**
+     * Lista todos los clientes registrados.
+     *
+     * @return lista de todos los clientes
+     */
+    public List<Cliente> listarTodos() {
         try {
-            return citaDAO.obtenerPorFecha(fecha);
+            return clienteDAO.obtenerTodos();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
-
+    
     /**
-     * Lista las citas asociadas a un cliente.
+     * Obtiene un cliente por su numero de cedula.
+     * <p>
+     * <b>Nota:</b> La validacion de cedula es flexible para permitir
+     * datos de prueba y cedulas semilla en la base de datos.
+     * </p>
      *
-     * @param idCliente identificador del cliente (debe ser > 0)
-     * @return lista de citas del cliente
+     * @param cedula numero de cedula del cliente (10 digitos)
+     * @return objeto Cliente encontrado
+     * @throws IllegalArgumentException si la cedula es invalida
+     */
+    public Cliente obtenerPorCedula(String cedula) {
+        validarCedulaConsulta(cedula);
+        try {
+            return clienteDAO.obtenerPorCedula(cedula);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Obtiene un cliente por su identificador.
+     *
+     * @param id identificador del cliente (debe ser > 0)
+     * @return objeto Cliente encontrado
      * @throws IllegalArgumentException si el id es invalido
      */
-    public List<Cita> listarPorCliente(int idCliente) {
+    public Cliente obtenerPorId(int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID de cliente invalido: " + id);
+        }
+        try {
+            return clienteDAO.obtenerPorId(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Busca clientes por nombre.
+     *
+     * @param nombre termino de busqueda (minimo 2 caracteres)
+     * @return lista de clientes que coinciden con el nombre
+     * @throws IllegalArgumentException si el nombre es nulo o muy corto
+     */
+    public List<Cliente> buscarPorNombre(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El termino de busqueda no puede estar vacio");
+        }
+        if (nombre.trim().length() < 2) {
+            throw new IllegalArgumentException("El termino de busqueda debe tener al menos 2 caracteres");
+        }
+        try {
+            return clienteDAO.buscarPorNombre("%" + nombre.trim() + "%");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Valida y crea un nuevo cliente en el sistema.
+     * <p>
+     * <b>Para creacion se aplica validacion estricta de cedula.</b>
+     * </p>
+     *
+     * @param cliente objeto Cliente a registrar
+     * @return true si la creacion fue exitosa
+     * @throws IllegalArgumentException si los datos del cliente son invalidos
+     */
+    public boolean crear(Cliente cliente) {
+        validarCliente(cliente);
+        validarCedula(cliente.getCedula());
+        
+        // Validar que la cedula no exista ya
+        Cliente existente = obtenerPorCedula(cliente.getCedula());
+        if (existente != null) {
+            throw new IllegalArgumentException("Ya existe un cliente con la cedula: " + cliente.getCedula());
+        }
+        
+        try {
+            return clienteDAO.insertar(cliente);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al crear el cliente en la base de datos", e);
+        }
+    }
+    
+    /**
+     * Valida y actualiza los datos de un cliente existente.
+     *
+     * @param cliente objeto Cliente con datos actualizados
+     * @return true si la actualizacion fue exitosa
+     * @throws IllegalArgumentException si los datos son invalidos o el cliente no existe
+     */
+    public boolean actualizar(Cliente cliente) {
+        validarCliente(cliente);
+        
+        if (cliente.getIdCliente() <= 0) {
+            throw new IllegalArgumentException("ID de cliente invalido para actualizar");
+        }
+        
+        // Validar que el cliente exista
+        Cliente existente = obtenerPorId(cliente.getIdCliente());
+        if (existente == null) {
+            throw new IllegalArgumentException("No existe un cliente con ID: " + cliente.getIdCliente());
+        }
+        
+        // Validar que la cedula no este siendo usada por otro cliente
+        Cliente porCedula = obtenerPorCedula(cliente.getCedula());
+        if (porCedula != null && porCedula.getIdCliente() != cliente.getIdCliente()) {
+            throw new IllegalArgumentException("La cedula " + cliente.getCedula() + " ya esta registrada por otro cliente");
+        }
+        
+        try {
+            return clienteDAO.actualizar(cliente);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al actualizar el cliente en la base de datos", e);
+        }
+    }
+    
+    /**
+     * Elimina un cliente del sistema.
+     * <p>
+     * <b>Reglas de negocio:</b> No se puede eliminar un cliente con mascotas registradas.
+     * </p>
+     *
+     * @param idCliente identificador del cliente a eliminar
+     * @return true si la eliminacion fue exitosa
+     * @throws IllegalArgumentException si el id es invalido
+     * @throws IllegalStateException si el cliente tiene mascotas asociadas
+     */
+    public boolean eliminar(int idCliente) {
         if (idCliente <= 0) {
             throw new IllegalArgumentException("ID de cliente invalido: " + idCliente);
         }
+        
+        Cliente existente = obtenerPorId(idCliente);
+        if (existente == null) {
+            throw new IllegalArgumentException("No existe un cliente con ID: " + idCliente);
+        }
+        
+        // Validar que no tenga mascotas asociadas
+        if (tieneMascotasAsociadas(idCliente)) {
+            throw new IllegalStateException("No se puede eliminar el cliente porque tiene mascotas registradas");
+        }
+        
         try {
-            return citaDAO.obtenerPorCliente(idCliente);
+            return clienteDAO.eliminar(idCliente);
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            throw new RuntimeException("Error al eliminar el cliente de la base de datos", e);
         }
     }
-
+    
     /**
-     * Obtiene una cita por su identificador.
-     *
-     * @param idCita identificador de la cita (debe ser > 0)
-     * @return objeto Cita encontrado
-     * @throws IllegalArgumentException si el id es invalido
-     */
-    public Cita obtenerPorId(int idCita) {
-        if (idCita <= 0) {
-            throw new IllegalArgumentException("ID de cita invalido: " + idCita);
-        }
-        try {
-            return citaDAO.obtenerPorId(idCita);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Valida y agenda una nueva cita en el sistema.
+     * Obtiene todas las cedulas de clientes registrados.
      * <p>
-     * <b>Reglas de negocio:</b>
-     * <ul>
-     *   <li>La fecha de la cita debe ser futura</li>
-     *   <li>No puede haber conflicto de horario con el mismo veterinario</li>
-     * </ul>
+     * <b>Nota:</b> Este metodo NO valida el digito verificador para permitir
+     * mostrar todas las cedulas existentes en el sistema, incluyendo datos de prueba.
      * </p>
      *
-     * @param cita objeto Cita a agendar
-     * @return ID de la cita agendada
-     * @throws IllegalArgumentException si los datos son invalidos
-     * @throws IllegalStateException si hay conflicto de horario
+     * @return lista de cedulas
      */
-    public int agendar(Cita cita) {
-        validarCita(cita);
-
-        Date ahora = new Date();
-        if (cita.getFechaHora() != null && cita.getFechaHora().before(ahora)) {
-            throw new IllegalArgumentException("No se puede agendar una cita en una fecha/hora pasada");
-        }
-
-        // Validar que el veterinario exista
-        if (cita.getVeterinario() == null ||
-                veterinarioService.obtenerPorId(cita.getVeterinario().getIdVeterinario()) == null) {
-            throw new IllegalArgumentException("El veterinario especificado no existe");
-        }
-
-        // Validar que el servicio exista y esté activo
-        var servicio = servicioService.obtenerPorId(cita.getServicio().getIdServicio());
-        if (servicio == null) {
-            throw new IllegalArgumentException("El servicio especificado no existe");
-        }
-        if (!servicio.isEstado()) {
-            throw new IllegalStateException("El servicio especificado no esta activo");
-        }
-
-        // Validar que la mascota exista y pertenezca al cliente
-        var mascota = mascotaService.obtenerPorId(cita.getMascota().getIdMascota());
-        if (mascota == null) {
-            throw new IllegalArgumentException("La mascota especificada no existe");
-        }
-        if (mascota.getIdCliente() != cita.getCliente().getIdCliente()) {
-            throw new IllegalArgumentException("La mascota no pertenece al cliente especificado");
-        }
-
+    public List<String> obtenerCedulas() {
         try {
-            return citaDAO.agendar(cita);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al agendar la cita", e);
-        }
-    }
-    /**
-     * Valida y actualiza los datos de una cita existente.
-     *
-     * @param cita objeto Cita con datos actualizados
-     * @return true si la actualizacion fue exitosa
-     * @throws IllegalArgumentException si los datos son invalidos
-     * @throws IllegalStateException si la cita ya fue realizada
-     */
-    public boolean actualizar(Cita cita) {
-        validarCita(cita);
-        
-        if (cita.getIdCita() <= 0) {
-            throw new IllegalArgumentException("ID de cita invalido para actualizar");
-        }
-        
-        // Validar que la cita exista
-        Cita existente = obtenerPorId(cita.getIdCita());
-        if (existente == null) {
-            throw new IllegalArgumentException("No existe una cita con ID: " + cita.getIdCita());
-        }
-        
-        // No se pueden modificar citas ya realizadas
-        if (ESTADO_REALIZADA.equals(existente.getEstado())) {
-            throw new IllegalStateException("No se puede modificar una cita ya realizada");
-        }
-        
-        try {
-            return citaDAO.actualizar(cita);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al actualizar la cita", e);
-        }
-    }
-
-    /**
-     * Cancela una cita con un motivo especifico.
-     *
-     * @param idCita identificador de la cita
-     * @param motivo razon de la cancelacion
-     * @return true si la cancelacion fue exitosa
-     * @throws IllegalArgumentException si el id es invalido o el motivo vacio
-     * @throws IllegalStateException si la cita ya fue realizada o cancelada
-     */
-    public boolean cancelar(int idCita, String motivo) {
-        if (idCita <= 0) {
-            throw new IllegalArgumentException("ID de cita invalido: " + idCita);
-        }
-        
-        if (motivo == null || motivo.trim().isEmpty()) {
-            throw new IllegalArgumentException("Debe especificar un motivo para la cancelacion");
-        }
-        
-        Cita existente = obtenerPorId(idCita);
-        if (existente == null) {
-            throw new IllegalArgumentException("No existe una cita con ID: " + idCita);
-        }
-        
-        if (ESTADO_REALIZADA.equals(existente.getEstado())) {
-            throw new IllegalStateException("No se puede cancelar una cita ya realizada");
-        }
-        
-        if (ESTADO_CANCELADA.equals(existente.getEstado())) {
-            throw new IllegalStateException("La cita ya se encuentra cancelada");
-        }
-        
-        try {
-            return citaDAO.cancelar(idCita, motivo);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al cancelar la cita", e);
-        }
-    }
-
-    /**
-     * Lista todas las citas registradas.
-     *
-     * @return lista de todas las citas
-     */
-    public List<Cita> listarTodas() {
-        try {
-            return citaDAO.obtenerTodas();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Lista las citas dentro de un rango de fechas.
-     *
-     * @param fechaInicio fecha de inicio del rango
-     * @param fechaFin fecha de fin del rango
-     * @return lista de citas en el rango
-     * @throws IllegalArgumentException si las fechas son invalidas
-     */
-    public List<Cita> listarPorRangoFechas(Date fechaInicio, Date fechaFin) {
-        if (fechaInicio == null || fechaFin == null) {
-            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias");
-        }
-        if (fechaInicio.after(fechaFin)) {
-            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin");
-        }
-        try {
-            return citaDAO.obtenerPorRangoFechas(fechaInicio, fechaFin);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Lista las citas filtradas por servicio, veterinario y estado.
-     *
-     * @param idServicio identificador del servicio
-     * @param idVeterinario identificador del veterinario
-     * @param estado estado de la cita
-     * @return lista de citas que coinciden con los filtros
-     * @throws IllegalArgumentException si los ids son invalidos
-     */
-    public List<Cita> listarPorServicioYVeterinario(int idServicio, int idVeterinario, String estado) {
-        if (idServicio <= 0) {
-            throw new IllegalArgumentException("ID de servicio invalido: " + idServicio);
-        }
-        if (idVeterinario <= 0) {
-            throw new IllegalArgumentException("ID de veterinario invalido: " + idVeterinario);
-        }
-        if (estado != null && !estado.trim().isEmpty()) {
-            validarEstado(estado);
-        }
-        try {
-            return citaDAO.obtenerPorServicioYVeterinario(idServicio, idVeterinario, estado);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Actualiza el estado de una cita.
-     *
-     * @param idCita identificador de la cita
-     * @param estado nuevo estado
-     * @return true si la actualizacion fue exitosa
-     * @throws IllegalArgumentException si el estado es invalido
-     * @throws IllegalStateException si la transicion de estado no es permitida
-     */
-    public boolean actualizarEstado(int idCita, String estado) {
-        if (idCita <= 0) {
-            throw new IllegalArgumentException("ID de cita invalido: " + idCita);
-        }
-        
-        validarEstado(estado);
-        
-        Cita existente = obtenerPorId(idCita);
-        if (existente == null) {
-            throw new IllegalArgumentException("No existe una cita con ID: " + idCita);
-        }
-        
-        // Validar transiciones de estado permitidas
-        if (ESTADO_REALIZADA.equals(existente.getEstado())) {
-            throw new IllegalStateException("No se puede cambiar el estado de una cita ya realizada");
-        }
-        
-        if (ESTADO_CANCELADA.equals(existente.getEstado()) && !ESTADO_CANCELADA.equals(estado)) {
-            throw new IllegalStateException("No se puede reactivar una cita cancelada");
-        }
-        
-        try {
-            return citaDAO.actualizarEstado(idCita, estado);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al actualizar el estado de la cita", e);
-        }
-    }
-
-    /**
-     * Elimina una cita del sistema.
-     *
-     * @param idCita identificador de la cita a eliminar
-     * @return true si la eliminacion fue exitosa
-     * @throws IllegalArgumentException si el id es invalido
-     * @throws IllegalStateException si la cita ya tiene atencion medica
-     */
-    public boolean eliminar(int idCita) {
-        if (idCita <= 0) {
-            throw new IllegalArgumentException("ID de cita invalido: " + idCita);
-        }
-        
-        Cita existente = obtenerPorId(idCita);
-        if (existente == null) {
-            throw new IllegalArgumentException("No existe una cita con ID: " + idCita);
-        }
-        
-        // No se puede eliminar una cita que ya tiene atencion medica
-        if (tieneAtencionMedica(idCita)) {
-            throw new IllegalStateException("No se puede eliminar una cita que ya tiene una atencion medica asociada");
-        }
-        
-        try {
-            return citaDAO.eliminar(idCita);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error al eliminar la cita", e);
-        }
-    }
-    
-    /**
-     * Obtiene todas las citas con estado pendiente.
-     *
-     * @return lista de citas pendientes
-     */
-    public List<Cita> listarPendientes() {
-        try {
-            return citaDAO.obtenerPendientes();
+            return clienteDAO.obtenerCedulas();
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -391,86 +248,113 @@ public class CitaService {
     }
     
     /**
-     * Valida los datos basicos de una cita.
+     * Validacion basica de cedula para consultas (solo formato, no digito verificador).
+     * <p>
+     * Esta validacion es mas permisiva para permitir consultar cedulas
+     * que puedan existir en la base de datos como datos de prueba.
+     * </p>
      *
-     * @param cita objeto a validar
+     * @param cedula cedula a validar
+     * @throws IllegalArgumentException si la cedula es invalida
+     */
+    private void validarCedulaConsulta(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            throw new IllegalArgumentException("La cedula es obligatoria");
+        }
+        if (!PATRON_CEDULA.matcher(cedula).matches()) {
+            throw new IllegalArgumentException("La cedula debe contener exactamente 10 digitos numericos");
+        }
+        // No se valida el digito verificador en consultas
+    }
+    
+    
+    /**
+     * Valida la estructura de la cedula .
+     *
+     * @param cedula cedula a validar
+     * @throws IllegalArgumentException si la cedula es invalida
+     */
+    private void validarCedula(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            throw new IllegalArgumentException("La cedula es obligatoria");
+        }
+        if (!PATRON_CEDULA.matcher(cedula).matches()) {
+            throw new IllegalArgumentException("La cedula debe contener exactamente 10 digitos numericos");
+        }
+       
+    }
+    /**
+     * Valida el formato del correo electronico.
+     *
+     * @param email correo a validar
+     * @throws IllegalArgumentException si el email es invalido
+     */
+    private void validarEmail(String email) {
+        if (email != null && !email.trim().isEmpty()) {
+            if (!PATRON_EMAIL.matcher(email).matches()) {
+                throw new IllegalArgumentException("El formato del correo electronico es invalido");
+            }
+        }
+    }
+    
+    /**
+     * Valida el formato del telefono.
+     *
+     * @param telefono telefono a validar
+     * @throws IllegalArgumentException si el telefono es invalido
+     */
+    private void validarTelefono(String telefono) {
+        if (telefono == null || telefono.trim().isEmpty()) {
+            throw new IllegalArgumentException("El telefono es obligatorio");
+        }
+        if (!PATRON_TELEFONO.matcher(telefono).matches()) {
+            throw new IllegalArgumentException("El telefono debe tener exactamente 10 digitos numericos");
+        }
+    }
+    
+    /**
+     * Valida todos los campos del objeto Cliente.
+     *
+     * @param cliente objeto a validar
      * @throws IllegalArgumentException si algun campo es invalido
      */
-    private void validarCita(Cita cita) {
-        if (cita == null) {
-            throw new IllegalArgumentException("La cita no puede ser nula");
+    private void validarCliente(Cliente cliente) {
+        if (cliente == null) {
+            throw new IllegalArgumentException("El objeto cliente no puede ser nulo");
         }
         
-        if (cita.getCliente() == null || cita.getCliente().getIdCliente() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un cliente valido");
+        if (cliente.getNombre() == null || cliente.getNombre().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del cliente es obligatorio");
+        }
+        if (cliente.getNombre().trim().length() > 50) {
+            throw new IllegalArgumentException("El nombre no puede exceder los 50 caracteres");
         }
         
-        if (cita.getMascota() == null || cita.getMascota().getIdMascota() <= 0) {
-            throw new IllegalArgumentException("Debe especificar una mascota valida");
+        if (cliente.getApellido() == null || cliente.getApellido().trim().isEmpty()) {
+            throw new IllegalArgumentException("El apellido del cliente es obligatorio");
+        }
+        if (cliente.getApellido().trim().length() > 50) {
+            throw new IllegalArgumentException("El apellido no puede exceder los 50 caracteres");
         }
         
-        if (cita.getServicio() == null || cita.getServicio().getIdServicio() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un servicio valido");
-        }
-        
-        if (cita.getVeterinario() == null || cita.getVeterinario().getIdVeterinario() <= 0) {
-            throw new IllegalArgumentException("Debe especificar un veterinario valido");
-        }
-        
-        if (cita.getFechaHora() == null) {
-            throw new IllegalArgumentException("La fecha y hora de la cita son obligatorias");
-        }
-        
-        // Validar estado si viene presente
-        if (cita.getEstado() != null && !cita.getEstado().trim().isEmpty()) {
-            validarEstado(cita.getEstado());
-        } else {
-            cita.setEstado(ESTADO_PENDIENTE);
-        }
+        validarCedula(cliente.getCedula());
+        validarTelefono(cliente.getTelefono());
+        validarEmail(cliente.getCorreoElectronico());
     }
     
     /**
-     * Valida que el estado sea uno de los permitidos.
+     * Verifica si un cliente tiene mascotas asociadas.
      *
-     * @param estado estado a validar
-     * @throws IllegalArgumentException si el estado es invalido
+     * @param idCliente identificador del cliente
+     * @return true si tiene mascotas asociadas
      */
-    private void validarEstado(String estado) {
-        String estadoUpper = estado.toUpperCase();
-        if (!estadoUpper.equals(ESTADO_PENDIENTE) && 
-            !estadoUpper.equals(ESTADO_CANCELADA) && 
-            !estadoUpper.equals(ESTADO_REALIZADA)) {
-            throw new IllegalArgumentException("Estado invalido. Los estados permitidos son: PENDIENTE, CANCELADA, REALIZADA");
-        }
-    }
-    
-    /**
-     * Verifica si una cita ya tiene una atencion medica asociada.
-     *
-     * @param idCita identificador de la cita
-     * @return true si tiene atencion medica
-     */
-    private boolean tieneAtencionMedica(int idCita) {
-        AtencionMedicaService atencionService = new AtencionMedicaService();
-        List<?> atenciones = null;
+    private boolean tieneMascotasAsociadas(int idCliente) {
+        MascotaService mascotaService = new MascotaService();
         try {
-            atenciones = atencionService.listarTodas();
+            List<?> mascotas = mascotaService.listarPorCliente(idCliente);
+            return mascotas != null && !mascotas.isEmpty();
         } catch (Exception e) {
             return false;
         }
-        if (atenciones != null) {
-            for (Object obj : atenciones) {
-                try {
-                    java.lang.reflect.Method m = obj.getClass().getMethod("getIdCita");
-                    Integer idCitaAtencion = (Integer) m.invoke(obj);
-                    if (idCitaAtencion != null && idCitaAtencion == idCita) {
-                        return true;
-                    }
-                } catch (Exception e) {
-                    // Ignorar errores de reflexion
-                }
-            }
-        }
-        return false;
     }
 }
