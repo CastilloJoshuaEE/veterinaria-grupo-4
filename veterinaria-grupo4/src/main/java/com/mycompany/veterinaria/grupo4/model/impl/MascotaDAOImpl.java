@@ -161,9 +161,12 @@ public class MascotaDAOImpl implements IMascotaDAO {
     public boolean eliminar(int idMascota) throws SQLException {
         String sql = "{call SP_ELIMINAR_MASCOTA(?)}";
         try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+            CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setInt(1, idMascota);
-            return stmt.executeUpdate() > 0;
+            // Ejecutar sin esperar resultset
+            boolean result = stmt.execute();
+            // Si no hubo excepción, la eliminación fue exitosa
+            return true;
         }
     }
 
