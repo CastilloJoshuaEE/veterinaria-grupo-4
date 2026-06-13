@@ -127,24 +127,6 @@ private void init(String titulo, String labelBoton) {
     setSize(480, 620);
     setLocationRelativeTo(getParent());
 
-    addWindowFocusListener(new WindowFocusListener() {
-        @Override 
-        public void windowGainedFocus(WindowEvent e) {}
-
-        @Override 
-        public void windowLostFocus(WindowEvent e) {
-            // NO cerrar el formulario si se perdió el foco (esto causa el cierre)
-            // Solo cerrar si se hace clic fuera con condiciones específicas
-            // Comentamos la línea dispose() para evitar el cierre automático
-            // dispose();  // <--- ELIMINAR O COMENTAR ESTA LÍNEA
-            
-            // Solo limpiar el popup de calendario si está abierto
-            if (calendarPopup != null && e.getOppositeWindow() != calendarPopup) {
-                calendarPopup.dispose();
-                calendarPopup = null;
-            }
-        }
-    });
 
     JPanel root = buildRoot();
     root.add(buildHeader(titulo),  BorderLayout.NORTH);
