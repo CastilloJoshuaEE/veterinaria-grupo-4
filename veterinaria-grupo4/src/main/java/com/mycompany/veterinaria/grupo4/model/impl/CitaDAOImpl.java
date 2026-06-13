@@ -389,7 +389,7 @@ public class CitaDAOImpl implements ICitaDAO {
         } catch (SQLException e) {
             mascota.setNombre("");
         }
-        try { mascota.setEspecie(rs.getString("ESPECIE_MASCOTA")); }  // ✅ nuevo
+        try { mascota.setEspecie(rs.getString("ESPECIE_MASCOTA")); }  //  nuevo
         catch (SQLException e) { mascota.setEspecie(""); }
         cita.setMascota(mascota);
 

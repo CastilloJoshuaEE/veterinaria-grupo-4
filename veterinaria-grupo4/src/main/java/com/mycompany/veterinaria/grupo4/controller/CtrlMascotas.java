@@ -181,6 +181,12 @@ public class CtrlMascotas {
      * Carga todas las mascotas desde la API.
      */
     private void cargarTabla() {
+        // Detener edición y limpiar selección antes de cargar
+        if (tblMascota.isEditing()) {
+            tblMascota.getCellEditor().stopCellEditing();
+        }
+        tblMascota.getSelectionModel().clearSelection();
+        
         try {
             List<Mascota> lista = restTemplate.exchange(
                 apiBaseUrl + "/mascota/listar",
@@ -192,6 +198,7 @@ public class CtrlMascotas {
             JOptionPane.showMessageDialog(pnlMascota,
                 "Error al cargar mascotas: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
  
@@ -202,8 +209,19 @@ public class CtrlMascotas {
      */
     private void llenarTabla(List<Mascota> mascotas) {
         DefaultTableModel model = (DefaultTableModel) tblMascota.getModel();
+        
+        // Detener cualquier edición en curso
+        if (tblMascota.isEditing()) {
+            tblMascota.getCellEditor().stopCellEditing();
+        }
+        
+        // Limpiar selección
+        tblMascota.getSelectionModel().clearSelection();
+        
+        // Limpiar modelo
         model.setRowCount(0);
-        if (mascotas == null) return;
+        
+        if (mascotas == null || mascotas.isEmpty()) return;
 
         for (Mascota m : mascotas) {
             byte[]    imgData = m.getFoto();
@@ -211,7 +229,7 @@ public class CtrlMascotas {
                 ? new ImageIcon(imgData)
                 : new ImageIcon(getClass().getResource("/icon/pet-paw.png"));
 
-            tblMascota.addRow(new Object[]{
+            model.addRow(new Object[]{
                 new ModelProfile(foto, m.getNombre()),
                 m.getEspecie(),
                 m.getRaza() != null ? m.getRaza() : "-",
@@ -221,12 +239,13 @@ public class CtrlMascotas {
                 new ModelAction()
                     .add(ModelAction.Tipo.EDITAR,    () -> editar(m))
                     .add(ModelAction.Tipo.VER,       () -> ver(m))
-                    //.add(ModelAction.Tipo.ATENCION,  () -> mostrarFichaMedica(m.getIdMascota(), m.getNombre()))
                     .add(ModelAction.Tipo.HISTORIAL, () -> mostrarHistorialMedico(m.getIdMascota(), m.getNombre()))
-                    .add(ModelAction.Tipo.ELIMINAR,  () -> eliminar(m)
-                )
+                    .add(ModelAction.Tipo.ELIMINAR,  () -> eliminar(m))
             });
         }
+        
+        // Notificar a la tabla que el modelo ha cambiado
+        model.fireTableDataChanged();
     }
     
     /**
@@ -356,55 +375,54 @@ public class CtrlMascotas {
     private String validarDatos(FormRegistroMascota form) {
         // Validación de cliente
         if (form.getClienteSeleccionado() == null) {
-            String msg = "Busque y seleccione un cliente antes de continuar.";
-            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-            return msg;
+            return "Busque y seleccione un cliente antes de continuar.";
         }
 
-        // Validación de nombre (obligatorio) - CORREGIDO
+        // Validación de nombre (obligatorio)
         String nombre = form.getTxtNombre().getText().trim();
         if (nombre.isEmpty()) {
-            String msg = "El nombre de la mascota es obligatorio.";
-            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-            return msg;
+            return "El nombre de la mascota es obligatorio.";
+        }
+        if (nombre.length() > 50) {
+            return "El nombre no puede exceder los 50 caracteres.";
         }
 
         // Validación de especie (obligatorio)
         String especie = form.getTxtEspecie().getText().trim();
         if (especie.isEmpty()) {
-            String msg = "La especie es obligatoria.";
-            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-            return msg;
+            return "La especie es obligatoria.";
+        }
+        if (especie.length() > 30) {
+            return "La especie no puede exceder los 30 caracteres.";
         }
 
         // Validación de sexo (obligatorio)
-        if (form.getCmbSexo().getSelectedIndex() < 0) {
-            String msg = "Seleccione el sexo de la mascota.";
-            JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-            return msg;
+        int selectedIndex = form.getCmbSexo().getSelectedIndex();
+        String selectedSexo = (String) form.getCmbSexo().getSelectedItem();
+
+        if (selectedIndex <= 0 || selectedSexo == null || selectedSexo.equals("-- Seleccione --")) {
+            return "Seleccione el sexo de la mascota.";
         }
-        // Validación de peso 
+        // Validación de peso (opcional pero debe ser válido si se ingresa)
         String pesoTxt = form.getTxtPeso().getText().trim();
-            if (!pesoTxt.isEmpty()) {
-                try {
-                    double peso = Double.parseDouble(pesoTxt);
-                    if (peso <= 0) {
-                        String msg = "El peso debe ser mayor a 0 kg.";
-                        JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-                        return msg;
-                    }
-                    if (peso > 200) {
-                        String msg = "El peso no puede exceder los 200 kg.";
-                        JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-                        return msg;
-                    }
-                } catch (NumberFormatException e) {
-                    String msg = "El peso debe ser un número válido (ej: 25.5).";
-                    JOptionPane.showMessageDialog(form, msg, "Validación", JOptionPane.WARNING_MESSAGE);
-                    return msg;
+        if (!pesoTxt.isEmpty()) {
+            try {
+                // Usar el nuevo método que maneja punto y coma
+                Double peso = form.getPesoAsDouble();
+                if (peso == null) {
+                    return "El peso debe ser un número válido (ej: 25.5 o 25,5).";
                 }
+                if (peso <= 0) {
+                    return "El peso debe ser mayor a 0 kg.";
+                }
+                if (peso > 200) {
+                    return "El peso no puede exceder los 200 kg.";
+                }
+            } catch (NumberFormatException e) {
+                return "El peso debe ser un número válido (ej: 25.5 o 25,5).";
             }
-  
+        }
+
         return null; // Todo válido
     }
  
@@ -416,22 +434,24 @@ public class CtrlMascotas {
      */
     private Mascota buildMascota(FormRegistroMascota form) {
         Mascota m = form.isModoEdicion() ? form.getMascotaActual() : new Mascota();
- 
+
         m.setIdCliente(form.getClienteSeleccionado().getIdCliente());
         m.setNombre(form.getTxtNombre().getText().trim());
         m.setEspecie(form.getTxtEspecie().getText().trim());
         m.setRaza(form.getTxtRaza().getText().trim());
-        m.setSexo("Macho".equals(form.getCmbSexo().getSelectedItem()) ? 'M' : 'H');
+
+        m.setSexo(form.getSexoChar());
+
         m.setFechaNacimiento(form.getFechaNacimiento());
- 
-        String pesoTxt = form.getTxtPeso().getText().trim();
-        if (!pesoTxt.isEmpty()) {
-            try { m.setPeso(new BigDecimal(pesoTxt).doubleValue()); } catch (NumberFormatException ignored) {}
+
+        Double peso = form.getPesoAsDouble();
+        if (peso != null) {
+            m.setPeso(peso);
         }
- 
+
         String colorTxt = form.getTxtColor().getText().trim();
         if (!colorTxt.isEmpty()) m.setColor(colorTxt);
- 
+
         return m;
     }
  
@@ -441,7 +461,15 @@ public class CtrlMascotas {
      * @param form formulario con los datos
      */
     private void registrar(FormRegistroMascota form) {
-        guardar(buildMascota(form), form.getFotoBytes(), form.getFotoNombreArchivo());
+        // Validar fecha antes de enviar
+        if (!form.validarFechaNacimiento()) {
+            return; // No continuar si la fecha es inválida
+        }
+        
+        Mascota m = buildMascota(form);
+        // Asegurar que el ID sea 0 para indicar que es nuevo
+        m.setIdMascota(0);
+        guardar(m, form.getFotoBytes(), form.getFotoNombreArchivo());
         form.dispose();
     }
  
@@ -451,59 +479,126 @@ public class CtrlMascotas {
      * @param form formulario con los datos actualizados
      */
     private void actualizar(FormRegistroMascota form) {
-        guardar(buildMascota(form), form.getFotoBytes(), form.getFotoNombreArchivo());
+        // Validar fecha antes de enviar
+        if (!form.validarFechaNacimiento()) {
+            return; // No continuar si la fecha es inválida
+        }
+        
+        Mascota m = buildMascota(form);
+        // Asegurar que el ID esté presente
+        if (m.getIdMascota() <= 0 && form.getMascotaActual() != null) {
+            m.setIdMascota(form.getMascotaActual().getIdMascota());
+        }
+        
+        guardar(m, form.getFotoBytes(), form.getFotoNombreArchivo());
         form.dispose();
     }
  
     /**
-     * Envia la mascota a la API como multipart/form-data.
-     * Maneja tanto el alta como la actualizacion.
-     *
-     * @param m              mascota a persistir
-     * @param fotoBytes      bytes de la imagen, o null si no se cambia
-     * @param nombreArchivo  nombre del archivo de imagen
-     */
-    public void guardar(Mascota m, byte[] fotoBytes, String nombreArchivo) {
-        try {
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("idCliente", m.getIdCliente());
-            body.add("nombre",    m.getNombre());
-            body.add("especie",   m.getEspecie());
-            body.add("raza",      m.getRaza());
-            body.add("sexo",      String.valueOf(m.getSexo()));
-            body.add("peso",      m.getPeso());
-            body.add("color",     m.getColor());
-            if (m.getFechaNacimiento() != null)
-                body.add("fechaNacimiento",
-                    new SimpleDateFormat("yyyy-MM-dd").format(m.getFechaNacimiento()));
- 
-            if (fotoBytes != null) {
-                body.add("foto", new org.springframework.core.io.ByteArrayResource(fotoBytes) {
-                    @Override public String getFilename() { return nombreArchivo; }
-                });
-            }
- 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
- 
-            if (m.getIdMascota() == 0) {
-                restTemplate.postForObject(apiBaseUrl + "/mascota/crear", request, Integer.class);
-                JOptionPane.showMessageDialog(pnlMascota,
-                    "Mascota registrada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                body.add("idMascota", m.getIdMascota());
-                restTemplate.put(apiBaseUrl + "/mascota/actualizar", request);
-                JOptionPane.showMessageDialog(pnlMascota,
-                    "Mascota actualizada correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
-            }
-            cargarTabla();
-        } catch (Exception e) {
+ * Envia la mascota a la API como multipart/form-data.
+ * Maneja tanto el alta como la actualizacion.
+ *
+ * @param m              mascota a persistir
+ * @param fotoBytes      bytes de la imagen, o null si no se cambia
+ * @param nombreArchivo  nombre del archivo de imagen
+ */
+public void guardar(Mascota m, byte[] fotoBytes, String nombreArchivo) {
+    try {
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("idCliente", String.valueOf(m.getIdCliente()));
+        body.add("nombre",    m.getNombre());
+        body.add("especie",   m.getEspecie());
+        body.add("raza",      m.getRaza() != null ? m.getRaza() : "");
+        body.add("sexo",      String.valueOf(m.getSexo()));
+        if (m.getPeso() != null) {
+            body.add("peso", String.valueOf(m.getPeso()));
+        }
+        if (m.getColor() != null && !m.getColor().isEmpty()) {
+            body.add("color", m.getColor());
+        }
+        if (m.getFechaNacimiento() != null) {
+            body.add("fechaNacimiento",
+                new SimpleDateFormat("yyyy-MM-dd").format(m.getFechaNacimiento()));
+        }
+
+        if (fotoBytes != null && fotoBytes.length > 0) {
+            body.add("foto", new org.springframework.core.io.ByteArrayResource(fotoBytes) {
+                @Override 
+                public String getFilename() { 
+                    return nombreArchivo != null ? nombreArchivo : "foto_mascota.jpg"; 
+                }
+            });
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+
+        if (m.getIdMascota() == 0) {
+            // REGISTRAR nueva mascota
+            restTemplate.postForObject(apiBaseUrl + "/mascota/crear", request, Integer.class);
             JOptionPane.showMessageDialog(pnlMascota,
-                "Error al guardar: " + e.getMessage(),
+                " Mascota registrada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // ACTUALIZAR mascota existente
+            body.add("idMascota", String.valueOf(m.getIdMascota()));
+            restTemplate.put(apiBaseUrl + "/mascota/actualizar", request);
+            JOptionPane.showMessageDialog(pnlMascota,
+                " Mascota actualizada correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        }
+        cargarTabla();
+        
+    } catch (org.springframework.web.client.HttpClientErrorException e) {
+        // Error 4xx del servidor
+        String mensajeError;
+        try {
+            mensajeError = e.getResponseBodyAsString();
+            if (mensajeError == null || mensajeError.isEmpty()) {
+                mensajeError = e.getMessage();
+            }
+            // Limpiar comillas si vienen en el JSON
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
+            }
+        } catch (Exception ex) {
+            mensajeError = e.getMessage();
+        }
+        
+        JOptionPane.showMessageDialog(pnlMascota,
+            " Error al guardar: " + mensajeError,
+            "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+        
+    } catch (Exception e) {
+        // Capturar cualquier otra excepción (incluyendo las de validación)
+        String mensaje = e.getMessage();
+        
+        // Verificar si es un error de validación de fecha
+        if (mensaje != null && mensaje.contains("fecha de nacimiento no puede ser futura")) {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " La fecha de nacimiento no puede ser futura. Por favor, corrija la fecha.",
+                "Error de validación", JOptionPane.ERROR_MESSAGE);
+        } 
+        // Verificar si es un error de cliente no existe
+        else if (mensaje != null && mensaje.contains("El cliente con ID")) {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " El cliente seleccionado no existe. Por favor, verifique.",
+                "Error de validación", JOptionPane.ERROR_MESSAGE);
+        }
+        // Verificar otros errores de validación
+        else if (mensaje != null && (mensaje.contains("es obligatorio") || mensaje.contains("invalido"))) {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " " + mensaje,
+                "Error de validación", JOptionPane.ERROR_MESSAGE);
+        }
+        else {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " Error al guardar: " + (mensaje != null ? mensaje : "Error desconocido"),
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
+        e.printStackTrace();
     }
+}
  
     /**
      * Guarda o actualiza la ficha medica de una mascota.
@@ -642,7 +737,6 @@ public class CtrlMascotas {
         val.setFont(new Font("SansSerif", Font.PLAIN, 12));
         panel.add(val, gbc);
     }
- 
 /**
  * Elimina una mascota del sistema.
  * 
@@ -650,14 +744,14 @@ public class CtrlMascotas {
  */
 private void eliminar(Mascota m) {
     int confirm = JOptionPane.showConfirmDialog(pnlMascota,
-        "¿Esta seguro de eliminar a " + m.getNombre() + "?\n" +
-        "Esta accion no se puede deshacer.",
-        "Confirmar eliminacion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        "¿Está seguro de eliminar a " + m.getNombre() + "?\n" +
+        "Esta acción no se puede deshacer.",
+        "Confirmar eliminación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
     if (confirm != JOptionPane.YES_OPTION) return;
 
     try {
-        // Usar exchange para obtener la respuesta completa
+        // Usar DELETE con exchange para capturar la respuesta
         ResponseEntity<String> response = restTemplate.exchange(
             apiBaseUrl + "/mascota/eliminar/" + m.getIdMascota(),
             HttpMethod.DELETE,
@@ -667,23 +761,33 @@ private void eliminar(Mascota m) {
         
         if (response.getStatusCode().is2xxSuccessful()) {
             JOptionPane.showMessageDialog(pnlMascota, 
-                "Mascota eliminada correctamente.", 
-                "Exito", JOptionPane.INFORMATION_MESSAGE);
+                " Mascota eliminada correctamente.", 
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            
+            // Limpiar la selección de la tabla antes de recargar
+            tblMascota.getSelectionModel().clearSelection();
+            
+            // Recargar la tabla
             cargarTabla();
             
             // Refrescar filtro por cliente si está activo
-            if (pnlMascota.getCmbClientes().getSelectedItem() != null) {
+            if (pnlMascota.getCmbClientes().getSelectedItem() != null &&
+                ((Cliente) pnlMascota.getCmbClientes().getSelectedItem()).getIdCliente() > 0) {
                 cargarMascotasPorCliente();
             }
+        } else {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " No se pudo eliminar la mascota.",
+                "Error", JOptionPane.ERROR_MESSAGE);
         }
         
     } catch (org.springframework.web.client.HttpClientErrorException e) {
-        // Error 4xx (incluye CONFLICT 409)
         String mensajeError;
         try {
-            // Intentar obtener el mensaje del cuerpo de la respuesta
             mensajeError = e.getResponseBodyAsString();
-            // Limpiar comillas si vienen en el JSON
+            if (mensajeError == null || mensajeError.isEmpty()) {
+                mensajeError = e.getMessage();
+            }
             if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
                 mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
             }
@@ -692,14 +796,25 @@ private void eliminar(Mascota m) {
         }
         
         JOptionPane.showMessageDialog(pnlMascota, 
-            mensajeError, 
+            " " + mensajeError, 
             "No se puede eliminar", 
             JOptionPane.ERROR_MESSAGE);
             
     } catch (Exception e) {
-        JOptionPane.showMessageDialog(pnlMascota,
-            "Error al eliminar: " + e.getMessage(),
-            "Error", JOptionPane.ERROR_MESSAGE);
+        String mensaje = e.getMessage();
+        if (mensaje != null && (mensaje.contains("cita médica realizada") || mensaje.contains("cita medica realizada"))) {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " La mascota ya posee una cita médica realizada. No se puede eliminar.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+        } else if (mensaje != null && mensaje.contains("citas pendientes")) {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " La mascota tiene citas pendientes. No se puede eliminar.",
+                "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(pnlMascota,
+                " Error al eliminar: " + (mensaje != null ? mensaje : "Error desconocido"),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
         e.printStackTrace();
     }
 }
