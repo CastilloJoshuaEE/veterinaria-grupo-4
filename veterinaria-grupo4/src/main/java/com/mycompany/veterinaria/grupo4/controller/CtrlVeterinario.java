@@ -518,43 +518,65 @@ public class CtrlVeterinario {
      * @param form formulario de veterinario
      */
     private void registrar(FormVeterinario form) {
-        try {
-            Boolean ok = restTemplate.postForObject(
-                api + "/veterinario/crear", buildVeterinario(form), Boolean.class);
- 
-            if (Boolean.TRUE.equals(ok)) {
-                // Buscar el veterinario recien creado por su cedula
-                Veterinario nuevo = null;
-                try {
-                    nuevo = restTemplate.getForObject(
-                        api + "/veterinario/cedula/" + form.getTxtCedula().getText().trim(),
-                        Veterinario.class);
-                } catch (Exception ex) {
-                    System.err.println("Error al obtener veterinario creado: " + ex.getMessage());
-                }
- 
-                if (nuevo != null && !pendientesAlta.isEmpty()) {
-                    for (Map.Entry<Integer, Integer> entry : pendientesAlta.entrySet()) {
-                        asignarServicioSilencioso(entry.getValue(), nuevo.getIdVeterinario());
-                    }
-                }
-                pendientesAlta.clear();
- 
-                JOptionPane.showMessageDialog(pnlVeterinario,
-                    "Veterinario registrado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
-                form.dispose();
-                cargarTabla();
-            } else {
-                JOptionPane.showMessageDialog(form,
-                    "Ya existe un veterinario con esa cedula.", "Aviso", JOptionPane.WARNING_MESSAGE);
+    try {
+        // Construir el objeto veterinario
+        Veterinario veterinario = buildVeterinario(form);
+        
+        // La contraseña se asigna por defecto en el servicio
+        Boolean ok = restTemplate.postForObject(
+            api + "/veterinario/crear", veterinario, Boolean.class);
+
+        if (Boolean.TRUE.equals(ok)) {
+            // Buscar el veterinario recien creado por su cedula
+            Veterinario nuevo = null;
+            try {
+                nuevo = restTemplate.getForObject(
+                    api + "/veterinario/cedula/" + form.getTxtCedula().getText().trim(),
+                    Veterinario.class);
+            } catch (Exception ex) {
+                System.err.println("Error al obtener veterinario creado: " + ex.getMessage());
             }
-        } catch (Exception e) {
+
+            if (nuevo != null && !pendientesAlta.isEmpty()) {
+                for (Map.Entry<Integer, Integer> entry : pendientesAlta.entrySet()) {
+                    asignarServicioSilencioso(entry.getValue(), nuevo.getIdVeterinario());
+                }
+            }
+            pendientesAlta.clear();
+
+            JOptionPane.showMessageDialog(pnlVeterinario,
+                "Veterinario registrado correctamente.\n" +
+                "Se ha creado un usuario con contraseña predeterminada: 123456 se recomienda cambiarla en la opción de OLVIDASTE TU CONTRASEÑA DEL LOGIN",
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            form.dispose();
+            cargarTabla();
+        } else {
             JOptionPane.showMessageDialog(form,
-                "Error al registrar: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+                "Ya existe un veterinario con esa cédula.", "Aviso", JOptionPane.WARNING_MESSAGE);
         }
+    } catch (org.springframework.web.client.HttpClientErrorException e) {
+        // Capturar errores HTTP (400, 409, etc.)
+        String mensajeError;
+        try {
+            mensajeError = e.getResponseBodyAsString();
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
+            }
+        } catch (Exception ex) {
+            mensajeError = e.getMessage();
+        }
+        JOptionPane.showMessageDialog(form,
+            "Error al registrar: " + mensajeError,
+            "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(form,
+            "Error al registrar: " + e.getMessage(),
+            "Error", JOptionPane.ERROR_MESSAGE);
+        e.printStackTrace();
     }
+}
+
  
     /**
      * Actualiza un veterinario existente usando PUT.
