@@ -21,23 +21,23 @@ import java.util.List;
 public interface IUsuarioDAO {
     
     /**
-     * Valida las credenciales de un usuario para el inicio de sesion.
+     * Valida las credenciales de un usuario usando email y contraseña.
      * 
-     * @param usuario nombre de usuario
-     * @param password contrasena
+     * @param email correo electrónico del usuario
+     * @param password contraseña del usuario
      * @return objeto Usuario si las credenciales son correctas
      * @throws SQLException si ocurre un error en la base de datos
      */
-    Usuario validarCredenciales(String usuario, String password) throws SQLException;
+    Usuario validarCredenciales(String email, String password) throws SQLException;
     
     /**
-     * Verifica si existe un usuario con el nombre especificado.
+     * Verifica si existe un usuario con el email especificado.
      * 
-     * @param usuario nombre de usuario a verificar
+     * @param email correo electrónico a verificar
      * @return true si el usuario existe
      * @throws SQLException si ocurre un error en la base de datos
      */
-    boolean existeUsuario(String usuario) throws SQLException;
+    boolean existeUsuario(String email) throws SQLException;
     
     /**
      * Registra un nuevo usuario en el sistema.
@@ -49,13 +49,13 @@ public interface IUsuarioDAO {
     int registrarUsuario(Usuario usuario) throws SQLException;
     
     /**
-     * Obtiene un usuario por su nombre de usuario.
+     * Obtiene un usuario por su email.
      * 
-     * @param usuario nombre de usuario
+     * @param email correo electrónico del usuario
      * @return objeto Usuario encontrado
      * @throws SQLException si ocurre un error en la base de datos
      */
-    Usuario obtenerUsuario(String usuario) throws SQLException;
+    Usuario obtenerUsuario(String email) throws SQLException;
     
     /**
      * Obtiene todos los usuarios registrados.
@@ -64,4 +64,13 @@ public interface IUsuarioDAO {
      * @throws SQLException si ocurre un error en la base de datos
      */
     List<Usuario> obtenerTodos() throws SQLException;
+    /**
+     * Actualiza la contraseña de un usuario por su email.
+     * 
+     * @param email correo electrónico del usuario
+     * @param nuevaContrasena nueva contraseña a establecer
+     * @return true si la actualización fue exitosa
+     * @throws SQLException si ocurre un error en la base de datos
+     */
+    boolean actualizarContrasena(String email, String nuevaContrasena) throws SQLException;
 }

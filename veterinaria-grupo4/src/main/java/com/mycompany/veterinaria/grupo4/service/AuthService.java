@@ -106,19 +106,19 @@ public class AuthService {
      * @param usuario objeto Usuario a registrar
      * @return ID del usuario creado, -1 si hay error
      */
-    public int registrarUsuario(Usuario usuario) {
+public int registrarUsuario(Usuario usuario) {
         if (usuario == null) {
             System.err.println("Intento de registrar usuario nulo");
             return -1;
         }
         
-        if (usuario.getNombreUsuario() == null || usuario.getNombreUsuario().trim().isEmpty()) {
-            System.err.println("Nombre de usuario vacio");
+        if (usuario.getEmail() == null || usuario.getEmail().trim().isEmpty()) {
+            System.err.println("Email de usuario vacio");
             return -1;
         }
         
         if (usuario.getContrasena() == null || usuario.getContrasena().trim().isEmpty()) {
-            System.err.println("Contrasena vacia para usuario: " + usuario.getNombreUsuario());
+            System.err.println("Contrasena vacia para usuario: " + usuario.getEmail());
             return -1;
         }
         
@@ -162,23 +162,7 @@ public class AuthService {
         }
     }
     
-    /**
-     * Valida el formato del nombre de usuario (solo para registro).
-     *
-     * @param usuario nombre a validar
-     * @throws IllegalArgumentException si el nombre es invalido
-     */
-    private void validarNombreUsuario(String usuario) {
-        if (usuario == null || usuario.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de usuario es obligatorio");
-        }
-        if (usuario.trim().length() < USUARIO_MIN_LENGTH) {
-            throw new IllegalArgumentException("El nombre de usuario debe tener al menos " + USUARIO_MIN_LENGTH + " caracteres");
-        }
-        if (usuario.trim().length() > USUARIO_MAX_LENGTH) {
-            throw new IllegalArgumentException("El nombre de usuario no puede exceder los " + USUARIO_MAX_LENGTH + " caracteres");
-        }
-    }
+   
     
     /**
      * Valida la contrasena (solo para registro).
@@ -221,12 +205,63 @@ public class AuthService {
             throw new IllegalArgumentException("El objeto usuario no puede ser nulo");
         }
         
-        validarNombreUsuario(usuario.getNombreUsuario());
         validarPassword(usuario.getContrasena());
         validarEmail(usuario.getCorreoElectronico());
         
         if (usuario.getRol() == null || usuario.getRol().trim().isEmpty()) {
             usuario.setRol("ADMINISTRADOR");
+        }
+    }
+    /**
+     * Restablece la contraseña de un usuario usando su correo electrónico.
+     * <p>
+     * Busca al usuario por su email y actualiza su contraseña si existe.
+     * </p>
+     *
+     * @param email correo electrónico del usuario
+     * @param nuevaContrasena nueva contraseña a establecer
+     * @return true si el restablecimiento fue exitoso, false en caso contrario
+     * @throws IllegalArgumentException si el email es inválido o la contraseña no cumple los requisitos
+     */
+    public boolean restablecerContrasena(String email, String nuevaContrasena) {
+        // Validar email
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio");
+        }
+        if (!PATRON_EMAIL.matcher(email.trim()).matches()) {
+            throw new IllegalArgumentException("El formato del correo electrónico es inválido");
+        }
+        
+        // Validar nueva contraseña
+        if (nuevaContrasena == null || nuevaContrasena.trim().isEmpty()) {
+            throw new IllegalArgumentException("La nueva contraseña es obligatoria");
+        }
+        if (nuevaContrasena.length() < 6) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        }
+        
+        try {
+            // Verificar que el usuario exista
+            Usuario usuario = usuarioDAO.obtenerUsuario(email.trim());
+            if (usuario == null) {
+                return false; // Usuario no encontrado
+            }
+            
+            // Actualizar la contraseña en la base de datos
+            boolean actualizado = usuarioDAO.actualizarContrasena(email.trim(), nuevaContrasena);
+            
+            if (actualizado) {
+                System.out.println("Contraseña restablecida exitosamente para: " + email);
+                return true;
+            } else {
+                System.err.println("No se pudo restablecer la contraseña para: " + email);
+                return false;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error SQL al restablecer contraseña para: " + email);
+            e.printStackTrace();
+            throw new RuntimeException("Error al restablecer la contraseña", e);
         }
     }
 }

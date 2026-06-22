@@ -39,7 +39,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public Usuario login(@RequestBody LoginRequest request) {
-        return authService.login(request.getUsuario(), request.getPassword());
+        return authService.login(request.getEmail(), request.getPassword());
     }
 
     /**
@@ -97,4 +97,10 @@ public class AuthController {
         }
         return resultado;
     }
+    @PostMapping("/restablecer-contrasena")
+    public boolean restablecerContrasena(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String nuevaContrasena = request.get("nuevaContrasena");
+        return authService.restablecerContrasena(email, nuevaContrasena);
+    }    
 }

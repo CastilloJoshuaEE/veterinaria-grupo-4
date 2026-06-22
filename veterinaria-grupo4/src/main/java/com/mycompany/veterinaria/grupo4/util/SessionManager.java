@@ -14,7 +14,7 @@ import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
  * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
  * 
  * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 1.0
+ * @version 2.0
  * @since 1.0
  */
 public class SessionManager {
@@ -53,7 +53,9 @@ public class SessionManager {
         if (user != null) {
             this.currentUser = user;
             this.isLoggedIn = true;
-            System.out.println("Usuario logueado: " + user.getNombreUsuario() + " (ID: " + user.getIdUsuario() + ")");
+            String nombreMostrar = user.getNombreCompleto() != null ? 
+                user.getNombreCompleto() : user.getEmail();
+            System.out.println("Usuario logueado: " + nombreMostrar + " (ID: " + user.getIdUsuario() + ")");
             NotificationManager.getInstance().start(user.getIdUsuario());
         }
     }
@@ -93,7 +95,11 @@ public class SessionManager {
      * @return nombre de usuario o null si no hay sesion activa
      */
     public String getCurrentUserName() {
-        return (currentUser != null) ? currentUser.getNombreUsuario() : null;
+        if (currentUser != null) {
+            return currentUser.getNombreCompleto() != null ? 
+                currentUser.getNombreCompleto() : currentUser.getEmail();
+        }
+        return null;
     }
 
     /**
