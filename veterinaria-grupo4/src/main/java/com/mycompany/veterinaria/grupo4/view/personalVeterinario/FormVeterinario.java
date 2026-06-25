@@ -106,6 +106,13 @@ public class FormVeterinario extends JDialog {
         setSize(460, 650);
         setLocationRelativeTo(getParent());
 
+        addWindowFocusListener(new WindowFocusListener() {
+            @Override public void windowGainedFocus(WindowEvent e) {}
+            @Override public void windowLostFocus(WindowEvent e) {
+                //dispose();
+            }
+        });
+
         JPanel root = buildRoot();
         root.add(buildHeader(titulo),     BorderLayout.NORTH);
         root.add(buildCuerpo(),           BorderLayout.CENTER);

@@ -4,10 +4,10 @@ import com.mycompany.veterinaria.grupo4.api.dto.FichaMedicaDTO;
 import com.mycompany.veterinaria.grupo4.model.dao.IMascotaDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.Mascota;
 import com.mycompany.veterinaria.grupo4.model.impl.MascotaDAOImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +35,10 @@ import java.util.List;
  * @version 2.0
  * @since 1.0
  */
+
+/**
+ * Servicio para la gestion de mascotas con validaciones de negocio.
+ */
 @Service
 public class MascotaService {
     
@@ -45,8 +49,8 @@ public class MascotaService {
     private static final double PESO_MINIMO = 0.01;
     private static final double PESO_MAXIMO = 200.0;
     
-    private final IMascotaDAO mascotaDAO;
-    private final ClienteService clienteService;
+    private IMascotaDAO mascotaDAO;
+    private ClienteService clienteService;
 
     // ========== CONSTRUCTORES ==========
     
@@ -93,9 +97,6 @@ public class MascotaService {
 
     /**
      * Lista las mascotas asociadas a un cliente.
-     * 
-     * @param idCliente identificador del cliente dueño de las mascotas
-     * @return lista de mascotas del cliente, nunca null
      */
     public List<Mascota> listarPorCliente(int idCliente) {
         if (idCliente <= 0) {
@@ -104,28 +105,25 @@ public class MascotaService {
         try {
             return mascotaDAO.obtenerPorCliente(idCliente);
         } catch (SQLException e) {
-            return new ArrayList<>(); // CORREGIDO: ya no retorna null
+            e.printStackTrace();
+            return null;
         }
     }
     
     /**
      * Lista todas las mascotas registradas.
-     * 
-     * @return lista de todas las mascotas, nunca null
      */
     public List<Mascota> listarTodo() {
         try {
             return mascotaDAO.listarTodo();
         } catch (SQLException e) {
-            return new ArrayList<>();
+            e.printStackTrace();
+            return null;
         }
     }
     
     /**
-     * Busca mascotas por termino de busqueda.
-     * 
-     * @param termino texto a buscar (nombre de mascota o cedula del dueño)
-     * @return lista de mascotas que coinciden con el termino, nunca null
+     * Busca mascotas por termino.
      */
     public List<Mascota> buscarMascotas(String termino) {
         try {
@@ -137,15 +135,13 @@ public class MascotaService {
             }
             return mascotaDAO.buscarMascotas(termino.trim());
         } catch (SQLException e) {
-            return new ArrayList<>();
+            System.err.println("Error en la busqueda de mascotas: " + e.getMessage());
+            return null; 
         }
     }
 
     /**
      * Obtiene una mascota por su identificador.
-     * 
-     * @param idMascota identificador unico de la mascota
-     * @return objeto Mascota encontrado, o null si no existe
      */
     public Mascota obtenerPorId(int idMascota) {
         if (idMascota <= 0) {
@@ -154,15 +150,13 @@ public class MascotaService {
         try {
             return mascotaDAO.obtenerPorId(idMascota);
         } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
     }
 
     /**
      * Valida y crea una nueva mascota.
-     * 
-     * @param mascota objeto Mascota con los datos a registrar
-     * @return ID generado para la mascota creada
      */
     public int crear(Mascota mascota) {
         validarMascota(mascota);
@@ -174,15 +168,13 @@ public class MascotaService {
         try {
             return mascotaDAO.insertar(mascota);
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException("Error al registrar mascota", e);
         }
     }
 
     /**
      * Valida y actualiza una mascota existente.
-     * 
-     * @param mascota objeto Mascota con los datos actualizados
-     * @return true si la actualizacion fue exitosa
      */
     public boolean actualizar(Mascota mascota) {
         validarMascota(mascota);
@@ -191,7 +183,7 @@ public class MascotaService {
             throw new IllegalArgumentException("ID de mascota invalido para actualizar");
         }
         
-        var existente = obtenerPorId(mascota.getIdMascota());
+        Mascota existente = obtenerPorId(mascota.getIdMascota());
         if (existente == null) {
             throw new IllegalArgumentException("No existe una mascota con ID: " + mascota.getIdMascota());
         }
@@ -203,22 +195,21 @@ public class MascotaService {
         try {
             return mascotaDAO.actualizar(mascota);
         } catch (SQLException e) {
+            System.err.println("ERROR SQL al actualizar mascota ID=" + mascota.getIdMascota());
+            e.printStackTrace();
             throw new RuntimeException("Error al actualizar la mascota", e);
         }
     }
 
     /**
-     * Elimina una mascota con validaciones de integridad.
-     * 
-     * @param idMascota identificador de la mascota a eliminar
-     * @return true si la eliminacion fue exitosa
+     * Elimina una mascota con validaciones.
      */
     public boolean eliminar(int idMascota) {
         if (idMascota <= 0) {
             throw new IllegalArgumentException("ID de mascota invalido: " + idMascota);
         }
         
-        var existente = obtenerPorId(idMascota);
+        Mascota existente = obtenerPorId(idMascota);
         if (existente == null) {
             throw new IllegalArgumentException("No existe una mascota con ID: " + idMascota);
         }
@@ -226,23 +217,21 @@ public class MascotaService {
         try {
             return mascotaDAO.eliminar(idMascota);
         } catch (SQLException e) {
-            var mensaje = e.getMessage(); // CORREGIDO: usa 'var'
+            e.printStackTrace();
+            String mensaje = e.getMessage();
             if (mensaje != null) {
                 if (mensaje.contains("cita médica realizada") || mensaje.contains("cita medica realizada")) {
-                    throw new RuntimeException("La mascota ya posee una cita médica realizada. No se puede eliminar.", e); //CORREGIDO: preserva stack trace
+                    throw new RuntimeException("La mascota ya posee una cita médica realizada. No se puede eliminar.");
                 } else if (mensaje.contains("citas pendientes")) {
-                    throw new RuntimeException("La mascota tiene citas pendientes. No se puede eliminar.", e);// CORREGIDO: preserva stack trace
+                    throw new RuntimeException("La mascota tiene citas pendientes. No se puede eliminar.");
                 }
             }
-            throw new RuntimeException("Error al eliminar la mascota: " + (mensaje != null ? mensaje : "Error desconocido"), e);
+            throw new RuntimeException("Error al eliminar la mascota: " + (mensaje != null ? mensaje : "Error desconocido"));
         }
     }
 
     /**
      * Obtiene la foto de una mascota.
-     * 
-     * @param idMascota identificador de la mascota
-     * @return arreglo de bytes con la imagen, o null si no tiene foto
      */
     public byte[] obtenerFoto(int idMascota) {
         if (idMascota <= 0) {
@@ -251,25 +240,20 @@ public class MascotaService {
         try {
             return mascotaDAO.obtenerFoto(idMascota);
         } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
     }
     
     /**
-     * Guarda o actualiza la ficha medica de una mascota.
-     * 
-     * @param idMascota identificador de la mascota
-     * @param alergias alergias conocidas de la mascota
-     * @param enfermedadesCronicas enfermedades cronicas diagnosticadas
-     * @param observaciones observaciones adicionales sobre la salud
-     * @return true si la operacion fue exitosa
+     * Guarda o actualiza la ficha medica.
      */
     public boolean guardarFichaMedica(int idMascota, String alergias, String enfermedadesCronicas, String observaciones) {
         if (idMascota <= 0) {
             throw new IllegalArgumentException("ID de mascota invalido: " + idMascota);
         }
         
-        var existente = obtenerPorId(idMascota);
+        Mascota existente = obtenerPorId(idMascota);
         if (existente == null) {
             throw new IllegalArgumentException("No existe una mascota con ID: " + idMascota);
         }
@@ -277,15 +261,13 @@ public class MascotaService {
         try {
             return mascotaDAO.actualizarFichaMedica(idMascota, alergias, enfermedadesCronicas, observaciones);
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException("Error al guardar la ficha medica", e);
         }
     }
 
     /**
-     * Obtiene la ficha medica completa de una mascota.
-     * 
-     * @param idMascota identificador de la mascota
-     * @return objeto FichaMedicaDTO con los datos medicos
+     * Obtiene la ficha medica.
      */
     public FichaMedicaDTO obtenerFichaMedica(int idMascota) {
         if (idMascota <= 0) {
@@ -294,6 +276,7 @@ public class MascotaService {
         try {
             return mascotaDAO.obtenerFichaMedicaDTO(idMascota);
         } catch (SQLException e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -301,9 +284,7 @@ public class MascotaService {
     // ========== MÉTODOS PRIVADOS ==========
     
     /**
-     * Valida todos los campos de una mascota segun reglas de negocio.
-     * 
-     * @param mascota objeto Mascota a validar
+     * Valida todos los campos de una mascota.
      */
     private void validarMascota(Mascota mascota) {
         if (mascota == null) {
@@ -332,8 +313,8 @@ public class MascotaService {
             throw new IllegalArgumentException("La raza no puede exceder los " + RAZA_MAX_LENGTH + " caracteres");
         }
 
-        if (mascota.getSexo() != 'M' && mascota.getSexo() != 'H') {
-            throw new IllegalArgumentException("Sexo invalido. Debe ser M (Masculino) o H (Hembra)");
+        if (mascota.getSexo() != 'M' && mascota.getSexo() != 'F') {
+            throw new IllegalArgumentException("Sexo invalido. Debe ser M (Masculino) o F (Femenino)");
         }
 
         if (mascota.getColor() != null && mascota.getColor().trim().length() > COLOR_MAX_LENGTH) {

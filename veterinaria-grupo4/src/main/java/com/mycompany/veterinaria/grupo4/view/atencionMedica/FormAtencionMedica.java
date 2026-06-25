@@ -100,7 +100,9 @@ public class FormAtencionMedica extends JDialog {
         setBackground(new Color(0, 0, 0, 0));
         setSize(600, 600);
         setLocationRelativeTo(getParent());
-        
+        // Sin windowFocusListener: el formulario de atención NO debe cerrarse
+        // accidentalmente al interactuar con combos o diálogos internos.
+ 
         JPanel root = buildRoot();
         root.add(buildHeader(),  BorderLayout.NORTH);
         root.add(buildTabs(),    BorderLayout.CENTER);

@@ -135,6 +135,15 @@ public class FormRegistroCita extends JDialog {
         setBackground(new Color(0, 0, 0, 0));
         setSize(420, 530);
         setLocationRelativeTo(getParent());
+ 
+        addWindowFocusListener(new WindowFocusListener() {
+            @Override public void windowGainedFocus(WindowEvent e) {}
+            @Override public void windowLostFocus(WindowEvent e) {
+                if (calendarPopup != null && e.getOppositeWindow() == calendarPopup) return;
+                if (calendarPopup != null) { calendarPopup.dispose(); calendarPopup = null; }
+                dispose();
+            }
+        });
         JScrollPane scroll = new JScrollPane(buildCuerpo(servicios));
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);

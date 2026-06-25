@@ -46,7 +46,7 @@ public class MyTextField extends JTextField {
 
     public MyTextField() {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        setOpaque(false); //  necesario para que nuestro paintComponent dibuje el fondo
+        setOpaque(false); // ✅ necesario para que nuestro paintComponent dibuje el fondo
         setFont(new java.awt.Font("sansserif", 0, 13));
         setSelectionColor(new Color(75, 175, 152));
 

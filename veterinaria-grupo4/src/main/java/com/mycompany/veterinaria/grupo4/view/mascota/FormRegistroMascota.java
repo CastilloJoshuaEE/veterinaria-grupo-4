@@ -121,20 +121,28 @@ public class FormRegistroMascota extends JDialog {
 
     // ─── Construcción UI ──────────────────────────────────────────────────────
 
-private void init(String titulo, String labelBoton) {
-    setUndecorated(true);
-    setBackground(new Color(0, 0, 0, 0));
-    setSize(480, 620);
-    setLocationRelativeTo(getParent());
+    private void init(String titulo, String labelBoton) {
+        setUndecorated(true);
+        setBackground(new Color(0, 0, 0, 0));
+        setSize(480, 620);
+        setLocationRelativeTo(getParent());
 
+        addWindowFocusListener(new WindowFocusListener() {
+            @Override public void windowGainedFocus(WindowEvent e) {}
+            @Override public void windowLostFocus(WindowEvent e) {
+                if (seleccionandoFoto) return;      //  no cerrar mientras el explorador está abierto
+                if (calendarPopup != null && e.getOppositeWindow() == calendarPopup) return;
+                if (calendarPopup != null) { calendarPopup.dispose(); calendarPopup = null; }
+                dispose();
+            }
+        });
 
-    JPanel root = buildRoot();
-    root.add(buildHeader(titulo),  BorderLayout.NORTH);
-    root.add(buildCuerpo(),        BorderLayout.CENTER);
-    root.add(buildFooter(labelBoton), BorderLayout.SOUTH);
-    setContentPane(root);
-    configurarValidaciones();
-}
+        JPanel root = buildRoot();
+        root.add(buildHeader(titulo),  BorderLayout.NORTH);
+        root.add(buildCuerpo(),        BorderLayout.CENTER);
+        root.add(buildFooter(labelBoton), BorderLayout.SOUTH);
+        setContentPane(root);
+    }
 
     private JPanel buildRoot() {
         JPanel root = new JPanel(new BorderLayout(0, 10)) {
@@ -226,8 +234,8 @@ private void init(String titulo, String labelBoton) {
         contentPanel.add(Box.createVerticalStrut(8));
 
         // Sexo | Fecha de nacimiento
-        cmbSexo = new JComboBox<>(new String[]{"-- Seleccione --","Macho", "Hembra"});
-        cmbSexo.setSelectedIndex(0);
+        cmbSexo = new JComboBox<>(new String[]{"Macho", "Hembra"});
+        cmbSexo.setSelectedIndex(-1);
         cmbSexo.setPreferredSize(FIELD_SIZE);
         contentPanel.add(wrapDos("Sexo", cmbSexo, "Fecha de nacimiento", buildFilaFecha()));
         contentPanel.add(Box.createVerticalStrut(8));
@@ -449,15 +457,8 @@ private void init(String titulo, String labelBoton) {
         if (m.getColor() != null) txtColor.setText(m.getColor());
         if (m.getPeso()  != null) txtPeso.setText(String.valueOf(m.getPeso()));
 
-        if (m.getSexo() != 0) {
-        if (m.getSexo() == 'M') {
-            cmbSexo.setSelectedItem("Macho");
-        } else if (m.getSexo() == 'H') {
-            cmbSexo.setSelectedItem("Hembra");
-        }
-    } else {
-        cmbSexo.setSelectedIndex(0); // "-- Seleccione --"
-    }
+        if (m.getSexo() != 0)
+            cmbSexo.setSelectedItem(m.getSexo() == 'M' ? "Macho" : "Hembra");
 
         if (m.getFechaNacimiento() != null) {
             fechaNacimiento = m.getFechaNacimiento();
@@ -528,227 +529,7 @@ private void init(String titulo, String labelBoton) {
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    /**
-     * Configura las validaciones en tiempo real para los campos del formulario.
-     * Se llama después de inicializar los componentes.
-     */
-    public void configurarValidaciones() {
-        // Flag para evitar múltiples mensajes
-        final boolean[] mensajeMostrado = {false};
-        txtCedula.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                String textoActual = txtCedula.getText();
-                
-                // Permitir teclas de control (backspace, delete, etc.)
-                if (c == '\b' || c == '\u007F') {
-                    return;
-                }
-                
-                // Verificar que sea un dígito numérico
-                if (!Character.isDigit(c)) {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "La cédula solo puede contener números", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1500); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                    return;
-                }
-                
-                // Verificar que no exceda los 10 dígitos
-                if (textoActual.length() >= 10) {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "La cédula debe tener exactamente 10 dígitos", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1500); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                }
-            }
-        });   
-        // Validar que el campo peso solo acepte números con decimales (punto o coma)
-        txtPeso.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                String textoActual = txtPeso.getText();
-                
-                // Permitir números, punto, coma y teclas de control
-                if (Character.isDigit(c) || c == '.' || c == ',' || c == '\b' || c == '\u007F') {
-                    // Si es punto o coma, verificar que no haya ya uno
-                    if ((c == '.' || c == ',') && (textoActual.contains(".") || textoActual.contains(","))) {
-                        e.consume();
-                        if (!mensajeMostrado[0]) {
-                            mensajeMostrado[0] = true;
-                            JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                                "El peso solo puede tener un separador decimal", 
-                                "Validación", JOptionPane.WARNING_MESSAGE);
-                            // Restablecer el flag después de cerrar el mensaje
-                            new Thread(() -> {
-                                try { Thread.sleep(1000); } catch (InterruptedException ex) {}
-                                mensajeMostrado[0] = false;
-                            }).start();
-                        }
-                    }
-                } else {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "El peso solo puede contener números", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1000); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                }
-            }
-        });
 
-        // Validar que el campo nombre permita letras, espacios, tildes y ñ
-        txtNombre.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                // Permitir letras (incluyendo tildes), espacios, ñ, y teclas de control
-                if (!Character.isLetter(c) && c != ' ' && c != '\b' && c != '\u007F' && 
-                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
-                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "El nombre solo puede contener letras y espacios", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1000); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                }
-            }
-        });
-
-        // Validar que el campo especie permita letras, espacios, tildes y ñ
-        txtEspecie.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isLetter(c) && c != ' ' && c != '\b' && c != '\u007F' && 
-                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
-                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "La especie solo puede contener letras y espacios", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1000); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                }
-            }
-        });
-
-        // Validar que el campo raza permita letras, espacios, tildes y ñ
-        txtRaza.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isLetter(c) && c != ' ' && c != '\b' && c != '\u007F' && 
-                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
-                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "La raza solo puede contener letras y espacios", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1000); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                }
-            }
-        });
-
-        // Validar que el campo color permita letras, espacios, tildes y ñ
-        txtColor.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isLetter(c) && c != ' ' && c != '\b' && c != '\u007F' && 
-                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
-                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
-                    e.consume();
-                    if (!mensajeMostrado[0]) {
-                        mensajeMostrado[0] = true;
-                        JOptionPane.showMessageDialog(FormRegistroMascota.this, 
-                            "El color solo puede contener letras y espacios", 
-                            "Validación", JOptionPane.WARNING_MESSAGE);
-                        new Thread(() -> {
-                            try { Thread.sleep(1000); } catch (InterruptedException ex) {}
-                            mensajeMostrado[0] = false;
-                        }).start();
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Obtiene el sexo como carácter ('M' o 'F') desde el combo box.
-     * 
-     * @return 'M' para Macho, 'F' para Hembra
-     */
-    public char getSexoChar() {
-        int selectedIndex = cmbSexo.getSelectedIndex();
-        // Si no hay selección o es el índice 0 ("-- Seleccione --"), retornar 0
-        if (selectedIndex <= 0) {
-            return 0;
-        }
-
-        String sexoSeleccionado = (String) cmbSexo.getSelectedItem();
-        if (sexoSeleccionado == null) {
-            return 0;
-        }
-
-        return sexoSeleccionado.equals("Macho") ? 'M' : 'H';
-    }
-
-    /**
-     * Obtiene el peso como Double, manejando punto y coma como separador decimal.
-     * 
-     * @return valor del peso como Double, o null si está vacío
-     */
-    public Double getPesoAsDouble() {
-        String pesoTxt = txtPeso.getText().trim();
-        if (pesoTxt.isEmpty()) return null;
-
-        // Reemplazar coma por punto para formato numérico
-        String normalized = pesoTxt.replace(',', '.');
-        try {
-            return Double.parseDouble(normalized);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
     /** Crea un {@link MyTextField} con hint y tamaño estándar. */
     private MyTextField field(String hint) {
         MyTextField f = new MyTextField();
@@ -779,18 +560,7 @@ private void init(String titulo, String labelBoton) {
         p.add(wrap(lbl2, c2));
         return p;
     }
-    public boolean validarFechaNacimiento() {
-        if (fechaNacimiento != null) {
-            Date hoy = new Date();
-            if (fechaNacimiento.after(hoy)) {
-                JOptionPane.showMessageDialog(this,
-                    "La fecha de nacimiento no puede ser futura. Por favor, seleccione una fecha válida.",
-                    "Validación", JOptionPane.WARNING_MESSAGE);
-                return false;
-            }
-        }
-        return true;
-    }
+
     // ─── Getters ──────────────────────────────────────────────────────────────
 
     public Button            getBtnAccion()           { return btnAccion;           }

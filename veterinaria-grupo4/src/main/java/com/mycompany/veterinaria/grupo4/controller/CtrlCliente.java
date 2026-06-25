@@ -29,20 +29,10 @@ import org.springframework.web.client.RestTemplate;
  * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
  * 
  * @author CASTRO AVILA JONATHAN XAVIER – MODULO: CLIENTE
- * @version 2.0
+ * @version 1.0
  * @since 1.0
  */
 public class CtrlCliente {
-
-    // Constantes para expresiones regulares
-    private static final String REGEX_SOLO_LETRAS = "^[a-zA-ZáéíóúñÁÉÍÓÚÑ\\s]+$";
-    private static final String REGEX_SOLO_NUMEROS = "^\\d+$";
-    private static final int LONGITUD_CEDULA = 10;
-    private static final int LONGITUD_TELEFONO = 10;
-    private static final int LONGITUD_MAX_NOMBRE = 50;
-    private static final int LONGITUD_MAX_APELLIDO = 50;
-    private static final int LONGITUD_MAX_EMAIL = 100;
-    private static final int LONGITUD_MAX_DIRECCION = 100;
 
     private PnlCliente pnlCliente;
     private RestTemplate restTemplate = new RestTemplate();
@@ -218,10 +208,6 @@ public class CtrlCliente {
         }
         
         FormRegistroCliente form = new FormRegistroCliente(parentFrame);
-        
-        // Configurar validaciones en tiempo real para los campos de texto
-        configurarValidacionesTiempoReal(form);
-        
         form.getBtnAccion().addActionListener(e -> {
             String error = validarDatos(form);
             if (error != null) {
@@ -250,10 +236,6 @@ public class CtrlCliente {
         }
         
         FormRegistroCliente form = new FormRegistroCliente(parentFrame, c);
-        
-        // Configurar validaciones en tiempo real para los campos de texto
-        configurarValidacionesTiempoReal(form);
-        
         form.getBtnAccion().addActionListener(e -> {
             String error = validarDatos(form);
             if (error != null) {
@@ -265,85 +247,6 @@ public class CtrlCliente {
             form.dispose();
         });
         form.setVisible(true);
-    }
-    
-    /**
-     * Configura validaciones en tiempo real para los campos del formulario.
-     * 
-     * @param form formulario de registro de cliente
-     */
-    private void configurarValidacionesTiempoReal(FormRegistroCliente form) {
-        // Validación para cédula: solo números y máximo 10 dígitos
-        form.getTxtCedula().addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                // Permitir solo dígitos, backspace y delete
-                if (!Character.isDigit(c) && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-                // Limitar a 10 caracteres
-                String texto = form.getTxtCedula().getText();
-                if (texto.length() >= LONGITUD_CEDULA && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-            }
-        });
-        
-        // Validación para teléfono: solo números y máximo 10 dígitos
-        form.getTxtTelefono().addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                if (!Character.isDigit(c) && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-                String texto = form.getTxtTelefono().getText();
-                if (texto.length() >= LONGITUD_TELEFONO && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-            }
-        });
-        
-        // Validación para nombre: solo letras, espacios, tildes y ñ
-        form.getTxtNombre().addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                // Permitir letras (incluyendo tildes y ñ), espacios, backspace y delete
-                boolean esLetra = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                                  (c == 'á' || c == 'é' || c == 'í' || c == 'ó' || c == 'ú' ||
-                                   c == 'Á' || c == 'É' || c == 'Í' || c == 'Ó' || c == 'Ú' ||
-                                   c == 'ñ' || c == 'Ñ');
-                if (!esLetra && c != ' ' && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-                // Limitar a 50 caracteres
-                String texto = form.getTxtNombre().getText();
-                if (texto.length() >= LONGITUD_MAX_NOMBRE && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-            }
-        });
-        
-        // Validación para apellido: solo letras, espacios, tildes y ñ
-        form.getTxtApellido().addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                boolean esLetra = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
-                                  (c == 'á' || c == 'é' || c == 'í' || c == 'ó' || c == 'ú' ||
-                                   c == 'Á' || c == 'É' || c == 'Í' || c == 'Ó' || c == 'Ú' ||
-                                   c == 'ñ' || c == 'Ñ');
-                if (!esLetra && c != ' ' && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-                String texto = form.getTxtApellido().getText();
-                if (texto.length() >= LONGITUD_MAX_APELLIDO && c != '\b' && c != '\u007f') {
-                    e.consume();
-                }
-            }
-        });
     }
 
     /**
@@ -377,18 +280,11 @@ public class CtrlCliente {
                     "Cliente registrado correctamente",
                     "Exito", JOptionPane.INFORMATION_MESSAGE);
                 cargarTabla();
+            } else {
+                JOptionPane.showMessageDialog(pnlCliente,
+                    "Error al registrar el cliente",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (org.springframework.web.client.HttpClientErrorException e) {
-            String mensajeError;
-            try {
-                mensajeError = e.getResponseBodyAsString();
-                if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
-                    mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
-                }
-            } catch (Exception ex) {
-                mensajeError = "Error al registrar el cliente";
-            }
-            JOptionPane.showMessageDialog(pnlCliente, mensajeError, "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(pnlCliente,
                 "Error al registrar: " + ex.getMessage(),
@@ -450,74 +346,27 @@ public class CtrlCliente {
      * @return mensaje de error o null si los datos son validos
      */
     public String validarDatos(FormRegistroCliente form) {
-        // Validación de CÉDULA (obligatorio, 10 dígitos numéricos)
-        String cedula = form.getTxtCedula().getText().trim();
-        if (cedula.isEmpty()) {
-            return "La cédula es obligatoria.";
-        }
-        if (cedula.length() != LONGITUD_CEDULA) {
-            return "La cédula debe tener exactamente " + LONGITUD_CEDULA + " dígitos.";
-        }
-        if (!cedula.matches(REGEX_SOLO_NUMEROS)) {
-            return "La cédula debe contener solo números.";
-        }
-        
-        // Validación de NOMBRE (obligatorio, solo letras y espacios, máximo 50 caracteres)
-        String nombre = form.getTxtNombre().getText().trim();
-        if (nombre.isEmpty()) {
-            return "El nombre es obligatorio.";
-        }
-        if (nombre.length() > LONGITUD_MAX_NOMBRE) {
-            return "El nombre no puede exceder los " + LONGITUD_MAX_NOMBRE + " caracteres.";
-        }
-        if (!nombre.matches(REGEX_SOLO_LETRAS)) {
-            return "El nombre solo puede contener letras y espacios.";
-        }
-        
-        // Validación de APELLIDO (obligatorio, solo letras y espacios, máximo 50 caracteres)
-        String apellido = form.getTxtApellido().getText().trim();
-        if (apellido.isEmpty()) {
-            return "El apellido es obligatorio.";
-        }
-        if (apellido.length() > LONGITUD_MAX_APELLIDO) {
-            return "El apellido no puede exceder los " + LONGITUD_MAX_APELLIDO + " caracteres.";
-        }
-        if (!apellido.matches(REGEX_SOLO_LETRAS)) {
-            return "El apellido solo puede contener letras y espacios.";
-        }
-        
-        // Validación de TELÉFONO (obligatorio, 10 dígitos numéricos)
-        String telefono = form.getTxtTelefono().getText().trim();
-        if (telefono.isEmpty()) {
-            return "El teléfono es obligatorio.";
-        }
-        if (telefono.length() != LONGITUD_TELEFONO) {
-            return "El teléfono debe tener exactamente " + LONGITUD_TELEFONO + " dígitos.";
-        }
-        if (!telefono.matches(REGEX_SOLO_NUMEROS)) {
-            return "El teléfono debe contener solo números.";
-        }
-        
-        // Validación de EMAIL (opcional, pero si se ingresa debe tener formato válido)
-        String email = form.getTxtEmail().getText().trim();
-        if (!email.isEmpty()) {
-            if (email.length() > LONGITUD_MAX_EMAIL) {
-                return "El correo electrónico no puede exceder los " + LONGITUD_MAX_EMAIL + " caracteres.";
-            }
-            // Expresión regular mejorada para email
-            String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-            if (!email.matches(emailRegex)) {
-                return "Ingrese un correo electrónico válido (ejemplo: usuario@dominio.com).";
-            }
-        }
-        
-        // Validación de DIRECCIÓN (opcional, solo longitud máxima)
-        String direccion = form.getTxtDireccion().getText().trim();
-        if (!direccion.isEmpty() && direccion.length() > LONGITUD_MAX_DIRECCION) {
-            return "La dirección no puede exceder los " + LONGITUD_MAX_DIRECCION + " caracteres.";
-        }
-        
-        return null; // Todo válido
+        if (form.getTxtCedula().getText().trim().isEmpty())
+            return "Ingrese la cedula";
+        if (form.getTxtCedula().getText().trim().length() != 10)
+            return "La cedula debe tener 10 digitos";
+        if (!form.getTxtCedula().getText().trim().matches("\\d+"))
+            return "La cedula debe contener solo numeros";
+        if (form.getTxtNombre().getText().trim().isEmpty())
+            return "Ingrese el nombre";
+        if (form.getTxtApellido().getText().trim().isEmpty())
+            return "Ingrese el apellido";
+        if (form.getTxtTelefono().getText().trim().isEmpty())
+            return "Ingrese el telefono";
+        if (form.getTxtTelefono().getText().trim().length() != 10)
+            return "El telefono debe tener 10 digitos";
+        if (!form.getTxtTelefono().getText().trim().matches("\\d+"))
+            return "El telefono debe contener solo numeros";
+        if (form.getTxtEmail().getText().trim().isEmpty())
+            return "Ingrese el email";
+        if (!form.getTxtEmail().getText().trim().matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"))
+            return "Ingrese un email valido";
+        return null;
     }
     
     /**

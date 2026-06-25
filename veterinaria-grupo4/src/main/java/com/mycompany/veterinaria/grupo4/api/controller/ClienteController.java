@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 /**
  * Controlador REST para la gestión de clientes del sistema veterinario.
@@ -90,14 +88,8 @@ public class ClienteController {
      * @return true si la creación fue exitosa
      */
     @PostMapping("/crear")
-    public ResponseEntity<?> crear(@RequestBody Cliente cliente) {
-        try {
-            boolean resultado = clienteService.crear(cliente);
-            return ResponseEntity.ok(resultado);
-        } catch (IllegalArgumentException e) {
-            // Retornar 409 Conflict con mensaje amigable
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public boolean crear(@RequestBody Cliente cliente) {
+        return clienteService.crear(cliente);
     }
     
     /**

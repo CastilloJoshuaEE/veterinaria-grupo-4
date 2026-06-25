@@ -177,27 +177,29 @@ public class MascotaController {
      * @param idMascota identificador de la mascota a eliminar
      * @return ResponseEntity con el mensaje de resultado
      */
-@DeleteMapping("/eliminar/{idMascota}")
-public ResponseEntity<?> eliminar(@PathVariable int idMascota) {
-    try {
-        mascotaService.eliminar(idMascota);
-        // Si llegamos aquí sin excepción, la eliminación fue exitosa
-        return ResponseEntity.ok().body("Mascota eliminada correctamente.");
-    } catch (RuntimeException e) {
-        String mensaje = e.getMessage();
-        if (mensaje != null) {
-            if (mensaje.contains("cita médica realizada")) {
+    @DeleteMapping("/eliminar/{idMascota}")
+    public ResponseEntity<?> eliminar(@PathVariable int idMascota) {
+        try {
+            boolean resultado = mascotaService.eliminar(idMascota);
+            if (resultado) {
+                return ResponseEntity.ok().body("Mascota eliminada correctamente.");
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("No se pudo eliminar la mascota. Verifique que no tenga citas o atenciones asociadas.");
+            }
+        } catch (RuntimeException e) {
+            String mensaje = e.getMessage();
+            if (mensaje != null && mensaje.contains("cita médica realizada")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("La mascota ya posee una cita médica realizada. No se puede eliminar.");
-            } else if (mensaje.contains("citas pendientes")) {
+            } else if (mensaje != null && mensaje.contains("citas pendientes")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("La mascota tiene citas pendientes. No se puede eliminar.");
             }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al eliminar la mascota: " + mensaje);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Error al eliminar la mascota: " + (mensaje != null ? mensaje : "Error desconocido"));
     }
-}
 
     /**
      * Obtiene la foto de una mascota.
