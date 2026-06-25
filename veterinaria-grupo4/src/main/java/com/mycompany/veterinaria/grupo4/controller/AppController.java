@@ -31,13 +31,10 @@ import java.net.URISyntaxException;
  * <p>
  * Gestiona la navegacion entre las diferentes vistas del sistema,
  * el flujo de autenticacion y la carga de modulos segun el menu seleccionado.
- * Actua como el orquestador central de la interfaz grafica.
  * </p>
  * 
- * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
- * 
- * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 1.0
+ * @author ROBLES MORALES JUAN ANDRES
+ * @version 2.0
  * @since 1.0
  */
 public class AppController {
@@ -105,49 +102,248 @@ public class AppController {
         bg.add(main, BorderLayout.CENTER);
         bg.revalidate();      
         bg.repaint();
-        //Temporalemente mistrare el dashborad
         mostrarDashboard();
     }
     
     /**
      * Inicializa los eventos del menu principal.
      * Define que accion ejecutar para cada opcion del menu.
+     * 
+     * ADMINISTRADOR:
+     * 0: Bienvenida → Dashboard
+     * 1: Citas Médicas → PnlCita
+     * 2: Atención Médica → PnlAtencionMedica
+     * 3: Mascotas → (sub: 1=Ver todos, 2=Historial Médico)
+     * 4: Clientes → PnlCliente
+     * 5: Inventario → (sub: 3=Servicios)
+     * 6: Facturación → frmFactura
+     * 7: Personal Veterinario → PnlVeterinario
+     * 8: Configuración → PnlRecordatorioReporte
+     * 9: Ayuda → (sub: 1=Documentación, 2=Acerca de)
+     * 10: Cerrar Sesión → logout
+     * 
+     * RECEPCIONISTA:
+     * 0: Bienvenida → Dashboard
+     * 1: Citas Médicas → PnlCita
+     * 2: Mascotas → (sub: 1=Ver todos, 2=Historial Médico)
+     * 3: Clientes → PnlCliente
+     * 4: Facturación → frmFactura
+     * 5: Ayuda → (sub: 1=Documentación, 2=Acerca de)
+     * 6: Cerrar Sesión → logout
+     * 
+     * VETERINARIO:
+     * 0: Bienvenida → Dashboard
+     * 1: Atención Médica → PnlAtencionMedica
+     * 2: Mascotas → (sub: 1=Ver todos, 2=Historial Médico)
+     * 3: Clientes → PnlCliente
+     * 4: Facturación → frmFactura
+     * 5: Personal Veterinario → PnlVeterinario
+     * 6: Ayuda → (sub: 1=Documentación, 2=Acerca de)
+     * 7: Cerrar Sesión → logout
      */
     private void initMenuEvent() {
         main.addMenuEvent((int index, int subIndex, MenuAction action) -> {
-            System.out.println("index: "+index + "subIndex: "+subIndex);
-            switch (index) {
-                case 0 -> mostrarDashboard();
-                case 1 -> mostrarCitas();
-                case 2 ->  mostrarAtencion();
-                case 3 -> {
-                    switch (subIndex) {
-                        case 1 -> mostrarMascotas(); 
-                        case 2 -> mostrarHistorialMedico();
-                        default -> action.cancel();
-                    }
-                }
-                case 4 ->  mostrarClientes(); 
-                case 5 -> {
-                    switch (subIndex) {
-                        case 3 -> mostrarServicios();
-                        default -> action.cancel();
-                    }
-                }
-                case 6 -> mostrarFacturacion(); 
-                case 7 -> mostrarPersonalVeterinario();
-                case 8 -> mostrarReporteRecordatorios();
-                case 9 -> { 
-                    switch (subIndex) {
-                        case 1 -> abrirDocumentacion();    // Ver Documentacion
-                        case 2 -> mostrarAcercaDe();       // Acerca de
-                        default -> action.cancel();
-                    }
-                }
-                case 10 -> cerrarSesion();
-                default -> action.cancel();
+            System.out.println("Menu seleccionado - index: " + index + ", subIndex: " + subIndex);
+            
+            String rol = SessionManager.getInstance().getCurrentUserRole();
+            
+            switch (rol.toUpperCase()) {
+                case "ADMINISTRADOR":
+                    manejarMenuAdministrador(index, subIndex, action);
+                    break;
+                case "RECEPCIONISTA":
+                    manejarMenuRecepcionista(index, subIndex, action);
+                    break;
+                case "VETERINARIO":
+                    manejarMenuVeterinario(index, subIndex, action);
+                    break;
+                default:
+                    action.cancel();
+                    break;
             }
         });
+    }
+    
+    /**
+     * Maneja las acciones del menú para ADMINISTRADOR
+     */
+    private void manejarMenuAdministrador(int index, int subIndex, MenuAction action) {
+        switch (index) {
+            case 0: // Bienvenida
+                mostrarDashboard();
+                break;
+            case 1: // Citas Médicas
+                mostrarCitas();
+                break;
+            case 2: // Atención Médica
+                mostrarAtencion();
+                break;
+            case 3: // Mascotas
+                switch (subIndex) {
+                    case 0: // Mascotas (principal)
+                    case 1: // Ver todos
+                        mostrarMascotas();
+                        break;
+                    case 2: // Historial Médico
+                        mostrarHistorialMedico();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 4: // Clientes
+                mostrarClientes();
+                break;
+            case 5: // Inventario
+                switch (subIndex) {
+                    case 0: // Inventario (principal)
+                    case 1: // Servicios
+                        mostrarServicios();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 6: // Facturación
+                mostrarFacturacion();
+                break;
+            case 7: // Personal Veterinario
+                mostrarPersonalVeterinario();
+                break;
+            case 8: // Configuración
+                mostrarReporteRecordatorios();
+                break;
+            case 9: // Ayuda
+                switch (subIndex) {
+                    case 1: // Ver Documentación
+                        abrirDocumentacion();
+                        break;
+                    case 2: // Acerca de
+                        mostrarAcercaDe();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 10: // Cerrar Sesión
+                cerrarSesion();
+                break;
+            default:
+                action.cancel();
+                break;
+        }
+    }
+    
+    /**
+     * Maneja las acciones del menú para RECEPCIONISTA
+     */
+    private void manejarMenuRecepcionista(int index, int subIndex, MenuAction action) {
+        switch (index) {
+            case 0: // Bienvenida
+                mostrarDashboard();
+                break;
+            case 1: // Citas Médicas
+                mostrarCitas();
+                break;
+            case 2: // Mascotas
+                switch (subIndex) {
+                    case 0:
+                    case 1:
+                        mostrarMascotas();
+                        break;
+                    case 2:
+                        mostrarHistorialMedico();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 3: // Clientes
+                mostrarClientes();
+                break;
+            case 4: // Facturación
+                mostrarFacturacion();
+                break;
+            case 5: // Ayuda
+                switch (subIndex) {
+                    case 1:
+                        abrirDocumentacion();
+                        break;
+                    case 2:
+                        mostrarAcercaDe();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 6: // Cerrar Sesión
+                cerrarSesion();
+                break;
+            default:
+                action.cancel();
+                break;
+        }
+    }
+    
+    /**
+     * Maneja las acciones del menú para VETERINARIO
+     */
+    private void manejarMenuVeterinario(int index, int subIndex, MenuAction action) {
+        switch (index) {
+            case 0: // Bienvenida
+                mostrarDashboard();
+                break;
+            case 1: // Atención Médica
+                mostrarAtencion();
+                break;
+            case 2: // Mascotas
+                switch (subIndex) {
+                    case 0:
+                    case 1:
+                        mostrarMascotas();
+                        break;
+                    case 2:
+                        mostrarHistorialMedico();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 3: // Clientes
+                mostrarClientes();
+                break;
+            case 4: // Facturación
+                mostrarFacturacion();
+                break;
+            case 5: // Personal Veterinario
+                mostrarPersonalVeterinario();
+                break;
+            case 6: // Ayuda
+                switch (subIndex) {
+                    case 1:
+                        abrirDocumentacion();
+                        break;
+                    case 2:
+                        mostrarAcercaDe();
+                        break;
+                    default:
+                        action.cancel();
+                        break;
+                }
+                break;
+            case 7: // Cerrar Sesión
+                cerrarSesion();
+                break;
+            default:
+                action.cancel();
+                break;
+        }
     }
     
     /**
@@ -247,8 +443,6 @@ public class AppController {
     
     /**
      * Ejecuta el cierre de sesion.
-     * Detiene las notificaciones, limpia la sesion actual
-     * y vuelve a cargar la pantalla de login.
      */
     private void cerrarSesion() {
         int confirm = JOptionPane.showConfirmDialog(frm,
@@ -269,72 +463,62 @@ public class AppController {
             cargarLogin();
         }
     }
-/**
- * Abre la documentacion Javadoc del sistema en el navegador web predeterminado.
- */
-private void abrirDocumentacion() {
-    try {
-        // Ruta relativa a la documentacion Javadoc
-        // La documentacion se genera en target/site/apidocs/index.html
-        File docFile = new File("target/site/apidocs/index.html");
-        
-        // Si no existe en target, buscar en la raiz del proyecto
-        if (!docFile.exists()) {
-            docFile = new File("docs/javadoc/index.html");
-        }
-        
-        // Si aun no existe, intentar abrir URL local
-        if (!docFile.exists()) {
-            String url = "http://localhost:8080/docs/javadoc/index.html";
-            Desktop.getDesktop().browse(new URI(url));
-            return;
-        }
-        
-        // Abrir el archivo HTML en el navegador
-        Desktop.getDesktop().browse(docFile.toURI());
-        
-    } catch (IOException | URISyntaxException ex) {
-        JOptionPane.showMessageDialog(frm, 
-            "No se pudo abrir la documentacion. Asegurese de haber generado el Javadoc.\n" +
-            "Ejecute: mvn javadoc:javadoc\n" +
-            "Error: " + ex.getMessage(),
-            "Error", JOptionPane.ERROR_MESSAGE);
-    }
-}
-
-/**
- * Muestra el dialogo "Acerca de" con informacion del proyecto.
- */
-private void mostrarAcercaDe() {
-    String mensaje = """
-        ============================================
-        VETERINARIA PET TOWN
-        ============================================
-        
-        Sistema de Gestion Veterinaria
-        Version: 1.0.0
-        Fecha de inicio: 15/04/2026
-        
-        DESARROLLADORES:
-        --------------------------------
-        • BESILLA TOMALA ANGEL KALED – MODULO: VETERINARIO
-        • CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
-        • CASTRO AVILA JONATHAN XAVIER – MODULO: CLIENTE
-        • CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
-        • ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
-        
-        TECNOLOGIAS:
-        --------------------------------
-        • Java 17
-        • Spring Boot 3.1.5
-        • SQL Server/MYSQL
-        • FlatLaf (UI)
-        
-        © 2026 - Todos los derechos reservados
-        ============================================
-        """;
     
-    JOptionPane.showMessageDialog(frm, mensaje, "Acerca de Veterinaria Pet Town", 
-        JOptionPane.INFORMATION_MESSAGE);
-}    
+    /**
+     * Abre la documentacion Javadoc del sistema en el navegador web.
+     */
+    private void abrirDocumentacion() {
+        try {
+            File docFile = new File("target/site/apidocs/index.html");
+            if (!docFile.exists()) {
+                docFile = new File("docs/javadoc/index.html");
+            }
+            if (!docFile.exists()) {
+                String url = "http://localhost:8080/docs/javadoc/index.html";
+                Desktop.getDesktop().browse(new URI(url));
+                return;
+            }
+            Desktop.getDesktop().browse(docFile.toURI());
+        } catch (IOException | URISyntaxException ex) {
+            JOptionPane.showMessageDialog(frm, 
+                "No se pudo abrir la documentacion.\nError: " + ex.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Muestra el dialogo "Acerca de" con informacion del proyecto.
+     */
+    private void mostrarAcercaDe() {
+        String mensaje = """
+            ============================================
+            VETERINARIA PET TOWN
+            ============================================
+            
+            Sistema de Gestion Veterinaria
+            Version: 1.0.0
+            Fecha de inicio: 15/04/2026
+            
+            DESARROLLADORES:
+            --------------------------------
+            • BESILLA TOMALA ANGEL KALED – MODULO: VETERINARIO
+            • CASTILLO MEREJILDO JOSHUA JAVIER – MODULO: MASCOTA
+            • CASTRO AVILA JONATHAN XAVIER – MODULO: CLIENTE
+            • CHILAN CHILAN DANNY ANDRES – MODULO: AGENDAMIENTO DE CITA
+            • ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
+            
+            TECNOLOGIAS:
+            --------------------------------
+            • Java 17
+            • Spring Boot 3.1.5
+            • SQL Server/MySQL
+            • FlatLaf (UI)
+            
+            © 2026 - Todos los derechos reservados
+            ============================================
+            """;
+        
+        JOptionPane.showMessageDialog(frm, mensaje, "Acerca de Veterinaria Pet Town", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }    
 }

@@ -3,6 +3,7 @@ package api.service;
 import com.mycompany.veterinaria.grupo4.model.dao.IVeterinarioDAO;
 import com.mycompany.veterinaria.grupo4.model.entity.EspecialidadVeterinaria;
 import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
+import com.mycompany.veterinaria.grupo4.service.AuthService;
 import com.mycompany.veterinaria.grupo4.service.VeterinarioService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +27,8 @@ public class VeterinarioServiceTest {
 
     @Mock
     private IVeterinarioDAO veterinarioDAO;
-
+    @Mock
+    private AuthService authService; 
     private VeterinarioService veterinarioService;
 
     private static Veterinario veterinarioPrueba;
@@ -57,7 +59,7 @@ public class VeterinarioServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        veterinarioService = new VeterinarioService(veterinarioDAO);
+        veterinarioService = new VeterinarioService(veterinarioDAO, authService);
 
         lenient().when(veterinarioDAO.obtenerPorId(TEST_VETERINARIO_ID)).thenReturn(veterinarioPrueba);
         lenient().when(veterinarioDAO.obtenerPorId(ID_NO_EXISTENTE)).thenReturn(null);
