@@ -272,19 +272,19 @@ public class CtrlAtencionMedica {
      */
 private String validarDatos(FormAtencionMedica form) {
     String diagnostico = form.getTxtDiagnostico().getText().trim();
-    if (diagnostico.isEmpty()) {
-        return "El diagnostico es obligatorio.";
-    }
-    if (diagnostico.length() < 3) {
-        return "El diagnostico debe tener al menos 3 caracteres.";
-    }
+    if (diagnostico.isEmpty()) {return "El diagnostico es obligatorio.";}
+    if (diagnostico.length() < 3) {return "El diagnostico debe tener al menos 3 caracteres.";}
     
     String tratamiento = form.getTxtTratamiento().getText().trim();
-    if (tratamiento.isEmpty()) {
-        return "El tratamiento es obligatorio.";
-    }
-    if (tratamiento.length() < 3) {
-        return "El tratamiento debe tener al menos 3 caracteres.";
+    if (tratamiento.isEmpty()) {return "El tratamiento es obligatorio.";}
+    if (tratamiento.length() < 3) {return "El tratamiento debe tener al menos 3 caracteres.";}
+    String pesoStr = form.getTxtPeso().getText().trim();
+    if (pesoStr.isEmpty()) return "El peso es obligatorio.";
+    try {
+        double peso = Double.parseDouble(pesoStr);
+        if (peso <= 0) return "El peso debe ser un valor positivo.";
+    } catch (NumberFormatException e) {
+        return "El peso debe ser un valor numerico valido.";
     }
     return null;
 }

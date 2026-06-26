@@ -86,9 +86,9 @@ public class FormRegistroMascota extends JDialog {
     private JWindow        calendarPopup;
 
     // ─── Acciones ─────────────────────────────────────────────────────────────
-
     private Button btnAccion;
     private Button btnCancelar;
+    private boolean validando = false;
 
     // ─── Modo ─────────────────────────────────────────────────────────────────
     private boolean modoEdicion = false;
@@ -126,6 +126,18 @@ public class FormRegistroMascota extends JDialog {
         setBackground(new Color(0, 0, 0, 0));
         setSize(480, 620);
         setLocationRelativeTo(getParent());
+
+        addWindowFocusListener(new WindowFocusListener() {
+            @Override public void windowGainedFocus(WindowEvent e) {}
+            @Override public void windowLostFocus(WindowEvent e) {
+                if (seleccionandoFoto) return;      //  no cerrar mientras el explorador está abierto
+                if (validando) return;
+                if (calendarPopup != null && e.getOppositeWindow() == calendarPopup) return;
+                if (calendarPopup != null) { calendarPopup.dispose(); calendarPopup = null; }
+                dispose();
+            }
+        });
+
         JPanel root = buildRoot();
         root.add(buildHeader(titulo),  BorderLayout.NORTH);
         root.add(buildCuerpo(),        BorderLayout.CENTER);
@@ -551,7 +563,6 @@ public class FormRegistroMascota extends JDialog {
     }
 
     // ─── Getters ──────────────────────────────────────────────────────────────
-
     public Button            getBtnAccion()           { return btnAccion;           }
     public Button            getBtnCancelar()         { return btnCancelar;         }
     public Button            getBtnBuscarCliente()    { return btnBuscarCliente;    }
@@ -570,4 +581,5 @@ public class FormRegistroMascota extends JDialog {
     public String            getFotoNombreArchivo()   { return fotoNombreArchivo;   }
     public boolean           isModoEdicion()          { return modoEdicion;         }
     public Mascota           getMascotaActual()       { return mascotaActual;       }
+    public void setValidando(boolean validando) { this.validando = validando; }
 }
