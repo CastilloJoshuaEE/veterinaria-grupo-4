@@ -126,17 +126,6 @@ public class FormRegistroMascota extends JDialog {
         setBackground(new Color(0, 0, 0, 0));
         setSize(480, 620);
         setLocationRelativeTo(getParent());
-
-        addWindowFocusListener(new WindowFocusListener() {
-            @Override public void windowGainedFocus(WindowEvent e) {}
-            @Override public void windowLostFocus(WindowEvent e) {
-                if (seleccionandoFoto) return;      //  no cerrar mientras el explorador está abierto
-                if (calendarPopup != null && e.getOppositeWindow() == calendarPopup) return;
-                if (calendarPopup != null) { calendarPopup.dispose(); calendarPopup = null; }
-                dispose();
-            }
-        });
-
         JPanel root = buildRoot();
         root.add(buildHeader(titulo),  BorderLayout.NORTH);
         root.add(buildCuerpo(),        BorderLayout.CENTER);

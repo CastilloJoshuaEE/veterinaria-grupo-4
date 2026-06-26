@@ -29,6 +29,7 @@ CREATE TABLE RECEPCIONISTA (
     CONSTRAINT FK_RECEPCIONISTA_USUARIO
         FOREIGN KEY (CORREO_ELECTRONICO)
         REFERENCES USUARIO(CORREO_ELECTRONICO)
+        ON UPDATE CASCADE
 );
 
 -- ─── Clientes (dueños de mascotas) ───────────────────────────
@@ -67,6 +68,7 @@ CREATE TABLE VETERINARIO (
     CONSTRAINT FK_VETERINARIO_USUARIO
         FOREIGN KEY (CORREO_ELECTRONICO)
         REFERENCES USUARIO(CORREO_ELECTRONICO)
+        ON UPDATE CASCADE
 );
 -- ─── Mascotas ────────────────────────────────────────────────
 CREATE TABLE MASCOTA (
@@ -514,44 +516,78 @@ BEGIN
         SELECT -1 AS ID_VETERINARIO;
     END IF;
 END //
-
 CREATE OR REPLACE PROCEDURE SP_ACTUALIZAR_VETERINARIO(
-    IN p_ID_VETERINARIO INT,
-    IN p_CEDULA VARCHAR(10),
-    IN p_NOMBRE VARCHAR(50),
-    IN p_APELLIDO VARCHAR(50),
-    IN p_TELEFONO VARCHAR(15),
-    IN p_ID_ESPECIALIDAD INT,
-    IN p_PAGO_MENSUAL DECIMAL(10,2),
-    IN p_DIRECCION VARCHAR(100),
+    IN p_ID_VETERINARIO     INT,
+    IN p_CEDULA             VARCHAR(10),
+    IN p_NOMBRE             VARCHAR(50),
+    IN p_APELLIDO           VARCHAR(50),
+    IN p_TELEFONO           VARCHAR(15),
+    IN p_ID_ESPECIALIDAD    INT,
+    IN p_PAGO_MENSUAL       DECIMAL(10,2),
+    IN p_DIRECCION          VARCHAR(100),
     IN p_CORREO_ELECTRONICO VARCHAR(100)
 )
 BEGIN
-    UPDATE VETERINARIO
-    SET CEDULA = p_CEDULA, NOMBRE = p_NOMBRE, APELLIDO = p_APELLIDO,
-        TELEFONO = p_TELEFONO, ID_ESPECIALIDAD = p_ID_ESPECIALIDAD,
-        PAGO_MENSUAL = p_PAGO_MENSUAL, DIRECCION = p_DIRECCION,
-        CORREO_ELECTRONICO = p_CORREO_ELECTRONICO
-    WHERE ID_VETERINARIO = p_ID_VETERINARIO;
-    SELECT ROW_COUNT() AS FILAS_AFECTADAS;
-END //
-
-CREATE OR REPLACE PROCEDURE SP_ELIMINAR_VETERINARIO(
-    IN p_ID_VETERINARIO INT
-)
-BEGIN
+    DECLARE v_EMAIL_ACTUAL VARCHAR(100);
+    DECLARE v_FILAS_AFECTADAS INT;
+    
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SELECT 0 AS RESULTADO;
+        SELECT 0 AS FILAS_AFECTADAS;
     END;
     
     START TRANSACTION;
-    DELETE FROM SERVICIO_VETERINARIO WHERE ID_VETERINARIO = p_ID_VETERINARIO;
-    DELETE FROM VETERINARIO WHERE ID_VETERINARIO = p_ID_VETERINARIO;
+    
+    -- 1. Obtener email actual del veterinario
+    SELECT CORREO_ELECTRONICO INTO v_EMAIL_ACTUAL
+    FROM VETERINARIO
+    WHERE ID_VETERINARIO = p_ID_VETERINARIO;
+    
+    IF v_EMAIL_ACTUAL IS NULL THEN
+        ROLLBACK;
+        SELECT 0 AS FILAS_AFECTADAS;
+        LEAVE;
+    END IF;
+    
+    -- 2. Si el email cambió, actualizar en USUARIO
+    --    La FK con ON UPDATE CASCADE actualizará VETERINARIO automáticamente
+    IF v_EMAIL_ACTUAL <> p_CORREO_ELECTRONICO THEN
+        -- Verificar que el nuevo email no esté en uso por OTRO usuario
+        IF EXISTS (
+            SELECT 1 FROM USUARIO
+            WHERE CORREO_ELECTRONICO = p_CORREO_ELECTRONICO
+        ) THEN
+            ROLLBACK;
+            SELECT 0 AS FILAS_AFECTADAS;
+            LEAVE;
+        END IF;
+        
+        -- Actualizar en USUARIO (ON UPDATE CASCADE actualizará VETERINARIO)
+        UPDATE USUARIO
+        SET CORREO_ELECTRONICO = p_CORREO_ELECTRONICO
+        WHERE CORREO_ELECTRONICO = v_EMAIL_ACTUAL;
+    END IF;
+    
+    -- 3. Actualizar el resto de campos de VETERINARIO
+    UPDATE VETERINARIO
+    SET CEDULA          = p_CEDULA,
+        NOMBRE          = p_NOMBRE,
+        APELLIDO        = p_APELLIDO,
+        TELEFONO        = p_TELEFONO,
+        ID_ESPECIALIDAD = p_ID_ESPECIALIDAD,
+        PAGO_MENSUAL    = p_PAGO_MENSUAL,
+        DIRECCION       = p_DIRECCION,
+        CORREO_ELECTRONICO = p_CORREO_ELECTRONICO
+    WHERE ID_VETERINARIO = p_ID_VETERINARIO;
+    
+    SET v_FILAS_AFECTADAS = ROW_COUNT();
+    
     COMMIT;
-    SELECT 1 AS RESULTADO;
+    SELECT v_FILAS_AFECTADAS AS FILAS_AFECTADAS;
+    
 END //
+
 
 CREATE OR REPLACE PROCEDURE SP_OBTENER_VETERINARIOS()
 BEGIN
@@ -794,7 +830,9 @@ BEGIN
     END IF;
 END //
 
-CREATE PROCEDURE SP_ELIMINAR_MASCOTA(IN p_ID_MASCOTA INT)
+CREATE OR REPLACE PROCEDURE SP_ELIMINAR_MASCOTA(
+    IN p_ID_MASCOTA INT
+)
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -804,23 +842,26 @@ BEGIN
     
     START TRANSACTION;
     
-    -- Verificar si la mascota tiene atenciones médicas
+    -- Verificar si la mascota tiene atenciones médicas (antecedentes clínicos)
     IF EXISTS (
-        SELECT 1 FROM ATENCION_MEDICA AM
+        SELECT 1
+        FROM ATENCION_MEDICA AM
         INNER JOIN CITA C ON AM.ID_CITA = C.ID_CITA
         WHERE C.ID_MASCOTA = p_ID_MASCOTA
     ) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La mascota ya posee una cita médica realizada. No se puede eliminar.';
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'La mascota ya posee una cita médica realizada. No se puede eliminar.';
         ROLLBACK;
     END IF;
     
     -- Verificar si la mascota tiene citas pendientes
     IF EXISTS (SELECT 1 FROM CITA WHERE ID_MASCOTA = p_ID_MASCOTA AND ESTADO = 'PENDIENTE') THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La mascota tiene citas pendientes. No se puede eliminar.';
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'La mascota tiene citas pendientes. No se puede eliminar.';
         ROLLBACK;
     END IF;
     
-    -- Eliminar ficha médica
+    -- Eliminar ficha médica (solo si existe)
     DELETE FROM FICHA_MEDICA WHERE ID_MASCOTA = p_ID_MASCOTA;
     
     -- Eliminar mascota
@@ -828,6 +869,7 @@ BEGIN
     
     COMMIT;
     SELECT 1 AS RESULTADO;
+    
 END //
 
 CREATE PROCEDURE SP_OBTENER_MASCOTAS_POR_CLIENTE(IN p_ID_CLIENTE INT)

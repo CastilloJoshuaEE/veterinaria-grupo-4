@@ -24,14 +24,6 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import net.miginfocom.swing.MigLayout;
 
-/**
- * Diálogo modal para restablecer contraseña.
- * Solicita email, nueva contraseña y confirmación.
- * 
- * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 1.0
- * @since 1.0
- */
 public class FormRestablecerContrasena extends JDialog {
     
     private MyTextField txtEmail;
@@ -40,12 +32,9 @@ public class FormRestablecerContrasena extends JDialog {
     private Button btnRestablecer;
     private JButton btnCancelar;
     private boolean confirmado = false;
+    private JButton btnToggleNueva;
+    private JButton btnToggleConfirmar;
     
-    /**
-     * Constructor del diálogo de restablecimiento.
-     * 
-     * @param parent ventana padre
-     */
     public FormRestablecerContrasena(Frame parent) {
         super(parent, "Restablecer Contraseña", true);
         init();
@@ -122,33 +111,22 @@ public class FormRestablecerContrasena extends JDialog {
         JPanel panel = new JPanel(new MigLayout("wrap, fillx", "push[center]push", "push[]10[]10[]10[]10[]push"));
         panel.setOpaque(false);
         
-        // ========== CORREGIDO: Usar icono que SÍ existe ==========
-        // En lugar de /icon/lock.png (que no existe), usar un icono existente
+        // Icono
         ImageIcon icono = null;
         try {
-            // Intentar cargar el icono de candado
-            java.net.URL url = getClass().getResource("/icon/lock.png");
+            java.net.URL url = getClass().getResource("/image/LOGO-ICON.png");
             if (url != null) {
                 icono = new ImageIcon(url);
             } else {
-                // Si no existe, usar el icono de la aplicación (LOGO-ICON.png)
-                url = getClass().getResource("/image/LOGO-ICON.png");
-                if (url != null) {
-                    icono = new ImageIcon(url);
-                } else {
-                    // Si nada funciona, crear un icono vacío
-                    icono = new ImageIcon();
-                }
+                icono = new ImageIcon();
             }
         } catch (Exception e) {
-            // En caso de error, crear un icono vacío
             icono = new ImageIcon();
         }
         
         JLabel iconLabel = new JLabel(icono);
         panel.add(iconLabel, "span, center");
         
-        // Instrucción
         JLabel instruccion = new JLabel("Ingrese su correo y nueva contraseña");
         instruccion.setFont(new Font("SansSerif", Font.PLAIN, 12));
         instruccion.setForeground(new Color(120, 120, 120));
@@ -165,27 +143,65 @@ public class FormRestablecerContrasena extends JDialog {
         txtEmail.setHint("ejemplo@correo.com");
         panel.add(txtEmail, "w 80%, h 38");
         
-        // Nueva Contraseña
-        JLabel lblNueva = new JLabel("Nueva Contraseña");
-        lblNueva.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblNueva.setForeground(new Color(120, 120, 120));
-        panel.add(lblNueva, "span, gaptop 5");
+        // Nueva Contraseña con botón toggle
+        JPanel nuevaPassPanel = new JPanel(new BorderLayout(5, 0));
+        nuevaPassPanel.setOpaque(false);
+        nuevaPassPanel.setPreferredSize(new Dimension(0, 38));
         
         txtNuevaContrasena = new MyPasswordField();
         txtNuevaContrasena.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/pass.png")));
         txtNuevaContrasena.setHint("Mínimo 6 caracteres");
-        panel.add(txtNuevaContrasena, "w 80%, h 38");
+        nuevaPassPanel.add(txtNuevaContrasena, BorderLayout.CENTER);
         
-        // Confirmar Contraseña
-        JLabel lblConfirmar = new JLabel("Confirmar Contraseña");
-        lblConfirmar.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        lblConfirmar.setForeground(new Color(120, 120, 120));
-        panel.add(lblConfirmar, "span, gaptop 5");
+        btnToggleNueva = new JButton();
+        btnToggleNueva.setIcon(new ImageIcon(getClass().getResource("/icon/eye-off.png")));
+        btnToggleNueva.setBorderPainted(false);
+        btnToggleNueva.setContentAreaFilled(false);
+        btnToggleNueva.setFocusPainted(false);
+        btnToggleNueva.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnToggleNueva.setPreferredSize(new Dimension(35, 35));
+        // CORREGIDO: Usar getEchoChar en lugar de isPasswordVisible
+        btnToggleNueva.addActionListener(e -> {
+            if (txtNuevaContrasena.getEchoChar() == '\u2022' || txtNuevaContrasena.getEchoChar() == '*') {
+                txtNuevaContrasena.setEchoChar((char) 0);
+                btnToggleNueva.setIcon(new ImageIcon(getClass().getResource("/icon/eye.png")));
+            } else {
+                txtNuevaContrasena.setEchoChar('*');
+                btnToggleNueva.setIcon(new ImageIcon(getClass().getResource("/icon/eye-off.png")));
+            }
+        });
+        nuevaPassPanel.add(btnToggleNueva, BorderLayout.EAST);
+        panel.add(nuevaPassPanel, "w 80%, h 38");
+        
+        // Confirmar Contraseña con botón toggle
+        JPanel confirmarPassPanel = new JPanel(new BorderLayout(5, 0));
+        confirmarPassPanel.setOpaque(false);
+        confirmarPassPanel.setPreferredSize(new Dimension(0, 38));
         
         txtConfirmarContrasena = new MyPasswordField();
         txtConfirmarContrasena.setPrefixIcon(new ImageIcon(getClass().getResource("/icon/pass.png")));
         txtConfirmarContrasena.setHint("Repita su contraseña");
-        panel.add(txtConfirmarContrasena, "w 80%, h 38");
+        confirmarPassPanel.add(txtConfirmarContrasena, BorderLayout.CENTER);
+        
+        btnToggleConfirmar = new JButton();
+        btnToggleConfirmar.setIcon(new ImageIcon(getClass().getResource("/icon/eye-off.png")));
+        btnToggleConfirmar.setBorderPainted(false);
+        btnToggleConfirmar.setContentAreaFilled(false);
+        btnToggleConfirmar.setFocusPainted(false);
+        btnToggleConfirmar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnToggleConfirmar.setPreferredSize(new Dimension(35, 35));
+        // CORREGIDO: Usar getEchoChar en lugar de isPasswordVisible
+        btnToggleConfirmar.addActionListener(e -> {
+            if (txtConfirmarContrasena.getEchoChar() == '\u2022' || txtConfirmarContrasena.getEchoChar() == '*') {
+                txtConfirmarContrasena.setEchoChar((char) 0);
+                btnToggleConfirmar.setIcon(new ImageIcon(getClass().getResource("/icon/eye.png")));
+            } else {
+                txtConfirmarContrasena.setEchoChar('*');
+                btnToggleConfirmar.setIcon(new ImageIcon(getClass().getResource("/icon/eye-off.png")));
+            }
+        });
+        confirmarPassPanel.add(btnToggleConfirmar, BorderLayout.EAST);
+        panel.add(confirmarPassPanel, "w 80%, h 38");
         
         return panel;
     }
@@ -218,17 +234,11 @@ public class FormRestablecerContrasena extends JDialog {
         return footer;
     }
     
-    /**
-     * Valida los datos ingresados en el formulario.
-     * 
-     * @return true si los datos son válidos
-     */
     private boolean validarDatos() {
         String email = txtEmail.getText().trim();
         String nueva = new String(txtNuevaContrasena.getPassword());
         String confirmar = new String(txtConfirmarContrasena.getPassword());
         
-        // Validar email
         if (email.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,
                 "Por favor, ingrese su correo electrónico.",
@@ -243,7 +253,6 @@ public class FormRestablecerContrasena extends JDialog {
             return false;
         }
         
-        // Validar contraseña
         if (nueva.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,
                 "Por favor, ingrese una nueva contraseña.",
@@ -258,7 +267,6 @@ public class FormRestablecerContrasena extends JDialog {
             return false;
         }
         
-        // Validar confirmación
         if (confirmar.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,
                 "Por favor, confirme su nueva contraseña.",
