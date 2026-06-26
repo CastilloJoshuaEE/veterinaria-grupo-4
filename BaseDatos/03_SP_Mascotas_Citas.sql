@@ -62,9 +62,6 @@ BEGIN
     END CATCH
 END;
 GO
-USE db_veterinaria;
-GO
-
 CREATE OR ALTER PROCEDURE SP_ELIMINAR_MASCOTA
     @ID_MASCOTA INT
 AS
@@ -76,14 +73,12 @@ BEGIN
 
         -- Verificar si la mascota tiene atenciones médicas (antecedentes clínicos)
         IF EXISTS (
-    SELECT 1
-    FROM ATENCION_MEDICA AM
-    INNER JOIN CITA C 
-        ON AM.ID_CITA = C.ID_CITA
-    WHERE C.ID_MASCOTA = @ID_MASCOTA
-)
+            SELECT 1
+            FROM ATENCION_MEDICA AM
+            INNER JOIN CITA C ON AM.ID_CITA = C.ID_CITA
+            WHERE C.ID_MASCOTA = @ID_MASCOTA
+        )
         BEGIN
-            -- Lanzar error con RAISERROR para que sea capturable
             RAISERROR('La mascota ya posee una cita médica realizada. No se puede eliminar.', 16, 1);
             ROLLBACK TRANSACTION;
             RETURN 0;
@@ -97,10 +92,8 @@ BEGIN
             RETURN 0;
         END
 
-        -- Eliminar ficha médica
+        -- Eliminar ficha médica (solo si existe)
         DELETE FROM FICHA_MEDICA WHERE ID_MASCOTA = @ID_MASCOTA;
-
-        -- Eliminar mascota
         DELETE FROM MASCOTA WHERE ID_MASCOTA = @ID_MASCOTA;
 
         COMMIT TRANSACTION;
@@ -112,7 +105,6 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
         
-        -- Re-lanzar el error
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
         DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
         DECLARE @ErrorState INT = ERROR_STATE();

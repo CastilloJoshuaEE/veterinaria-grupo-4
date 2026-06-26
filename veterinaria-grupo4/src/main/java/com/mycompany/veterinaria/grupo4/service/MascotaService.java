@@ -217,7 +217,7 @@ public class MascotaService {
         try {
             return mascotaDAO.eliminar(idMascota);
         } catch (SQLException e) {
-            e.printStackTrace();
+            
             String mensaje = e.getMessage();
             if (mensaje != null) {
                 if (mensaje.contains("cita médica realizada") || mensaje.contains("cita medica realizada")) {

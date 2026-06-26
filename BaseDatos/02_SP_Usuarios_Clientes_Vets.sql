@@ -262,7 +262,6 @@ BEGIN
         SELECT -1 AS ID_VETERINARIO;
 END;
 GO
-
 CREATE OR ALTER PROCEDURE SP_ACTUALIZAR_VETERINARIO
     @ID_VETERINARIO     INT,
     @CEDULA             VARCHAR(10),
@@ -275,13 +274,68 @@ CREATE OR ALTER PROCEDURE SP_ACTUALIZAR_VETERINARIO
     @CORREO_ELECTRONICO VARCHAR(100) = NULL
 AS
 BEGIN
-    UPDATE VETERINARIO
-    SET CEDULA = @CEDULA, NOMBRE = @NOMBRE, APELLIDO = @APELLIDO,
-        TELEFONO = @TELEFONO, ID_ESPECIALIDAD = @ID_ESPECIALIDAD,
-        PAGO_MENSUAL = @PAGO_MENSUAL, DIRECCION = @DIRECCION,
-        CORREO_ELECTRONICO = @CORREO_ELECTRONICO
-    WHERE ID_VETERINARIO = @ID_VETERINARIO;
-    SELECT @@ROWCOUNT AS FILAS_AFECTADAS;
+    SET NOCOUNT ON;
+
+    DECLARE @EMAIL_ACTUAL VARCHAR(100);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Obtener email actual del veterinario
+        SELECT @EMAIL_ACTUAL = CORREO_ELECTRONICO
+        FROM VETERINARIO
+        WHERE ID_VETERINARIO = @ID_VETERINARIO;
+
+        IF @EMAIL_ACTUAL IS NULL
+        BEGIN
+            RAISERROR('No existe un veterinario con ese ID.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Si el email cambió, verificar que no esté en uso por OTRO usuario
+        IF @EMAIL_ACTUAL <> @CORREO_ELECTRONICO
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM USUARIO
+                WHERE CORREO_ELECTRONICO = @CORREO_ELECTRONICO
+            )
+            BEGIN
+                RAISERROR('El correo electrónico ya está registrado por otro usuario.', 16, 1);
+                ROLLBACK TRANSACTION;
+                SELECT 0 AS FILAS_AFECTADAS;
+                RETURN;
+            END
+
+            -- Actualizar USUARIO: la cascada actualiza VETERINARIO automáticamente
+            UPDATE USUARIO
+            SET CORREO_ELECTRONICO = @CORREO_ELECTRONICO
+            WHERE CORREO_ELECTRONICO = @EMAIL_ACTUAL;
+        END
+
+        -- 3. Actualizar el resto de campos de VETERINARIO
+        UPDATE VETERINARIO
+        SET CEDULA          = @CEDULA,
+            NOMBRE          = @NOMBRE,
+            APELLIDO        = @APELLIDO,
+            TELEFONO        = @TELEFONO,
+            ID_ESPECIALIDAD = @ID_ESPECIALIDAD,
+            PAGO_MENSUAL    = @PAGO_MENSUAL,
+            DIRECCION       = @DIRECCION
+        WHERE ID_VETERINARIO = @ID_VETERINARIO;
+
+        COMMIT TRANSACTION;
+        SELECT 1 AS FILAS_AFECTADAS;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrorMessage, 16, 1);
+        SELECT 0 AS FILAS_AFECTADAS;
+    END CATCH
 END;
 GO
 

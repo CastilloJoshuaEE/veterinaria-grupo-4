@@ -1,0 +1,256 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    
+    <!-- ================================================================ -->
+    <!-- REGLAS DE FORMATO DE ARCHIVO                                     -->
+    <!-- ================================================================ -->
+    
+    <!-- Longitud máxima de línea: 120 caracteres -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+        <property name="fileExtensions" value="java"/>
+        <message key="maxLineLen" value="La línea excede los {0,number,integer} caracteres permitidos."/>
+    </module>
+    
+    <!-- No permitir tabuladores, solo espacios -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+        <message key="containsTab" value="El archivo contiene tabuladores. Use espacios en su lugar."/>
+    </module>
+    
+    <!-- Archivo debe terminar con una nueva línea -->
+    <module name="NewlineAtEndOfFile">
+        <message key="missingFinalNewline" value="El archivo debe terminar con una nueva línea."/>
+    </module>
+
+    <!-- ================================================================ -->
+    <!-- TREE WALKER - REGLAS DE ESTRUCTURA DEL CÓDIGO                   -->
+    <!-- ================================================================ -->
+    
+    <module name="TreeWalker">
+        
+        
+        <!-- REGLAS DE NOMBRES                                             -->
+        
+        
+        <!-- Nombres de métodos: deben empezar con minúscula -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" 
+                value="El método ''{0}'' debe empezar con minúscula y usar camelCase."/>
+        </module>
+        
+        <!-- Nombres de clases: deben empezar con mayúscula -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" 
+                value="La clase ''{0}'' debe iniciar con mayúscula y usar PascalCase."/>
+        </module>
+        
+        <!-- Nombres de variables locales: minúscula y camelCase -->
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" 
+                value="La variable local ''{0}'' debe empezar en minúscula y usar camelCase."/>
+        </module>
+        
+        <!-- Nombres de variables de instancia: minúscula y camelCase -->
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" 
+                value="El atributo ''{0}'' debe empezar en minúscula y usar camelCase."/>
+        </module>
+        
+        <!-- Nombres de parámetros: minúscula y camelCase -->
+        <module name="ParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern" 
+                value="El parámetro ''{0}'' debe empezar en minúscula y usar camelCase."/>
+        </module>
+        
+        <!-- Nombres de constantes (static final): MAYÚSCULAS con guión bajo -->
+        <module name="ConstantName">
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+            <message key="name.invalidPattern" 
+                value="La constante ''{0}'' debe usar MAYÚSCULAS y guión bajo (ej: MAX_SIZE)."/>
+        </module>
+        
+        
+        <!-- REGLAS DE IMPORTACIONES                                       -->
+        
+        
+        <!-- No permitir imports no utilizados -->
+        <module name="UnusedImports">
+            <message key="import.unused" value="La importación ''{0}'' no se utiliza."/>
+        </module>
+        
+        <!-- No permitir importaciones redundantes (mismo paquete) -->
+        <module name="RedundantImport">
+            <message key="import.redundant" value="La importación ''{0}'' es redundante."/>
+        </module>
+        
+        <!-- Orden de importaciones (java, javax, org, com) -->
+        <module name="ImportOrder">
+            <property name="groups" value="java,javax,org,com"/>
+            <property name="ordered" value="true"/>
+            <property name="separated" value="true"/>
+            <message key="import.ordering" 
+                value="Las importaciones deben estar en orden: java, javax, org, com."/>
+        </module>
+        
+        
+        <!-- REGLAS DE ESPACIADO Y SANGRIADO                               -->
+        
+        
+        <!-- No permitir espacios después de la apertura y antes del cierre de paréntesis -->
+        <module name="ParenPad">
+            <property name="option" value="nospace"/>
+            <message key="ws.followed" value="Espacio innecesario después de ''(''."/>
+            <message key="ws.preceded" value="Espacio innecesario antes de '')''."/>
+        </module>
+        
+        <!-- Espacios alrededor de operadores -->
+        <module name="WhitespaceAround">
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
+            <property name="allowEmptyLoops" value="true"/>
+            <message key="ws.notFollowed" 
+                value="Se requiere espacio después de ''{0}''."/>
+            <message key="ws.notPreceded" 
+                value="Se requiere espacio antes de ''{0}''."/>
+        </module>
+        
+        <!-- Espacio después de: if, for, while, catch, switch, try -->
+        <module name="WhitespaceAfter">
+            <property name="tokens" value="IF, FOR, WHILE, CATCH, SWITCH, TRY"/>
+            <message key="ws.notFollowed" 
+                value="Se requiere espacio después de ''{0}''."/>
+        </module>
+        
+        
+        <!-- REGLAS DE JAVADOC                                            -->
+        
+        
+        <!-- Javadoc para clases e interfaces -->
+        <module name="JavadocType">
+            <property name="scope" value="public"/>
+            <property name="allowMissingParamTags" value="false"/>
+            <message key="javadoc.missing" 
+                value="Falta Javadoc para la clase ''{0}''."/>
+        </module>
+        
+        <!-- Javadoc para métodos públicos -->
+        <module name="JavadocMethod">
+            <property name="scope" value="public"/>
+            <property name="allowMissingParamTags" value="false"/>
+            <property name="allowMissingReturnTag" value="false"/>
+            <property name="allowMissingThrowsTags" value="false"/>
+            <message key="javadoc.missing" 
+                value="Falta Javadoc para el método ''{0}''."/>
+        </module>
+        
+        <!-- No permitir Javadoc mal formateado -->
+        <module name="JavadocStyle">
+            <property name="checkFirstSentence" value="true"/>
+            <property name="checkEmptyJavadoc" value="true"/>
+            <message key="javadoc.missing" 
+                value="El Javadoc está incompleto o mal formateado."/>
+        </module>
+        
+        
+        <!-- REGLAS DE MODIFICADORES                                       -->
+        
+        
+        <!-- Orden de modificadores: public, protected, private, abstract, static, final -->
+        <module name="ModifierOrder">
+            <message key="mod.order" 
+                value="Orden incorrecto de modificadores. Debe ser: public/protected/private, abstract, static, final."/>
+        </module>
+        
+        <!-- No permitir modificadores redundantes -->
+        <module name="RedundantModifier">
+            <message key="redundantModifier" 
+                value="El modificador ''{0}'' es redundante aquí."/>
+        </module>
+        
+        
+        <!-- REGLAS DE ESTRUCTURA DE CÓDIGO                                -->
+        
+        
+        <!-- No permitir líneas vacías múltiples -->
+        <module name="MultipleEmptyLines">
+            <property name="max" value="2"/>
+            <message key="multiple.empty.lines" 
+                value="Múltiples líneas vacías consecutivas (máximo 2 permitidas)."/>
+        </module>
+        
+        <!-- Declaración de variables una por línea -->
+        <module name="MultipleVariableDeclarations">
+            <message key="multiple.variable.declarations" 
+                value="Cada variable debe declararse en su propia línea."/>
+        </module>
+        
+        <!-- No permitir finalizers -->
+        <module name="NoFinalizer">
+            <message key="finalizer.exists" value="No se debe usar el método finalize()."/>
+        </module>
+        
+        <!-- Verificar que las excepciones se capturen correctamente -->
+        <module name="EmptyCatchBlock">
+            <property name="commentFormat" value=".*"/>
+            <message key="empty.catch.block" 
+                value="El bloque catch no debe estar vacío. Documente o maneje la excepción."/>
+        </module>
+        
+        <!-- No permitir métodos con muchas líneas (más de 100) -->
+        <module name="MethodLength">
+            <property name="max" value="100"/>
+            <property name="countEmpty" value="false"/>
+            <message key="maxLen.method" 
+                value="El método ''{0}'' excede el máximo de {1,number,integer} líneas."/>
+        </module>
+        
+        <!-- Número máximo de parámetros -->
+        <module name="ParameterNumber">
+            <property name="max" value="6"/>
+            <message key="maxParam" 
+                value="El método ''{0}'' tiene demasiados parámetros ({1,number,integer}). Máximo 6."/>
+        </module>
+        
+        
+        <!-- REGLAS ADICIONALES DE SEGURIDAD Y BUENAS PRÁCTICAS           -->
+        
+        
+        <!-- Evitar System.out.println() en producción -->
+        <module name="Regexp">
+            <property name="format" value="System\.out\.println"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="ignoreComments" value="true"/>
+            <message key="regexp.exceeded" 
+                value="No se debe usar System.out.println() en el código de producción. Use logging en su lugar."/>
+        </module>
+        
+        <!-- Evitar e.printStackTrace() en producción -->
+        <module name="Regexp">
+            <property name="format" value="\.printStackTrace\(\)"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="ignoreComments" value="true"/>
+            <message key="regexp.exceeded" 
+                value="No se debe usar printStackTrace(). Use logging en su lugar."/>
+        </module>
+        
+        <!-- Evitar System.err.println() -->
+        <module name="Regexp">
+            <property name="format" value="System\.err\.println"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="ignoreComments" value="true"/>
+            <message key="regexp.exceeded" 
+                value="No se debe usar System.err.println(). Use logging en su lugar."/>
+        </module>
+        
+    </module>
+    
+</module>
