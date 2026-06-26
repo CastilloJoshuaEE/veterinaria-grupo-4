@@ -17,7 +17,9 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -73,14 +75,32 @@ public class MenuItem extends JPanel {
         this.events = events;
         init();
     }
-
+    
+    // Diccionario de íconos
+    private static final Map<String, String> ICON_MAP = new HashMap<>();
+    static {
+        ICON_MAP.put("Bienvenida", "0");
+        ICON_MAP.put("Citas Médicas", "1");
+        ICON_MAP.put("Atención Médica", "2");
+        ICON_MAP.put("Mascotas", "3");
+        ICON_MAP.put("Clientes", "4");
+        ICON_MAP.put("Inventario", "5");
+        ICON_MAP.put("Facturación", "6");
+        ICON_MAP.put("Personal Veterinario", "7");
+        ICON_MAP.put("Configuración", "8");
+        ICON_MAP.put("Ayuda", "9");
+        ICON_MAP.put("Cerrar Sesión", "10");
+    }
+    
     private Icon getIcon() {
         try {
             Color lightColor = FlatUIUtils.getUIColor("Menu.icon.lightColor", Color.orange);
             Color darkColor = FlatUIUtils.getUIColor("Menu.icon.darkColor", Color.orange);
-            java.net.URL iconUrl = getClass().getResource("/icon/svg/" + menuIndex + ".svg");
+            String menuName = menus[0];
+            String iconNumber = ICON_MAP.getOrDefault(menuName, "default");
+            java.net.URL iconUrl = getClass().getResource("/icon/svg/" + iconNumber + ".svg");
             if (iconUrl == null) {
-                System.err.println("Icono no encontrado: /icon/svg/" + menuIndex + ".svg");
+                System.err.println("Icono no encontrado para "+ menuName +": /icon/svg/" + iconNumber + ".svg");
                 return null;
             }
             FlatSVGIcon icon = new FlatSVGIcon(iconUrl);
@@ -89,7 +109,7 @@ public class MenuItem extends JPanel {
             icon.setColorFilter(f);
             return icon;
         } catch (Exception e) {
-            System.err.println("Error cargando icono " + menuIndex + ": " + e.getMessage());
+            System.err.println("Error cargando icono " + menus[0] + ": " + e.getMessage());
             return null;
         }
     }
