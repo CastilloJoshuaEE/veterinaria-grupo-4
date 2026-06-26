@@ -23,6 +23,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -340,7 +342,12 @@ public class CtrlMascotas {
         form.getBtnAccion().addActionListener(e -> {
             String err = validarDatos(form);
             if (err != null) {
-                JOptionPane.showMessageDialog(form, err, "Validacion", JOptionPane.WARNING_MESSAGE);
+                form.setValidando(true);
+                try {
+                    JOptionPane.showMessageDialog(form, err, "Validacion", JOptionPane.WARNING_MESSAGE);
+                } finally {
+                    form.setValidando(false);
+                }
                 return;
             }
             if (form.isModoEdicion()) actualizar(form);
@@ -355,16 +362,86 @@ public class CtrlMascotas {
      * @return mensaje de error, o null si todo es valido
      */
     private String validarDatos(FormRegistroMascota form) {
+
+        // ─── Cliente ──────────────────────────────────────────────────────────────
         if (form.getClienteSeleccionado() == null)
-            return "Busque y seleccione un cliente antes de continuar.";
-        if (form.getTxtNombre().getText().trim().isEmpty())
+           return "Busque y seleccione un cliente antes de continuar.";
+
+        // ─── Nombre ───────────────────────────────────────────────────────────────
+        String nombre = form.getTxtNombre().getText().trim();
+        if (nombre.isEmpty())
             return "El nombre de la mascota es obligatorio.";
-        if (form.getTxtEspecie().getText().trim().isEmpty())
+        if (nombre.length() < 2)
+            return "El nombre debe tener al menos 2 caracteres.";
+        if (nombre.length() > 50)
+            return "El nombre no puede superar los 50 caracteres.";
+        if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
+            return "El nombre solo puede contener letras y espacios.";
+
+        // ─── Especie ──────────────────────────────────────────────────────────────
+        String especie = form.getTxtEspecie().getText().trim();
+        if (especie.isEmpty())
             return "La especie es obligatoria.";
+        if (especie.length() < 2)
+            return "La especie debe tener al menos 2 caracteres.";
+        if (especie.length() > 50)
+            return "La especie no puede superar los 50 caracteres.";
+        if (!especie.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
+            return "La especie solo puede contener letras y espacios.";
+
+        // ─── Raza (opcional) ──────────────────────────────────────────────────────
+        String raza = form.getTxtRaza().getText().trim();
+        if (!raza.isEmpty()) {
+            if (raza.length() < 2)
+                return "La raza debe tener al menos 2 caracteres.";
+            if (raza.length() > 50)
+                return "La raza no puede superar los 50 caracteres.";
+            if (!raza.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
+                return "La raza solo puede contener letras y espacios.";
+        }
+
+        // ─── Sexo ─────────────────────────────────────────────────────────────────
         if (form.getCmbSexo().getSelectedIndex() < 0)
             return "Seleccione el sexo de la mascota.";
-        return null;
-    }
+
+        // ─── Fecha de nacimiento (opcional) ───────────────────────────────────────
+        Date fechaNac = form.getFechaNacimiento();
+        if (fechaNac != null) {
+            if (fechaNac.after(new Date()))
+                return "La fecha de nacimiento no puede ser futura.";
+            // No más de 50 años atrás (límite razonable para cualquier mascota)
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.YEAR, -50);
+            if (fechaNac.before(cal.getTime()))
+                return "La fecha de nacimiento no es válida.";
+        }
+
+        // ─── Peso (opcional) ──────────────────────────────────────────────────────
+        String pesoTxt = form.getTxtPeso().getText().trim();
+        if (!pesoTxt.isEmpty()) {
+            try {
+                double peso = Double.parseDouble(pesoTxt);
+                if (peso <= 0)
+                    return "El peso debe ser un valor positivo.";
+                if (peso > 999)
+                    return "El peso ingresado no es válido.";
+            } catch (NumberFormatException e) {
+                return "El peso debe ser un valor numérico válido. Ej: 4.5";
+            }
+        }
+
+        // ─── Color (opcional) ─────────────────────────────────────────────────────
+        String color = form.getTxtColor().getText().trim();
+        if (!color.isEmpty()) {
+            if (color.length() < 2)
+                return "El color debe tener al menos 2 caracteres.";
+            if (color.length() > 50)
+                return "El color no puede superar los 50 caracteres.";
+            if (!color.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
+                return "El color solo puede contener letras y espacios.";
+        }
+    return null;
+}
  
     /**
      * Construye un objeto Mascota con los datos actuales del formulario.
