@@ -5,6 +5,7 @@ import com.mycompany.veterinaria.grupo4.service.VeterinarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Controlador REST para la gestión de veterinarios del sistema.
@@ -110,9 +111,23 @@ public class VeterinarioController {
      * @return true si la creación fue exitosa
      */
     @PostMapping("/crear")
-    public boolean crear(@RequestBody Veterinario veterinario) {
-        return veterinarioService.crear(veterinario);
+public ResponseEntity<?> crear(@RequestBody Veterinario veterinario) {
+    try {
+        return ResponseEntity.ok(
+            veterinarioService.crear(veterinario)
+        );
+
+    } catch (IllegalArgumentException e) {
+
+        return ResponseEntity.badRequest()
+                .body(e.getMessage());
+
+    } catch (Exception e) {
+
+        return ResponseEntity.internalServerError()
+                .body(e.getMessage());
     }
+}
 
     /**
      * Actualiza los datos de un veterinario existente.

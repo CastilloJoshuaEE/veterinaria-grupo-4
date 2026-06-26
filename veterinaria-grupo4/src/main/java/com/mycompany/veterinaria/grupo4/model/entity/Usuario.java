@@ -27,12 +27,13 @@ import java.util.Date;
  */
 public class Usuario {
     private int idUsuario;
-    private String nombreUsuario;
+    private String email;
     private String contrasena;
     private String correoElectronico;
     private String rol;
     private Date fechaCreacion;
     private boolean estado;
+    private String nombreCompleto;
     /**
      * Constructor por defecto.
      */
@@ -41,14 +42,14 @@ public class Usuario {
      * Constructor con los campos basicos del usuario.
      * 
      * @param idUsuario identificador del usuario
-     * @param nombreUsuario nombre de usuario
+     * @param email email del usuario
      * @param contrasena contrasena del usuario
      * @param correoElectronico correo electronico
      * @param rol rol del usuario (ADMINISTRADOR, VETERINARIO, etc.)
      */
-    public Usuario(int idUsuario, String nombreUsuario, String contrasena, String correoElectronico, String rol) {
+    public Usuario(int idUsuario, String email, String contrasena, String correoElectronico, String rol) {
         this.idUsuario = idUsuario;
-        this.nombreUsuario = nombreUsuario;
+        this.email = email;
         this.contrasena = contrasena;
         this.correoElectronico = correoElectronico;
         this.rol = rol;
@@ -57,8 +58,8 @@ public class Usuario {
     // Getters y Setters
     public int getIdUsuario() { return idUsuario; }
     public void setIdUsuario(int idUsuario) { this.idUsuario = idUsuario; }
-    public String getNombreUsuario() { return nombreUsuario; }
-    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
     public String getContrasena() { return contrasena; }
     public void setContrasena(String contrasena) { this.contrasena = contrasena; }
     public String getCorreoElectronico() { return correoElectronico; }
@@ -69,4 +70,6 @@ public class Usuario {
     public void setFechaCreacion(Date fechaCreacion) { this.fechaCreacion = fechaCreacion; }
     public boolean isEstado() { return estado; }
     public void setEstado(boolean estado) { this.estado = estado; }
+    public String getNombreCompleto() { return nombreCompleto; }
+    public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
 }

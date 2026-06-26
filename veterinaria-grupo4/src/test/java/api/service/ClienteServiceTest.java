@@ -58,7 +58,7 @@ public class ClienteServiceTest {
     }
 
     // ═══════════════════════════════════════════════════════
-    // PRUEBAS PARA buscarPorNombre() - COMPLEJIDAD CICLOMÁTICA M=2
+    // PRUEBAS PARA buscarPorNombre() - COMPLEJIDAD CICLOMÁTICA M=4
     // ═══════════════════════════════════════════════════════
 
     @Test

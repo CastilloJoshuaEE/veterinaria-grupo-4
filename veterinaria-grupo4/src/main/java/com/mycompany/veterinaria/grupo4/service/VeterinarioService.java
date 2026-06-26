@@ -1,6 +1,7 @@
 package com.mycompany.veterinaria.grupo4.service;
 
 import com.mycompany.veterinaria.grupo4.model.dao.IVeterinarioDAO;
+import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
 import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.model.impl.VeterinarioDAOImpl;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,12 @@ public class VeterinarioService {
     private static final double PAGO_MAXIMO = 5000.0;
     
     private IVeterinarioDAO veterinarioDAO;
+    private AuthService authService;
+
     /** Constructor por defecto (usado por Spring) */
     public VeterinarioService() {
         this.veterinarioDAO = new VeterinarioDAOImpl();
+        this.authService = new AuthService();  
     }
 
     /**
@@ -54,8 +58,9 @@ public class VeterinarioService {
      *
      * @param veterinarioDAO DAO de veterinarios mockeado
      */
-    public VeterinarioService(IVeterinarioDAO veterinarioDAO) {
+    public VeterinarioService(IVeterinarioDAO veterinarioDAO, AuthService authService) {
         this.veterinarioDAO = veterinarioDAO;
+        this.authService = authService;
     }
     /**
      * Lista todos los veterinarios registrados.
@@ -122,15 +127,54 @@ public class VeterinarioService {
      * @return true si la creacion fue exitosa
      * @throws IllegalArgumentException si los datos del veterinario son invalidos
      */
+    /**
+     * Valida y crea un nuevo veterinario en el sistema.
+     * <p>
+     * <b>Flujo completo:</b>
+     * <ol>
+     *   <li>Valida todos los campos del veterinario</li>
+     *   <li>Verifica que la cédula no exista</li>
+     *   <li>Verifica que el email no esté registrado como usuario</li>
+     *   <li>CREA el usuario en la tabla USUARIO (con rol VETERINARIO)</li>
+     *   <li>INSERTA el veterinario en la tabla VETERINARIO</li>
+     * </ol>
+     * </p>
+     *
+     * @param veterinario objeto Veterinario a registrar (validado)
+     * @return true si la creacion fue exitosa
+     * @throws IllegalArgumentException si los datos del veterinario son invalidos
+     * @throws IllegalStateException si el email ya está registrado como usuario
+     */
     public boolean crear(Veterinario veterinario) {
+        // 1. Validar datos del veterinario
         validarVeterinario(veterinario);
         
-        // Validar que la cedula no exista ya
+        // 2. Validar que la cédula no exista ya en VETERINARIO
         Veterinario existente = obtenerPorCedula(veterinario.getCedula());
         if (existente != null) {
-            throw new IllegalArgumentException("Ya existe un veterinario con la cedula: " + veterinario.getCedula());
+            throw new IllegalArgumentException("Ya existe un veterinario con la cédula: " + veterinario.getCedula());
         }
         
+        // 3. Verificar que el email no esté registrado como usuario
+        if (authService.existeUsuario(veterinario.getCorreoElectronico())) {
+            throw new IllegalStateException("El correo electrónico '" + veterinario.getCorreoElectronico() + 
+                "' ya está registrado como usuario del sistema.");
+        }
+        
+        // 4. Crear el usuario en USUARIO (CONTRASEÑA = "123456" por defecto)
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setEmail(veterinario.getCorreoElectronico());
+        nuevoUsuario.setCorreoElectronico(veterinario.getCorreoElectronico());
+        nuevoUsuario.setContrasena("123456"); // Contraseña por defecto
+        nuevoUsuario.setRol("VETERINARIO");
+        nuevoUsuario.setEstado(true);
+        
+        int idUsuario = authService.registrarUsuario(nuevoUsuario);
+        if (idUsuario <= 0) {
+            throw new RuntimeException("Error al crear el usuario para el veterinario");
+        }
+        
+        // 5. Insertar el veterinario en VETERINARIO
         try {
             return veterinarioDAO.insertar(veterinario);
         } catch (SQLException e) {

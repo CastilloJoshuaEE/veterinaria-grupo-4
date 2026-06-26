@@ -2,14 +2,26 @@
 --  MÓDULO 8 | Datos Iniciales (Seed)
 -- ============================================================
 USE db_veterinaria;
+
+GO
+INSERT INTO USUARIO (CORREO_ELECTRONICO, CONTRASENA, ROL) VALUES
+('cjimenez@hotmail.com', '123456', 'VETERINARIO'),
+('evera@hotmail.com', '123456', 'VETERINARIO'),
+('lchavez@hotmail.com', '123456', 'VETERINARIO'),
+('portega@hotmail.com', '123456', 'VETERINARIO'),
+('amorales@hotmail.com', '123456', 'VETERINARIO'),
+('lmejia@hotmail.com', '123456', 'VETERINARIO'),
+('jvega@hotmail.com', '123456', 'VETERINARIO'),
+('sgonzalez@hotmail.com', '123456', 'VETERINARIO'),
+('mcastro@hotmail.com', '123456', 'VETERINARIO'),
+('dperez@hotmail.com', '123456', 'VETERINARIO');
+GO
+-- ─── Usuarios ────────────────────────────────────────────────
+INSERT INTO USUARIO (CORREO_ELECTRONICO, CONTRASENA, ROL) VALUES
+('admin@vet.com', 'admin123', 'ADMINISTRADOR'),
+('maria@vet.com', 'maria123', 'RECEPCIONISTA');
 GO
 
--- ─── Usuarios ────────────────────────────────────────────────
-INSERT INTO USUARIO (NOMBRE_USUARIO, CONTRASENA, CORREO_ELECTRONICO, ROL) VALUES
-('JUAN',    '1234segura1',  'juan@email.com',    'ADMINISTRADOR'),
-('MARCO',   '1234marco2',   'marco@email.com',   'ADMINISTRADOR'),
-('MALCOLM', '1234MALCOLM3', 'malcolm@hotmail.com','ADMINISTRADOR');
-GO
 
 -- ─── Especialidades veterinarias ─────────────────────────────
 INSERT INTO ESPECIALIDAD_VETERINARIA (NOMBRE_ESPECIALIDAD) VALUES
@@ -55,7 +67,11 @@ BEGIN CATCH
     PRINT 'Error al insertar veterinarios: ' + ERROR_MESSAGE();
 END CATCH;
 GO
+INSERT INTO RECEPCIONISTA (CEDULA, NOMBRE, APELLIDO, TELEFONO, CORREO_ELECTRONICO)
+VALUES 
+('1734511890', 'María', 'Rizzo', '0993451189', 'maria@vet.com');
 
+GO
 -- ─── Cliente de prueba ───────────────────────────────────────
 INSERT INTO CLIENTE (CEDULA, NOMBRE, APELLIDO, TELEFONO, DIRECCION, CORREO_ELECTRONICO)
 VALUES ('1234567890','Ana','Ramírez','0987654321','Av. Siempre Viva 123','ana.ramirez@email.com');
@@ -186,18 +202,6 @@ BEGIN CATCH
     PRINT 'Error en datos de ejemplo: ' + ERROR_MESSAGE() + ' (Línea ' + CAST(ERROR_LINE() AS VARCHAR) + ')';
 END CATCH;
 GO
-
--- ─── Crear usuario de base de datos y asignar permisos ─────────
-IF EXISTS (SELECT * FROM sys.server_principals WHERE name = 'veterinaria_user')
-BEGIN
-    DROP LOGIN veterinaria_user;
-END
-GO
-CREATE LOGIN veterinaria_user WITH PASSWORD = '123456';
-USE db_veterinaria;
-CREATE USER veterinaria_user FOR LOGIN veterinaria_user;
-ALTER ROLE db_owner ADD MEMBER veterinaria_user; 
-GO
 -- Nueva vacuna aplicada --
 DECLARE @ID_MASCOTA INT;
 SELECT @ID_MASCOTA = ID_MASCOTA FROM MASCOTA WHERE NOMBRE = 'Max';
@@ -234,4 +238,16 @@ FROM sys.objects
 WHERE type IN ('U','P','TR')
 GROUP BY type_desc
 ORDER BY type_desc;
+GO
+-- ─── Crear usuario de base de datos y asignar permisos ─────────
+IF EXISTS (SELECT * FROM sys.server_principals WHERE name = 'veterinaria_user')
+BEGIN
+    DROP LOGIN veterinaria_user;
+END
+
+GO
+CREATE LOGIN veterinaria_user WITH PASSWORD = '123456';
+USE db_veterinaria;
+CREATE USER veterinaria_user FOR LOGIN veterinaria_user;
+ALTER ROLE db_owner ADD MEMBER veterinaria_user; 
 GO
