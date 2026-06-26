@@ -73,4 +73,13 @@ public interface IUsuarioDAO {
      * @throws SQLException si ocurre un error en la base de datos
      */
     boolean actualizarContrasena(String email, String nuevaContrasena) throws SQLException;
+    /**
+     * Actualiza el correo electrónico de un usuario.
+     * 
+     * @param emailActual correo electrónico actual
+     * @param emailNuevo nuevo correo electrónico
+     * @return true si la actualización fue exitosa
+     * @throws SQLException si ocurre un error en la base de datos
+     */
+    boolean actualizarEmail(String emailActual, String emailNuevo) throws SQLException;
 }

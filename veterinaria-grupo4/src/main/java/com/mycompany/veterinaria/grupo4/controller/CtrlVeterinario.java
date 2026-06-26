@@ -2,6 +2,7 @@ package com.mycompany.veterinaria.grupo4.controller;
 
 import com.mycompany.veterinaria.grupo4.model.entity.EspecialidadVeterinaria;
 import com.mycompany.veterinaria.grupo4.model.entity.Servicio;
+import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
 import com.mycompany.veterinaria.grupo4.model.entity.Veterinario;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.FormVeterinario;
 import com.mycompany.veterinaria.grupo4.view.personalVeterinario.PnlVeterinario;
@@ -9,6 +10,7 @@ import com.mycompany.veterinaria.grupo4.view.swing.table.ModelAction;
 import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellAction;
 import com.mycompany.veterinaria.grupo4.view.swing.table.TableCellRender;
 import java.awt.Frame;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -609,29 +611,67 @@ public class CtrlVeterinario {
      * * @param form formulario de veterinario
      */
     private void actualizar(FormVeterinario form) {
-        try {
-            Veterinario veterinario = buildVeterinario(form);
-            
-            // Usar exchange con PUT en lugar de postForObject
-            restTemplate.exchange(
-                api + "/veterinario/actualizar",
-                HttpMethod.PUT,
-                new HttpEntity<>(veterinario),
-                Boolean.class
-            );
+    try {
+        Veterinario veterinario = buildVeterinario(form);
+        
+        restTemplate.exchange(
+            api + "/veterinario/actualizar",
+            HttpMethod.PUT,
+            new HttpEntity<>(veterinario),
+            Boolean.class
+        );
 
-            JOptionPane.showMessageDialog(pnlVeterinario,
-                "Veterinario actualizado correctamente.", "Exito", JOptionPane.INFORMATION_MESSAGE);
-            form.dispose();
-            cargarTabla();
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(form,
-                "Error al actualizar: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+        JOptionPane.showMessageDialog(pnlVeterinario,
+            "Veterinario actualizado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        form.dispose();
+        cargarTabla();
+        
+    } catch (HttpClientErrorException e) {
+        // Error 4xx - Mostrar mensaje al usuario, NO imprimir en consola
+        String mensajeError;
+        try {
+            mensajeError = e.getResponseBodyAsString();
+            if (mensajeError == null || mensajeError.isEmpty()) {
+                mensajeError = e.getMessage();
+            }
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
+            }
+        } catch (Exception ex) {
+            mensajeError = "Error al actualizar el veterinario";
         }
+        
+        JOptionPane.showMessageDialog(form,
+            "Error al actualizar: " + mensajeError,
+            "Error", JOptionPane.ERROR_MESSAGE);
+            
+    } catch (HttpServerErrorException e) {
+        // Error 5xx - Mostrar mensaje al usuario, NO imprimir en consola
+        String mensajeError;
+        try {
+            mensajeError = e.getResponseBodyAsString();
+            if (mensajeError == null || mensajeError.isEmpty()) {
+                mensajeError = "Error interno del servidor";
+            }
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
+            }
+        } catch (Exception ex) {
+            mensajeError = "Error interno del servidor";
+        }
+        
+        JOptionPane.showMessageDialog(form,
+            "Error del servidor: " + mensajeError,
+            "Error", JOptionPane.ERROR_MESSAGE);
+            
+    } catch (Exception e) {
+        // Error genérico - Mostrar mensaje al usuario, NO imprimir en consola
+        String mensaje = e.getMessage();
+        JOptionPane.showMessageDialog(form,
+            "Error al actualizar: " + (mensaje != null ? mensaje : "Error desconocido"),
+            "Error", JOptionPane.ERROR_MESSAGE);
     }
+}
 
     /**
      * Asigna un servicio sin mostrar mensajes de error al usuario (usado en flujo de alta).

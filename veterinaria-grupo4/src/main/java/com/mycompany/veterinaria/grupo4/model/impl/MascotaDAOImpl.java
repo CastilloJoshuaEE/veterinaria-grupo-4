@@ -106,14 +106,21 @@ public class MascotaDAOImpl implements IMascotaDAO {
     public int insertar(Mascota mascota) throws SQLException {
         String sql = "{call SP_INSERTAR_MASCOTA(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+            CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setInt(1, mascota.getIdCliente());
             stmt.setString(2, mascota.getNombre());
             stmt.setString(3, mascota.getEspecie());
             stmt.setString(4, mascota.getRaza());
             stmt.setString(5, String.valueOf(mascota.getSexo()));
-            stmt.setDate(6, mascota.getFechaNacimiento() != null ? new java.sql.Date(mascota.getFechaNacimiento().getTime()) : null);
-            stmt.setDouble(7, mascota.getPeso() != null ? mascota.getPeso() : 0);
+            stmt.setDate(6, mascota.getFechaNacimiento() != null ? 
+                new java.sql.Date(mascota.getFechaNacimiento().getTime()) : null);
+            
+            if (mascota.getPeso() != null) {
+                stmt.setDouble(7, mascota.getPeso());
+            } else {
+                stmt.setNull(7, java.sql.Types.DECIMAL);
+            }
+            
             stmt.setString(8, mascota.getColor());
             stmt.setBytes(9, mascota.getFoto());
             ResultSet rs = stmt.executeQuery();

@@ -188,4 +188,27 @@ public class UsuarioDAOImpl implements IUsuarioDAO {
             return filasAfectadas > 0;
         }
     }    
+  /**
+     * Actualiza el correo electrónico de un usuario.
+     * Utiliza transacción para asegurar consistencia.
+     *
+     * @param emailActual correo electrónico actual
+     * @param emailNuevo nuevo correo electrónico
+     * @return true si la actualización fue exitosa
+     * @throws SQLException si ocurre un error en la base de datos
+     */
+    @Override
+    public boolean actualizarEmail(String emailActual, String emailNuevo) throws SQLException {
+        String sql = "UPDATE USUARIO SET CORREO_ELECTRONICO = ? WHERE CORREO_ELECTRONICO = ? AND ESTADO = 1";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, emailNuevo);
+            stmt.setString(2, emailActual);
+            
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+        }
+    }    
 }

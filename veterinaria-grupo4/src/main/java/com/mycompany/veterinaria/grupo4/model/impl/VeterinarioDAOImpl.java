@@ -132,7 +132,7 @@ public class VeterinarioDAOImpl implements IVeterinarioDAO {
         String sql = "{call SP_ACTUALIZAR_VETERINARIO(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         
         try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+            CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setInt(1, veterinario.getIdVeterinario());
             stmt.setString(2, veterinario.getCedula());
             stmt.setString(3, veterinario.getNombre());

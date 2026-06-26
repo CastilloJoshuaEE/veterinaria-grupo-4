@@ -82,14 +82,14 @@ public class PnlMascota extends javax.swing.JPanel {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Mascotas");
 
-        // NUEVO: Configurar la etiqueta del filtro
+        //Configurar la etiqueta del filtro
         lblFiltrarCliente.setFont(new java.awt.Font("Segoe UI", 0, 12));
         lblFiltrarCliente.setText("Filtrar por cliente:");
 
-        txtBusqueda.setText("Buscar por nombre de mascota");
+        txtBusqueda.setHint("Buscar por nombre de mascota");
+        txtBusqueda.setText(""); // Asegurar que el campo esté vacío inicialmente
         txtBusqueda.setToolTipText("Buscar por nombre de mascota");
-
-        // NUEVO: Configurar el ComboBox de clientes
+        // Configurar el ComboBox de clientes
         cmbClientes.setToolTipText("Seleccione un cliente para ver sus mascotas");
         cmbClientes.setPreferredSize(new java.awt.Dimension(180, 38));
 
