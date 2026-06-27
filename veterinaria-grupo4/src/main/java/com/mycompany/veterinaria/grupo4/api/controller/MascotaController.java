@@ -62,9 +62,25 @@ public class MascotaController {
      * @param termino término de búsqueda para el nombre de la mascota
      * @return Lista de mascotas que coinciden con el término
      */
+    /**
+     * Busca mascotas cuyo nombre coincida con el término de búsqueda.
+     * 
+     * @param termino término de búsqueda para el nombre de la mascota
+     * @return ResponseEntity con la lista de mascotas o un mensaje de error
+     */
     @GetMapping("/buscar")
-    public List<Mascota> buscarMascotas(@RequestParam(name = "termino", required = false, defaultValue = "") String termino) {
-        return mascotaService.buscarMascotas(termino);
+    public ResponseEntity<?> buscarMascotas(@RequestParam(name = "termino", required = false, defaultValue = "") String termino) {
+        try {
+            List<Mascota> mascotas = mascotaService.buscarMascotas(termino);
+            return ResponseEntity.ok(mascotas);
+        } catch (IllegalArgumentException e) {
+            // Capturar la excepción de validación y retornar un error 400 con el mensaje
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Manejar otros errores inesperados
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al buscar mascotas: " + e.getMessage());
+        }
     }
 
     /**

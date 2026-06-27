@@ -19,6 +19,7 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -65,7 +66,6 @@ public class FormRegistroCliente extends JDialog {
         setBackground(new Color(0, 0, 0, 0)); // fondo transparente para redondear
         setSize(480, 520);
         setLocationRelativeTo(getParent());
-
         // ── Panel raíz con esquinas redondeadas ──────────────────
         JPanel root = new JPanel(new BorderLayout()) {
             @Override
@@ -164,9 +164,106 @@ public class FormRegistroCliente extends JDialog {
                     SwingUtilities.invokeLater(() -> dispose());
                 }
             }
+        });        
+        configurarValidaciones();
+
+    }
+    /**
+     * Configura las validaciones en tiempo real para los campos del formulario.
+     */
+    public void configurarValidaciones() {
+        final boolean[] mensajeMostrado = {false};
+        
+        // --- Cédula: solo números y máximo 10 dígitos ---
+        txtCedula.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                String textoActual = txtCedula.getText();
+                
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                    mostrarMensajeValidacion("La cédula solo puede contener números", mensajeMostrado);
+                    return;
+                }
+                
+                if (textoActual.length() >= 10) {
+                    e.consume();
+                    mostrarMensajeValidacion("La cédula debe tener exactamente 10 dígitos", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Teléfono: solo números y máximo 10 dígitos ---
+        txtTelefono.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                String textoActual = txtTelefono.getText();
+                
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                    mostrarMensajeValidacion("El teléfono solo puede contener números", mensajeMostrado);
+                    return;
+                }
+                
+                if (textoActual.length() >= 10) {
+                    e.consume();
+                    mostrarMensajeValidacion("El teléfono debe tener exactamente 10 dígitos", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Nombre: solo letras, espacios, tildes y ñ ---
+        txtNombre.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isLetter(c) && c != ' ' && 
+                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
+                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
+                    e.consume();
+                    mostrarMensajeValidacion("El nombre solo puede contener letras y espacios", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Apellido: solo letras, espacios, tildes y ñ ---
+        txtApellido.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isLetter(c) && c != ' ' && 
+                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
+                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
+                    e.consume();
+                    mostrarMensajeValidacion("El apellido solo puede contener letras y espacios", mensajeMostrado);
+                }
+            }
         });
     }
-
+    
+    /**
+     * Muestra un mensaje de validación sin saturar al usuario con múltiples popups.
+     */
+    private void mostrarMensajeValidacion(String mensaje, boolean[] flag) {
+        if (!flag[0]) {
+            flag[0] = true;
+            JOptionPane.showMessageDialog(this, mensaje, "Validación", JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                try { Thread.sleep(1500); } catch (InterruptedException ex) {}
+                flag[0] = false;
+            }).start();
+        }
+    }
     // ── Helper: crea label + campo y lo agrega al panel ─────────
     private MyTextField campo(JPanel panel, String hint) {
         JPanel wrap = new JPanel(new BorderLayout(0, 4));

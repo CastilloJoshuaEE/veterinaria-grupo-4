@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -293,27 +292,71 @@ public class CtrlMascotas {
 
         dialog.setVisible(true);
     }
+/**
+ * Busca mascotas por termino de busqueda.
+ */
+private void buscar() {
+    String texto = pnlMascota.getTxtBusqueda().getText().trim();
+    if (texto.isEmpty()) { cargarTabla(); return; }
     
-    /**
-     * Busca mascotas por termino de busqueda.
-     */
-    private void buscar() {
-        String texto = pnlMascota.getTxtBusqueda().getText().trim();
-        if (texto.isEmpty()) { cargarTabla(); return; }
-        try {
-            List<Mascota> lista = restTemplate.exchange(
-                apiBaseUrl + "/mascota/buscar?termino=" + texto,
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<Mascota>>() {}
-            ).getBody();
-            llenarTabla(lista);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(pnlMascota,
-                "Error al buscar: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-        }
+    // Validación previa: si el texto tiene menos de 2 caracteres, mostrar mensaje sin llamar a la API
+    if (texto.length() < 2) {
+        JOptionPane.showMessageDialog(pnlMascota,
+            "El término de búsqueda debe tener al menos 2 caracteres.",
+            "Validación", JOptionPane.WARNING_MESSAGE);
+        return;
     }
- 
+    
+    try {
+        List<Mascota> lista = restTemplate.exchange(
+            apiBaseUrl + "/mascota/buscar?termino=" + texto,
+            HttpMethod.GET, null,
+            new ParameterizedTypeReference<List<Mascota>>() {}
+        ).getBody();
+        llenarTabla(lista);
+    } catch (HttpClientErrorException e) {
+        // Capturar errores 4xx (incluye 400 Bad Request del backend)
+        String mensajeError;
+        try {
+            mensajeError = e.getResponseBodyAsString();
+            if (mensajeError == null || mensajeError.isEmpty()) {
+                mensajeError = e.getMessage();
+            }
+            // Limpiar comillas del JSON
+            if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
+                mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
+            }
+        } catch (Exception ex) {
+            mensajeError = "Error en la búsqueda";
+        }
+        
+        JOptionPane.showMessageDialog(pnlMascota,
+            mensajeError,
+            "Validación", JOptionPane.WARNING_MESSAGE);
+            
+    } catch (Exception e) {
+        // Error genérico - Mostrar solo el mensaje útil
+        String mensaje = e.getMessage();
+        if (mensaje != null && mensaje.contains("400")) {
+            // Extraer solo el mensaje después del código de error
+            String[] partes = mensaje.split("400");
+            if (partes.length > 1) {
+                String mensajeLimpio = partes[1].trim();
+                // Si el mensaje viene con comillas, limpiarlas
+                if (mensajeLimpio.startsWith("\"") && mensajeLimpio.endsWith("\"")) {
+                    mensajeLimpio = mensajeLimpio.substring(1, mensajeLimpio.length() - 1);
+                }
+                JOptionPane.showMessageDialog(pnlMascota,
+                    mensajeLimpio,
+                    "Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+        JOptionPane.showMessageDialog(pnlMascota,
+            "Error al buscar: " + (mensaje != null ? mensaje : "Error desconocido"),
+            "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
     /**
      * Abre el formulario en modo alta.
      */
@@ -371,12 +414,7 @@ public class CtrlMascotas {
         form.getBtnAccion().addActionListener(e -> {
             String err = validarDatos(form);
             if (err != null) {
-                form.setValidando(true);
-                try {
-                    JOptionPane.showMessageDialog(form, err, "Validacion", JOptionPane.WARNING_MESSAGE);
-                } finally {
-                    form.setValidando(false);
-                }
+                JOptionPane.showMessageDialog(form, err, "Validacion", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if (form.isModoEdicion()) actualizar(form);
@@ -391,87 +429,63 @@ public class CtrlMascotas {
      * @return mensaje de error, o null si todo es valido
      */
     private String validarDatos(FormRegistroMascota form) {
-
-        // ─── Cliente ──────────────────────────────────────────────────────────────
+        // Cliente obligatorio
         if (form.getClienteSeleccionado() == null)
-           return "Busque y seleccione un cliente antes de continuar.";
-
-        // ─── Nombre ───────────────────────────────────────────────────────────────
+            return "Busque y seleccione un cliente antes de continuar.";
+        
+        // Nombre obligatorio
         String nombre = form.getTxtNombre().getText().trim();
         if (nombre.isEmpty())
             return "El nombre de la mascota es obligatorio.";
-        if (nombre.length() < 2)
-            return "El nombre debe tener al menos 2 caracteres.";
         if (nombre.length() > 50)
-            return "El nombre no puede superar los 50 caracteres.";
-        if (!nombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
-            return "El nombre solo puede contener letras y espacios.";
-
-        // ─── Especie ──────────────────────────────────────────────────────────────
+            return "El nombre no puede exceder los 50 caracteres.";
+        
+        // Especie obligatoria
         String especie = form.getTxtEspecie().getText().trim();
         if (especie.isEmpty())
             return "La especie es obligatoria.";
-        if (especie.length() < 2)
-            return "La especie debe tener al menos 2 caracteres.";
-        if (especie.length() > 50)
-            return "La especie no puede superar los 50 caracteres.";
-        if (!especie.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
-            return "La especie solo puede contener letras y espacios.";
-
-        // ─── Raza (opcional) ──────────────────────────────────────────────────────
-        String raza = form.getTxtRaza().getText().trim();
-        if (!raza.isEmpty()) {
-            if (raza.length() < 2)
-                return "La raza debe tener al menos 2 caracteres.";
-            if (raza.length() > 50)
-                return "La raza no puede superar los 50 caracteres.";
-            if (!raza.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
-                return "La raza solo puede contener letras y espacios.";
-        }
-
-        // ─── Sexo ─────────────────────────────────────────────────────────────────
+        if (especie.length() > 30)
+            return "La especie no puede exceder los 30 caracteres.";
+        
+        // Sexo obligatorio
         if (form.getCmbSexo().getSelectedIndex() < 0)
             return "Seleccione el sexo de la mascota.";
-
-        // ─── Fecha de nacimiento (opcional) ───────────────────────────────────────
-        Date fechaNac = form.getFechaNacimiento();
-        if (fechaNac != null) {
-            if (fechaNac.after(new Date()))
-                return "La fecha de nacimiento no puede ser futura.";
-            // No más de 50 años atrás (límite razonable para cualquier mascota)
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.YEAR, -50);
-            if (fechaNac.before(cal.getTime()))
-                return "La fecha de nacimiento no es válida.";
+        
+        // Raza es opcional - solo validar si se ingresa
+        String raza = form.getTxtRaza().getText().trim();
+        if (!raza.isEmpty() && raza.length() > 50) {
+            return "La raza no puede exceder los 50 caracteres.";
         }
-
-        // ─── Peso (opcional) ──────────────────────────────────────────────────────
+        
+        // Color es opcional - solo validar si se ingresa
+        String color = form.getTxtColor().getText().trim();
+        if (!color.isEmpty() && color.length() > 30) {
+            return "El color no puede exceder los 30 caracteres.";
+        }
+        
+        // Peso es opcional - solo validar si se ingresa
         String pesoTxt = form.getTxtPeso().getText().trim();
         if (!pesoTxt.isEmpty()) {
             try {
                 double peso = Double.parseDouble(pesoTxt);
                 if (peso <= 0)
-                    return "El peso debe ser un valor positivo.";
-                if (peso > 999)
-                    return "El peso ingresado no es válido.";
+                    return "El peso debe ser mayor a 0 kg.";
+                if (peso > 200)
+                    return "El peso no puede exceder los 200 kg.";
             } catch (NumberFormatException e) {
-                return "El peso debe ser un valor numérico válido. Ej: 4.5";
+                return "Ingrese un peso válido (ej: 25.5).";
             }
         }
-
-        // ─── Color (opcional) ─────────────────────────────────────────────────────
-        String color = form.getTxtColor().getText().trim();
-        if (!color.isEmpty()) {
-            if (color.length() < 2)
-                return "El color debe tener al menos 2 caracteres.";
-            if (color.length() > 50)
-                return "El color no puede superar los 50 caracteres.";
-            if (!color.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+"))
-                return "El color solo puede contener letras y espacios.";
+        
+        // Fecha es opcional - solo validar si se ingresa
+        Date fechaNac = form.getFechaNacimiento();
+        if (fechaNac != null && fechaNac.after(new Date())) {
+            return "La fecha de nacimiento no puede ser futura.";
         }
-    return null;
-}
- 
+        
+        return null; // Todo válido
+    }
+    
     /**
      * Construye un objeto Mascota con los datos actuales del formulario.
      *
@@ -749,13 +763,14 @@ private void eliminar(Mascota m) {
         }
         
     } catch (HttpClientErrorException e) {
-        // Error 4xx (incluye CONFLICT 409) - Mostrar mensaje al usuario
+        // Error 4xx - Capturar mensaje del RAISERROR
         String mensajeError;
         try {
             mensajeError = e.getResponseBodyAsString();
             if (mensajeError == null || mensajeError.isEmpty()) {
                 mensajeError = e.getMessage();
             }
+            // Limpiar comillas del JSON
             if (mensajeError.startsWith("\"") && mensajeError.endsWith("\"")) {
                 mensajeError = mensajeError.substring(1, mensajeError.length() - 1);
             }
@@ -763,16 +778,17 @@ private void eliminar(Mascota m) {
             mensajeError = "No se puede eliminar la mascota debido a restricciones.";
         }
         
+        // Mostrar mensaje limpio al usuario SIN mostrarlo en consola
         JOptionPane.showMessageDialog(pnlMascota, 
             mensajeError, 
             "No se puede eliminar", 
             JOptionPane.ERROR_MESSAGE);
             
     } catch (HttpServerErrorException e) {
-        // Error 5xx - Mostrar mensaje al usuario
-        JOptionPane.showMessageDialog(pnlMascota,
-            "Error interno del servidor al intentar eliminar la mascota.",
-            "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(pnlMascota, 
+                "Mascota eliminada correctamente.", 
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            cargarTabla();
             
     } catch (Exception e) {
         // Error genérico - Mostrar mensaje al usuario

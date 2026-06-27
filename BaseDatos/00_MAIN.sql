@@ -16,7 +16,7 @@ GO
 --		:setvar BASE_PATH "C:\PROYECTOS\veterinaria-grupo-4\BaseDatos\"
 --   → Importante: No olvidar el "\" al final
 -- =====================================================
-:setvar BasePath "C:\PROYECTOS\veterinaria-grupo-4\BaseDatos\"
+:setvar BasePath ""
 
 
 -- ============================================================
