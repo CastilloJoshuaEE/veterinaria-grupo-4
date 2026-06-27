@@ -126,25 +126,144 @@ public class FormRegistroMascota extends JDialog {
         setBackground(new Color(0, 0, 0, 0));
         setSize(480, 620);
         setLocationRelativeTo(getParent());
-
-        addWindowFocusListener(new WindowFocusListener() {
-            @Override public void windowGainedFocus(WindowEvent e) {}
-            @Override public void windowLostFocus(WindowEvent e) {
-                if (seleccionandoFoto) return;      //  no cerrar mientras el explorador está abierto
-                if (validando) return;
-                if (calendarPopup != null && e.getOppositeWindow() == calendarPopup) return;
-                if (calendarPopup != null) { calendarPopup.dispose(); calendarPopup = null; }
-                dispose();
-            }
-        });
-
         JPanel root = buildRoot();
         root.add(buildHeader(titulo),  BorderLayout.NORTH);
         root.add(buildCuerpo(),        BorderLayout.CENTER);
         root.add(buildFooter(labelBoton), BorderLayout.SOUTH);
         setContentPane(root);
+        configurarValidaciones();
     }
-
+    /**
+     * Configura las validaciones en tiempo real para los campos del formulario.
+     */
+    public void configurarValidaciones() {
+        final boolean[] mensajeMostrado = {false};
+        
+        // --- Cédula: solo números y máximo 10 dígitos ---
+        txtCedula.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                String textoActual = txtCedula.getText();
+                
+                // Permitir teclas de control (backspace, delete)
+                if (c == '\b' || c == '\u007F') return;
+                
+                // Solo números
+                if (!Character.isDigit(c)) {
+                    e.consume();
+                    mostrarMensajeValidacion("La cédula solo puede contener números", mensajeMostrado);
+                    return;
+                }
+                
+                // Máximo 10 dígitos
+                if (textoActual.length() >= 10) {
+                    e.consume();
+                    mostrarMensajeValidacion("La cédula debe tener exactamente 10 dígitos", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Nombre: solo letras, espacios, tildes y ñ ---
+        txtNombre.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isLetter(c) && c != ' ' && 
+                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
+                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
+                    e.consume();
+                    mostrarMensajeValidacion("El nombre solo puede contener letras y espacios", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Especie: solo letras, espacios, tildes y ñ ---
+        txtEspecie.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isLetter(c) && c != ' ' && 
+                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
+                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
+                    e.consume();
+                    mostrarMensajeValidacion("La especie solo puede contener letras y espacios", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Raza: solo letras, espacios, tildes y ñ ---
+        txtRaza.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isLetter(c) && c != ' ' && 
+                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
+                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
+                    e.consume();
+                    mostrarMensajeValidacion("La raza solo puede contener letras y espacios", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Color: solo letras, espacios, tildes y ñ ---
+        txtColor.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (!Character.isLetter(c) && c != ' ' && 
+                    c != 'á' && c != 'é' && c != 'í' && c != 'ó' && c != 'ú' && 
+                    c != 'Á' && c != 'É' && c != 'Í' && c != 'Ó' && c != 'Ú' && c != 'ñ' && c != 'Ñ') {
+                    e.consume();
+                    mostrarMensajeValidacion("El color solo puede contener letras y espacios", mensajeMostrado);
+                }
+            }
+        });
+        
+        // --- Peso: números, punto y coma ---
+        txtPeso.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                String textoActual = txtPeso.getText();
+                
+                if (c == '\b' || c == '\u007F') return;
+                
+                if (Character.isDigit(c) || c == '.' || c == ',') {
+                    // Verificar que no haya más de un separador decimal
+                    if ((c == '.' || c == ',') && (textoActual.contains(".") || textoActual.contains(","))) {
+                        e.consume();
+                        mostrarMensajeValidacion("El peso solo puede tener un separador decimal", mensajeMostrado);
+                    }
+                } else {
+                    e.consume();
+                    mostrarMensajeValidacion("El peso solo puede contener números y punto decimal", mensajeMostrado);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Muestra un mensaje de validación sin saturar al usuario con múltiples popups.
+     */
+    private void mostrarMensajeValidacion(String mensaje, boolean[] flag) {
+        if (!flag[0]) {
+            flag[0] = true;
+            JOptionPane.showMessageDialog(this, mensaje, "Validación", JOptionPane.WARNING_MESSAGE);
+            new Thread(() -> {
+                try { Thread.sleep(1500); } catch (InterruptedException ex) {}
+                flag[0] = false;
+            }).start();
+        }
+    }
     private JPanel buildRoot() {
         JPanel root = new JPanel(new BorderLayout(0, 10)) {
             @Override

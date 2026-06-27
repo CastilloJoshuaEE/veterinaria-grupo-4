@@ -313,8 +313,8 @@ public class MascotaService {
             throw new IllegalArgumentException("La raza no puede exceder los " + RAZA_MAX_LENGTH + " caracteres");
         }
 
-        if (mascota.getSexo() != 'M' && mascota.getSexo() != 'F') {
-            throw new IllegalArgumentException("Sexo invalido. Debe ser M (Masculino) o F (Femenino)");
+        if (mascota.getSexo() != 'M' && mascota.getSexo() != 'H') {
+            throw new IllegalArgumentException("Sexo invalido. Debe ser M (Masculino) o H (Hembra)");
         }
 
         if (mascota.getColor() != null && mascota.getColor().trim().length() > COLOR_MAX_LENGTH) {
