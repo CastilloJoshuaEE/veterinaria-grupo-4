@@ -246,6 +246,11 @@ public class CtrlCitas {
                 "Ingrese la cedula del cliente.", "Busqueda", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        if (cedula.length() != 10) {
+            JOptionPane.showMessageDialog(form,
+                "La cedula del cliente debe tener 10 digitos", "Busqueda", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         try {
             Cliente cliente = restTemplate.getForObject(
                 apiCliente + "/cedula/" + cedula, Cliente.class);
