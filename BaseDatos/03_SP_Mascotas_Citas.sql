@@ -27,8 +27,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ID_MASCOTA;
 END;
 GO
-
-CREATE PROCEDURE SP_ACTUALIZAR_MASCOTA
+CREATE OR ALTER PROCEDURE SP_ACTUALIZAR_MASCOTA
     @ID_MASCOTA      INT,
     @ID_CLIENTE      INT,
     @NOMBRE          VARCHAR(50),
@@ -41,18 +40,21 @@ CREATE PROCEDURE SP_ACTUALIZAR_MASCOTA
     @FOTO            VARBINARY(MAX) = NULL
 AS
 BEGIN
+    SET NOCOUNT ON;
+    
     BEGIN TRY
         UPDATE MASCOTA
         SET ID_CLIENTE       = @ID_CLIENTE,
             NOMBRE           = @NOMBRE,
             ESPECIE          = @ESPECIE,
-            RAZA             = ISNULL(@RAZA, RAZA),
-            SEXO             = ISNULL(@SEXO, SEXO),
-            FECHA_NACIMIENTO = ISNULL(@FECHA_NACIMIENTO, FECHA_NACIMIENTO),
-            PESO             = ISNULL(@PESO, PESO),
-            COLOR            = ISNULL(@COLOR, COLOR),
-            FOTO             = ISNULL(@FOTO, FOTO)
+            RAZA             = @RAZA,  -- Si es NULL, se asigna NULL
+            SEXO             = @SEXO,  -- Si es NULL, se asigna NULL
+            FECHA_NACIMIENTO = @FECHA_NACIMIENTO,  -- Si es NULL, se asigna NULL
+            PESO             = @PESO,  -- Si es NULL, se asigna NULL (PERMITE LIMPIAR)
+            COLOR            = @COLOR,  -- Si es NULL, se asigna NULL
+            FOTO             = @FOTO   -- Si es NULL, se asigna NULL
         WHERE ID_MASCOTA = @ID_MASCOTA;
+        
         IF @@ROWCOUNT = 0 RETURN 0;
         RETURN 1;
     END TRY

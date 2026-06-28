@@ -492,32 +492,32 @@ private void buscar() {
      * @param form instancia activa del formulario
      * @return mascota lista para enviar a la API
      */
-    private Mascota buildMascota(FormRegistroMascota form) {
-        Mascota m = form.isModoEdicion() ? form.getMascotaActual() : new Mascota();
- 
-        m.setIdCliente(form.getClienteSeleccionado().getIdCliente());
-        m.setNombre(form.getTxtNombre().getText().trim());
-        m.setEspecie(form.getTxtEspecie().getText().trim());
-        m.setRaza(form.getTxtRaza().getText().trim());
-        m.setSexo("Macho".equals(form.getCmbSexo().getSelectedItem()) ? 'M' : 'H');
-        m.setFechaNacimiento(form.getFechaNacimiento());
- 
-        String pesoTxt = form.getTxtPeso().getText().trim();
-        if (!pesoTxt.isEmpty()) {
-            try { 
-                m.setPeso(new BigDecimal(pesoTxt).doubleValue()); 
-            } catch (NumberFormatException ignored) {
-                // Si no es número válido, se ignora y queda null
-            }
-        } else {
-            m.setPeso(null); 
+private Mascota buildMascota(FormRegistroMascota form) {
+    Mascota m = form.isModoEdicion() ? form.getMascotaActual() : new Mascota();
+
+    m.setIdCliente(form.getClienteSeleccionado().getIdCliente());
+    m.setNombre(form.getTxtNombre().getText().trim());
+    m.setEspecie(form.getTxtEspecie().getText().trim());
+    m.setRaza(form.getTxtRaza().getText().trim());
+    m.setSexo("Macho".equals(form.getCmbSexo().getSelectedItem()) ? 'M' : 'H');
+    m.setFechaNacimiento(form.getFechaNacimiento());
+
+    String pesoTxt = form.getTxtPeso().getText().trim();
+    if (!pesoTxt.isEmpty()) {
+        try { 
+            m.setPeso(Double.parseDouble(pesoTxt)); 
+        } catch (NumberFormatException ignored) {
+            m.setPeso(null); //  si no es número válido, queda null
         }
- 
-        String colorTxt = form.getTxtColor().getText().trim();
-        if (!colorTxt.isEmpty()) m.setColor(colorTxt);
- 
-        return m;
+    } else {
+        m.setPeso(null);  // si está vacío, queda null
     }
+
+    String colorTxt = form.getTxtColor().getText().trim();
+    if (!colorTxt.isEmpty()) m.setColor(colorTxt);
+
+    return m;
+}
  
     /**
      * Registra una nueva mascota.
