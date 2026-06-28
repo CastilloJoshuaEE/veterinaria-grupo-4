@@ -341,6 +341,32 @@ public class CitaDAOImpl implements ICitaDAO {
     }
     
     /**
+     * Verifica si un veterinario ya tiene una cita activa en una fecha y hora especifica.
+     * Excluye del filtro aquellas citas con estado 'CANCELADA'.
+     *
+     * @param idVeterinario Identificador unico del veterinario.
+     * @param fechaHora Fecha y hora exacta a consultar.
+     * @return true si ya existe una cita que genere conflicto.
+     * @throws SQLException Si ocurre un error en la comunicacion con SQL Server.
+     */
+    @Override
+    public boolean existeConflicto(int idVeterinario, java.util.Date fechaHora) throws SQLException {
+        String sql = "{call SP_VERIFICAR_CONFLICTO_CITA(?, ?)}";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             CallableStatement stmt = conn.prepareCall(sql)) {
+            
+            stmt.setInt(1, idVeterinario);
+            stmt.setTimestamp(2, new Timestamp(fechaHora.getTime()));
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                // Asumiendo que el SP retorna un 1 (existe) o 0 (no existe) en una columna RESULTADO
+                return rs.next() && rs.getInt("RESULTADO") == 1;
+            }
+        }
+    }
+    
+    /**
      * Metodo auxiliar para transformar una fila de la BD en un objeto Cita completo.
      *
      * @param rs ResultSet con los datos de la consulta

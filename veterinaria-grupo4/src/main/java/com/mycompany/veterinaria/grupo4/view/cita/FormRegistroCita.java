@@ -26,6 +26,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.geom.RoundRectangle2D;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -44,6 +45,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.SpinnerDateModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
@@ -238,15 +240,7 @@ public class FormRegistroCita extends JDialog {
     panel.add(wrap("Mascota", cmbMascota));
     panel.add(Box.createVerticalStrut(8));
 
-    panel.add(buildSelectorFecha());
-    panel.add(Box.createVerticalStrut(8));
-
-    spnHora = new JSpinner(new SpinnerDateModel());
-    spnHora.setEditor(new JSpinner.DateEditor(spnHora, "HH:mm"));
-    spnHora.setPreferredSize(new Dimension(0, 36));
-    spnHora.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-    spnHora.setValue(new Date());
-    panel.add(wrap("Hora", spnHora));
+    panel.add(buildSelectorFechaYHora());
     panel.add(Box.createVerticalStrut(8));
 
     // EL CAMPO OBSERVACIONES - Asegurar que se vea
@@ -287,18 +281,22 @@ public class FormRegistroCita extends JDialog {
         return outer;
     }
  
-    private JPanel buildSelectorFecha() {
+    private JPanel buildSelectorFechaYHora() {
         JPanel outer = new JPanel(new BorderLayout(0, 4));
         outer.setOpaque(false);
- 
-        JLabel lbl = new JLabel("Fecha");
+
+        JLabel lbl = new JLabel("Fecha y Hora");
         lbl.setFont(new Font("SansSerif", Font.PLAIN, 12));
         lbl.setForeground(new Color(120, 120, 120));
         outer.add(lbl, BorderLayout.NORTH);
- 
-        JPanel fila = new JPanel(new BorderLayout(6, 0));
+
+        JPanel fila = new JPanel(new BorderLayout(10, 0));
         fila.setOpaque(false);
- 
+
+        // ── 1. Fecha ──────────────────────────────────────────────────────────
+        JPanel panelFecha = new JPanel(new BorderLayout(2, 0));
+        panelFecha.setOpaque(false);
+
         txtFecha = new JTextField();
         txtFecha.setEditable(false);
         txtFecha.setFont(new Font("SansSerif", Font.PLAIN, 13));
@@ -310,16 +308,70 @@ public class FormRegistroCita extends JDialog {
                 mostrarPopupCalendario();
             }
         });
- 
+
         btnCalendario = new JButton("📅");
         btnCalendario.setFocusPainted(false);
         btnCalendario.setFont(new Font("SansSerif", Font.PLAIN, 15));
         btnCalendario.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnCalendario.setPreferredSize(new Dimension(40, 36));
         btnCalendario.addActionListener(e -> mostrarPopupCalendario());
- 
-        fila.add(txtFecha,      BorderLayout.CENTER);
-        fila.add(btnCalendario, BorderLayout.EAST);
+
+        panelFecha.add(txtFecha,      BorderLayout.CENTER);
+        panelFecha.add(btnCalendario, BorderLayout.EAST);
+
+        // ── 2. Hora — modelo que salta de 15 en 15 sin importar qué campo esté activo
+        Calendar ahora = Calendar.getInstance();
+        int m0 = ahora.get(Calendar.MINUTE);
+        ahora.set(Calendar.MINUTE,      ((m0 + 7) / 15) * 15 % 60);
+        ahora.set(Calendar.SECOND,      0);
+        ahora.set(Calendar.MILLISECOND, 0);
+        final Date valorInicial = ahora.getTime();
+
+        SpinnerDateModel modeloHora = new SpinnerDateModel(
+                valorInicial, null, null, Calendar.MINUTE) {
+
+            private Date snap(Date d) {
+                Calendar c = Calendar.getInstance();
+                c.setTime(d);
+                c.set(Calendar.MINUTE,      (c.get(Calendar.MINUTE) / 15) * 15);
+                c.set(Calendar.SECOND,      0);
+                c.set(Calendar.MILLISECOND, 0);
+                return c.getTime();
+            }
+
+            @Override public Object getNextValue() {
+                Calendar c = Calendar.getInstance();
+                c.setTime(snap((Date) getValue()));
+                c.add(Calendar.MINUTE, 15);
+                return c.getTime();
+            }
+
+            @Override public Object getPreviousValue() {
+                Calendar c = Calendar.getInstance();
+                c.setTime(snap((Date) getValue()));
+                c.add(Calendar.MINUTE, -15);
+                return c.getTime();
+            }
+        };
+
+        spnHora = new JSpinner(modeloHora);
+        JSpinner.DateEditor editorHora = new JSpinner.DateEditor(spnHora, "HH:mm");
+        spnHora.setEditor(editorHora);
+        spnHora.setPreferredSize(new Dimension(85, 36));
+
+        // Cada vez que el spinner gana foco, posicionar el cursor en "mm"
+        // para que las flechas del teclado también muevan minutos
+        editorHora.getTextField().addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) {
+                SwingUtilities.invokeLater(() ->
+                    editorHora.getTextField().setCaretPosition(3)
+                );
+            }
+        });
+
+        // ── 3. Ensamblar ──────────────────────────────────────────────────────
+        fila.add(panelFecha, BorderLayout.CENTER);
+        fila.add(spnHora,    BorderLayout.EAST);
         outer.add(fila, BorderLayout.CENTER);
         return outer;
     }

@@ -168,6 +168,20 @@ public class CitaController {
     public List<Cita> obtenerCitasPendientes() {
         return citaService.listarPendientes();
     }
+    
+    /**
+     * Verifica si un veterinario ya tiene una cita agendada en una fecha y hora específica.
+     * 
+     * @param idVeterinario identificador del veterinario a consultar
+     * @param fechaHora fecha y hora exacta en formato ISO (ej. 2026-06-27T10:30:00.000Z)
+     * @return true si ya existe una cita que genere conflicto, false si el horario está libre
+     */
+    @GetMapping("/conflicto")
+    public boolean existeConflicto(
+            @RequestParam int idVeterinario,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date fechaHora) {
+        return citaService.existeConflicto(idVeterinario, fechaHora);
+    }
 
     /**
      * Clase auxiliar para recibir datos de cita en las peticiones.

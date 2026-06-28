@@ -372,6 +372,14 @@ public class CtrlCitas {
             return "Seleccione una fecha.";
         if (getFechaHoraCombinada(form).before(new Date()))
             return "La fecha y hora no pueden ser en el pasado.";
+        if (form.getCmbVeterinario().getSelectedItem() != null) {
+            Veterinario vet = (Veterinario) form.getCmbVeterinario().getSelectedItem();
+            Date fechaHora = getFechaHoraCombinada(form);
+            
+            if (existeConflicto(vet.getIdVeterinario(), fechaHora)) {
+                return "El Dr. " + vet.getApellido() + " ya tiene una cita programada en ese horario.";
+            }
+        }
         return null;
     }
  
@@ -507,6 +515,31 @@ public class CtrlCitas {
             return res != null ? res : new ArrayList<>();
         } catch (Exception e) {
             return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Verifica con el servidor si el veterinario ya tiene una cita agendada en ese horario.
+     *
+     * @param idVeterinario identificador del veterinario a consultar
+     * @param fechaHora fecha y hora exacta a validar
+     * @return true si hay conflicto, false si esta libre o hay un error de red
+     */
+    private boolean existeConflicto(int idVeterinario, Date fechaHora) {
+        try {
+            // Formateamos la fecha al estandar ISO que espera el controlador REST
+            SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+            String fechaIso = isoFormat.format(fechaHora);
+            
+            String url = apiCita + "/conflicto?idVeterinario=" + idVeterinario + "&fechaHora=" + fechaIso;
+            
+            Boolean conflicto = restTemplate.getForObject(url, Boolean.class);
+            return Boolean.TRUE.equals(conflicto);
+        } catch (Exception e) {
+            System.err.println("Error al verificar conflicto de horario: " + e.getMessage());
+            // En caso de fallo de red, asumimos que no hay conflicto localmente 
+            // para que la excepcion del backend lo detenga de todos modos.
+            return false;
         }
     }
  

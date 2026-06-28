@@ -131,4 +131,6 @@ public interface ICitaDAO {
      * @throws SQLException si ocurre un error en la base de datos
      */
     boolean eliminar(int idCita) throws SQLException;
+    
+    boolean existeConflicto(int idVeterinario, java.util.Date fechaHora) throws SQLException;
 }
