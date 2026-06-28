@@ -473,4 +473,27 @@ public class CitaService {
         }
         return false;
     }
+    
+    /**
+     * Verifica si existe un conflicto de horario para un veterinario en una fecha y hora especificas.
+     *
+     * @param idVeterinario identificador del veterinario
+     * @param fechaHora fecha y hora a consultar
+     * @return true si ya existe una cita asignada en ese horario, false en caso contrario
+     * @throws IllegalArgumentException si los parametros son invalidos
+     */
+    public boolean existeConflicto(int idVeterinario, Date fechaHora) {
+        if (idVeterinario <= 0) {
+            throw new IllegalArgumentException("ID de veterinario invalido: " + idVeterinario);
+        }
+        if (fechaHora == null) {
+            throw new IllegalArgumentException("La fecha y hora son obligatorias");
+        }
+        try {
+            return citaDAO.existeConflicto(idVeterinario, fechaHora);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error al verificar conflicto de horario", e);
+        }
+    }
 }
