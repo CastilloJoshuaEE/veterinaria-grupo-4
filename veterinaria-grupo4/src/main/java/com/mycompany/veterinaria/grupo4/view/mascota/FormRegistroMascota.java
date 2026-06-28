@@ -100,7 +100,9 @@ public class FormRegistroMascota extends JDialog {
     public FormRegistroMascota(Frame parent) {
         super(parent, true);
         init("Registrar Mascota", "Registrar");
+        setModoEdicion(false); // Modo alta
     }
+
 
     /**
      * Constructor para modo edición.
@@ -116,6 +118,7 @@ public class FormRegistroMascota extends JDialog {
         this.modoEdicion   = true;
         this.mascotaActual = mascota;
         init("Editar Mascota", "Actualizar");
+        setModoEdicion(true); // Modo edición - DESHABILITA cédula y botón buscar
         rellenarCampos(mascota, cliente);
     }
 
@@ -134,6 +137,47 @@ public class FormRegistroMascota extends JDialog {
         configurarValidaciones();
     }
     /**
+     * Configura el modo de edición, deshabilitando la cédula y el botón buscar.
+     * Se llama desde el constructor de edición.
+     */
+/**
+ * Configura el modo de edición, deshabilitando la cédula y el botón buscar.
+ */
+public void setModoEdicion(boolean edicion) {
+    this.modoEdicion = edicion;
+    if (edicion) {
+        // Deshabilitar la cédula (no editable y no seleccionable)
+        txtCedula.setEditable(false);
+        txtCedula.setEnabled(false);  
+        txtCedula.setBackground(new Color(240, 240, 240));
+        txtCedula.setForeground(new Color(100, 100, 100));
+        txtCedula.setFocusable(false);  
+        
+        // Deshabilitar el botón de buscar cliente
+        btnBuscarCliente.setEnabled(false);
+        btnBuscarCliente.setBackground(new Color(180, 180, 180));
+        btnBuscarCliente.setForeground(Color.WHITE);
+        btnBuscarCliente.setFocusable(false);
+        
+        txtCedula.setHint("Cédula (no editable)");
+    } else {
+        // Modo alta: habilitar campos
+        txtCedula.setEditable(true);
+        txtCedula.setEnabled(true);
+        txtCedula.setFocusable(true);
+        txtCedula.setBackground(Color.WHITE);
+        txtCedula.setForeground(Color.BLACK);
+        txtCedula.setHint("Cédula / RUC");
+        btnBuscarCliente.setEnabled(true);
+        btnBuscarCliente.setBackground(new Color(230, 140, 30));
+        btnBuscarCliente.setForeground(Color.WHITE);
+        btnBuscarCliente.setFocusable(true);
+    }
+    revalidate();
+    repaint();
+}
+ 
+    /**
      * Configura las validaciones en tiempo real para los campos del formulario.
      */
     public void configurarValidaciones() {
@@ -141,28 +185,33 @@ public class FormRegistroMascota extends JDialog {
         
         // --- Cédula: solo números y máximo 10 dígitos ---
         txtCedula.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                char c = e.getKeyChar();
-                String textoActual = txtCedula.getText();
-                
-                // Permitir teclas de control (backspace, delete)
-                if (c == '\b' || c == '\u007F') return;
-                
-                // Solo números
-                if (!Character.isDigit(c)) {
-                    e.consume();
-                    mostrarMensajeValidacion("La cédula solo puede contener números", mensajeMostrado);
-                    return;
-                }
-                
-                // Máximo 10 dígitos
-                if (textoActual.length() >= 10) {
-                    e.consume();
-                    mostrarMensajeValidacion("La cédula debe tener exactamente 10 dígitos", mensajeMostrado);
-                }
+        @Override
+        public void keyTyped(java.awt.event.KeyEvent e) {
+            // Si está en modo edición, no permitir escribir
+            if (modoEdicion) {
+                e.consume();
+                return;
             }
-        });
+            char c = e.getKeyChar();
+            String textoActual = txtCedula.getText();
+            
+            // Permitir teclas de control (backspace, delete)
+            if (c == '\b' || c == '\u007F') return;
+            
+            // Solo números
+            if (!Character.isDigit(c)) {
+                e.consume();
+                mostrarMensajeValidacion("La cédula solo puede contener números", mensajeMostrado);
+                return;
+            }
+            
+            // Máximo 10 dígitos
+            if (textoActual.length() >= 10) {
+                e.consume();
+                mostrarMensajeValidacion("La cédula debe tener exactamente 10 dígitos", mensajeMostrado);
+            }
+        }
+    });
         
         // --- Nombre: solo letras, espacios, tildes y ñ ---
         txtNombre.addKeyListener(new java.awt.event.KeyAdapter() {

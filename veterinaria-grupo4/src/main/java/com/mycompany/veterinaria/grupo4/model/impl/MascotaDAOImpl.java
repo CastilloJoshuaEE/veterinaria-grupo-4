@@ -142,21 +142,27 @@ public class MascotaDAOImpl implements IMascotaDAO {
     public boolean actualizar(Mascota mascota) throws SQLException {
         String sql = "{call SP_ACTUALIZAR_MASCOTA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection conn = DatabaseConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+            CallableStatement stmt = conn.prepareCall(sql)) {
             stmt.setInt(1, mascota.getIdMascota());
             stmt.setInt(2, mascota.getIdCliente());
             stmt.setString(3, mascota.getNombre());
             stmt.setString(4, mascota.getEspecie());
             stmt.setString(5, mascota.getRaza());
             stmt.setString(6, String.valueOf(mascota.getSexo()));
-            stmt.setDate(7, mascota.getFechaNacimiento() != null ? new java.sql.Date(mascota.getFechaNacimiento().getTime()) : null);
-            stmt.setDouble(8, mascota.getPeso() != null ? mascota.getPeso() : 0);
+            stmt.setDate(7, mascota.getFechaNacimiento() != null ? 
+                new java.sql.Date(mascota.getFechaNacimiento().getTime()) : null);
+            
+            if (mascota.getPeso() != null) {
+                stmt.setDouble(8, mascota.getPeso());
+            } else {
+                stmt.setNull(8, java.sql.Types.DECIMAL);
+            }
+            
             stmt.setString(9, mascota.getColor());
             stmt.setBytes(10, mascota.getFoto());
             return stmt.executeUpdate() > 0;
         }
     }
-
     /**
      * Elimina una mascota de la base de datos.
      *
