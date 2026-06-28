@@ -477,30 +477,28 @@ CREATE OR ALTER PROCEDURE SP_REGISTRAR_RECEPCIONISTA
     @CONTRASENA         VARCHAR(100)
 AS
 BEGIN
+    SET NOCOUNT ON;
+    
     BEGIN TRY
         BEGIN TRANSACTION;
         
         -- 1. Verificar que el email no exista en USUARIO
         IF EXISTS (SELECT 1 FROM USUARIO WHERE CORREO_ELECTRONICO = @EMAIL)
         BEGIN
-            SELECT -1 AS RESULTADO, 'El correo electrónico ya está registrado' AS MENSAJE;
-            ROLLBACK;
-            RETURN;
+            ROLLBACK TRANSACTION;
+            RETURN -1; -- -1: Email ya registrado
         END;
         
         -- 2. Verificar que la cédula no exista en RECEPCIONISTA
         IF EXISTS (SELECT 1 FROM RECEPCIONISTA WHERE CEDULA = @CEDULA)
         BEGIN
-            SELECT -2 AS RESULTADO, 'La cédula ya está registrada' AS MENSAJE;
-            ROLLBACK;
-            RETURN;
+            ROLLBACK TRANSACTION;
+            RETURN -2; -- -2: Cédula ya registrada
         END;
         
         -- 3. Insertar en USUARIO
         INSERT INTO USUARIO (CORREO_ELECTRONICO, CONTRASENA, ROL)
         VALUES (@EMAIL, @CONTRASENA, 'RECEPCIONISTA');
-        
-        DECLARE @ID_USUARIO INT = SCOPE_IDENTITY();
         
         -- 4. Insertar en RECEPCIONISTA
         INSERT INTO RECEPCIONISTA 
@@ -508,14 +506,14 @@ BEGIN
         VALUES 
             (@CEDULA, @NOMBRE, @APELLIDO, @TELEFONO, @DIRECCION, @EMAIL);
         
-        DECLARE @ID_RECEPCIONISTA INT = SCOPE_IDENTITY();
-        
         COMMIT TRANSACTION;
-        SELECT 1 AS RESULTADO, 'Recepcionista registrado correctamente' AS MENSAJE, @ID_RECEPCIONISTA AS ID;
+        RETURN 1; -- 1: Registro exitoso
+        
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SELECT -3 AS RESULTADO, ERROR_MESSAGE() AS MENSAJE;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        RETURN -3; -- -3: Error en la ejecución
     END CATCH
 END;
 GO
