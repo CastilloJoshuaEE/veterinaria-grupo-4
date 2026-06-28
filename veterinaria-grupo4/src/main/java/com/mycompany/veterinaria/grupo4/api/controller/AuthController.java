@@ -1,13 +1,17 @@
 package com.mycompany.veterinaria.grupo4.api.controller;
 
 import com.mycompany.veterinaria.grupo4.api.dto.LoginRequest;
+import com.mycompany.veterinaria.grupo4.model.entity.Recepcionista;
 import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
 import com.mycompany.veterinaria.grupo4.service.AuthService;
+import com.mycompany.veterinaria.grupo4.service.RecepcionistaService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -30,7 +34,8 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
-
+    @Autowired
+    private RecepcionistaService recepcionistaService;
     /**
      * Realiza el inicio de sesión de un usuario en el sistema.
      * 
@@ -103,4 +108,37 @@ public class AuthController {
         String nuevaContrasena = request.get("nuevaContrasena");
         return authService.restablecerContrasena(email, nuevaContrasena);
     }    
+    /**
+     * Registra un nuevo recepcionista usando SP_REGISTRAR_RECEPCIONISTA.
+     */
+    @PostMapping("/registrar-recepcionista")
+    public ResponseEntity<?> registrarRecepcionista(@RequestBody Recepcionista registro) {
+        try {
+            boolean resultado = recepcionistaService.registrarRecepcionista(registro);
+            if (resultado) {
+                return ResponseEntity.ok(true);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error al registrar el recepcionista");
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(e.getMessage());
+        } catch (RuntimeException e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("correo electrónico ya está registrado")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("El correo electrónico ya está registrado");
+            } else if (msg != null && msg.contains("cédula ya está registrada")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("La cédula ya está registrada");
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error interno al registrar: " + msg);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error inesperado: " + e.getMessage());
+        }
+    }
+  
 }

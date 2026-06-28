@@ -692,7 +692,6 @@ END //
 -- ════════════════════════════════════════════════════════════
 --  RECEPCIONISTAS
 -- ════════════════════════════════════════════════════════════
-
 CREATE OR REPLACE PROCEDURE SP_REGISTRAR_RECEPCIONISTA(
     IN p_CEDULA VARCHAR(10),
     IN p_NOMBRE VARCHAR(50),
@@ -700,32 +699,34 @@ CREATE OR REPLACE PROCEDURE SP_REGISTRAR_RECEPCIONISTA(
     IN p_TELEFONO VARCHAR(15),
     IN p_DIRECCION VARCHAR(100),
     IN p_EMAIL VARCHAR(100),
-    IN p_CONTRASENA VARCHAR(100)
+    IN p_CONTRASENA VARCHAR(100),
+    OUT p_RESULTADO INT
 )
-BEGIN
+SP:BEGIN
     DECLARE v_ID_USUARIO INT;
     DECLARE v_ID_RECEPCIONISTA INT;
     
+    -- Manejador de excepciones
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SELECT -3 AS RESULTADO, ERROR_MESSAGE() AS MENSAJE;
+        SET p_RESULTADO = -3; -- -3: Error en la ejecución
     END;
     
     START TRANSACTION;
     
     -- 1. Verificar que el email no exista en USUARIO
     IF EXISTS (SELECT 1 FROM USUARIO WHERE CORREO_ELECTRONICO = p_EMAIL) THEN
-        SELECT -1 AS RESULTADO, 'El correo electrónico ya está registrado' AS MENSAJE;
         ROLLBACK;
-        LEAVE;
+        SET p_RESULTADO = -1; -- -1: Email ya registrado
+        LEAVE SP;
     END IF;
     
     -- 2. Verificar que la cédula no exista en RECEPCIONISTA
     IF EXISTS (SELECT 1 FROM RECEPCIONISTA WHERE CEDULA = p_CEDULA) THEN
-        SELECT -2 AS RESULTADO, 'La cédula ya está registrada' AS MENSAJE;
         ROLLBACK;
-        LEAVE;
+        SET p_RESULTADO = -2; -- -2: Cédula ya registrada
+        LEAVE SP;
     END IF;
     
     -- 3. Insertar en USUARIO
@@ -743,7 +744,8 @@ BEGIN
     SET v_ID_RECEPCIONISTA = LAST_INSERT_ID();
     
     COMMIT;
-    SELECT 1 AS RESULTADO, 'Recepcionista registrado correctamente' AS MENSAJE, v_ID_RECEPCIONISTA AS ID;
+    SET p_RESULTADO = 1; -- 1: Registro exitoso
+    
 END //
 
 -- ════════════════════════════════════════════════════════════

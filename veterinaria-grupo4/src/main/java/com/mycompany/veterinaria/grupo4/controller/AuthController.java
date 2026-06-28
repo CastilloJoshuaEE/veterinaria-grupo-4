@@ -1,6 +1,7 @@
 package com.mycompany.veterinaria.grupo4.controller;
 
 import com.mycompany.veterinaria.grupo4.api.dto.LoginRequest;
+import com.mycompany.veterinaria.grupo4.model.entity.Recepcionista;
 import com.mycompany.veterinaria.grupo4.model.entity.Usuario;
 import com.mycompany.veterinaria.grupo4.util.SessionManager;
 import com.mycompany.veterinaria.grupo4.view.auth.FormRestablecerContrasena;
@@ -9,20 +10,12 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
  * Controlador de autenticacion del sistema.
- * <p>
- * Gestiona el proceso de inicio de sesion, validando las credenciales
- * del usuario mediante la API REST y manejando la sesion activa.
- * </p>
- * 
- * <p><b>Fecha de inicio del proyecto:</b> 15/04/2026</p>
- * 
- * @author ROBLES MORALES JUAN ANDRES – MODULO: ATENCION VETERINARIA
- * @version 2.0
- * @since 1.0
  */
 public class AuthController implements ActionListener {
     private AppController app;
@@ -30,12 +23,6 @@ public class AuthController implements ActionListener {
     private RestTemplate restTemplate = new RestTemplate();
     private String apiBaseUrl = "http://localhost:8080/api/auth";
 
-    /**
-     * Constructor del controlador de autenticacion.
-     * 
-     * @param app controlador principal de la aplicacion
-     * @param pnl panel de login que contiene los componentes de la UI
-     */
     public AuthController(AppController app, PnlBgLogin pnl) {
         this.app = app;
         this.pnl = pnl;
@@ -49,7 +36,163 @@ public class AuthController implements ActionListener {
             login();
         } else if (obj == pnl.getPnlLogin().getCmdForget()) {
             mostrarDialogoRestablecer();
+        } else if (obj == pnl.getPnlLogin().getCmdRegistrar()) {
+            registrarRecepcionista();
         }
+    }
+    
+    /**
+     * Registra un nuevo recepcionista usando el SP_REGISTRAR_RECEPCIONISTA.
+     */
+        private void registrarRecepcionista() {
+        var pnlLogin = pnl.getPnlLogin();
+        
+        // Obtener datos
+        String cedula = pnlLogin.getTxtCedula().getText().trim();
+        String nombre = pnlLogin.getTxtNombre().getText().trim();
+        String apellido = pnlLogin.getTxtApellido().getText().trim();
+        String telefono = pnlLogin.getTxtTelefono().getText().trim();
+        String direccion = pnlLogin.getTxtDireccion().getText().trim();
+        String email = pnlLogin.getTxtEmailRegistro().getText().trim();
+        String password = new String(pnlLogin.getTxtPassRegistro().getPassword()).trim();
+        
+        // Validaciones básicas
+        if (cedula.isEmpty() || nombre.isEmpty() || apellido.isEmpty() || 
+            telefono.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(pnl,
+                "Todos los campos son obligatorios excepto Dirección",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (password.length() < 6) {
+            JOptionPane.showMessageDialog(pnl,
+                "La contraseña debe tener al menos 6 caracteres",
+                "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        try {
+            Recepcionista registro = new Recepcionista();
+            registro.setCedula(cedula);
+            registro.setNombre(nombre);
+            registro.setApellido(apellido);
+            registro.setTelefono(telefono);
+            registro.setDireccion(direccion.isEmpty() ? null : direccion);
+            registro.setEmail(email);
+            registro.setContrasena(password);
+            
+            // Llamar a la API
+            Boolean resultado = restTemplate.postForObject(
+                apiBaseUrl + "/registrar-recepcionista",
+                registro,
+                Boolean.class
+            );
+            
+            if (Boolean.TRUE.equals(resultado)) {
+                JOptionPane.showMessageDialog(pnl,
+                    "Recepcionista registrado exitosamente.\n" +
+                    "Ahora puede iniciar sesión con sus credenciales.",
+                    "Registro exitoso", JOptionPane.INFORMATION_MESSAGE);
+                
+                // Limpiar campos
+                limpiarCamposRegistro();
+                
+                // Cambiar a la vista de Login
+                pnl.getCover().login(false);
+                pnlLogin.showRegister(false);
+                
+            } else {
+                JOptionPane.showMessageDialog(pnl,
+                    "Error al registrar el recepcionista. Verifique que la cédula y email no estén registrados.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            // Errores HTTP 4xx (incluye validaciones del backend)
+            String mensaje = "Error al registrar";
+            try {
+                String body = e.getResponseBodyAsString();
+                if (body != null && !body.isEmpty()) {
+                    if (body.startsWith("\"") && body.endsWith("\"")) {
+                        mensaje = body.substring(1, body.length() - 1);
+                    } else {
+                        mensaje = body;
+                    }
+                }
+            } catch (Exception ex) {
+                mensaje = e.getMessage();
+            }
+            JOptionPane.showMessageDialog(pnl,
+                mensaje,
+                "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(pnl,
+                "Error de conexión. Asegúrese que el servidor esté corriendo.\n" + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+        /**
+     * Limpia todos los campos del formulario de registro.
+     */
+    private void limpiarCamposRegistro() {
+        var pnlLogin = pnl.getPnlLogin();
+        pnlLogin.getTxtCedula().setText("");
+        pnlLogin.getTxtNombre().setText("");
+        pnlLogin.getTxtApellido().setText("");
+        pnlLogin.getTxtTelefono().setText("");
+        pnlLogin.getTxtDireccion().setText("");
+        pnlLogin.getTxtEmailRegistro().setText("");
+        pnlLogin.getTxtPassRegistro().setText("");
+        // Desactivar el botón de registro si se desea (se habilitará con validación)
+    }
+    /**
+     * Extrae el mensaje de error de la excepción HTTP.
+     */
+    private String extraerMensajeError(HttpClientErrorException e) {
+        try {
+            String body = e.getResponseBodyAsString();
+            if (body != null && !body.isEmpty()) {
+                // Intentar extraer el mensaje del JSON
+                if (body.contains("mensaje") || body.contains("message")) {
+                    // Buscar entre comillas
+                    int start = body.indexOf("\"message\"");
+                    if (start == -1) start = body.indexOf("\"mensaje\"");
+                    if (start != -1) {
+                        int startQuote = body.indexOf("\"", start + 10);
+                        if (startQuote != -1) {
+                            int endQuote = body.indexOf("\"", startQuote + 1);
+                            if (endQuote != -1) {
+                                return body.substring(startQuote + 1, endQuote);
+                            }
+                        }
+                    }
+                }
+                // Si no se pudo extraer, limpiar comillas
+                if (body.startsWith("\"") && body.endsWith("\"")) {
+                    return body.substring(1, body.length() - 1);
+                }
+                return body;
+            }
+        } catch (Exception ex) {
+            // Ignorar errores al parsear
+        }
+        return e.getMessage();
+    }
+    
+    /**
+     * Limpia todos los campos del formulario de registro.
+     */
+    private void limpiarFormularioRegistro() {
+        var pnlLogin = pnl.getPnlLogin();
+        pnlLogin.getTxtCedula().setText("");
+        pnlLogin.getTxtNombre().setText("");
+        pnlLogin.getTxtApellido().setText("");
+        pnlLogin.getTxtTelefono().setText("");
+        pnlLogin.getTxtDireccion().setText("");
+        pnlLogin.getTxtEmailRegistro().setText("");
+        pnlLogin.getTxtPassRegistro().setText("");
     }
     
     /**
@@ -69,7 +212,6 @@ public class AuthController implements ActionListener {
             String nuevaContrasena = dialog.getNuevaContrasena();
             String confirmarContrasena = dialog.getConfirmarContrasena();
             
-            // Validar que las contraseñas coincidan (ya se validó en el diálogo)
             if (nuevaContrasena.equals(confirmarContrasena)) {
                 restablecerContrasena(email, nuevaContrasena);
             }
@@ -78,18 +220,13 @@ public class AuthController implements ActionListener {
     
     /**
      * Ejecuta el proceso de restablecimiento de contraseña.
-     * 
-     * @param email correo del usuario
-     * @param nuevaContrasena nueva contraseña
      */
     private void restablecerContrasena(String email, String nuevaContrasena) {
         try {
-            // Construir la solicitud
             java.util.Map<String, String> request = new java.util.HashMap<>();
             request.put("email", email);
             request.put("nuevaContrasena", nuevaContrasena);
             
-            // Llamar a la API para restablecer la contraseña
             Boolean resultado = restTemplate.postForObject(
                 apiBaseUrl + "/restablecer-contrasena",
                 request,
@@ -106,29 +243,11 @@ public class AuthController implements ActionListener {
                     "No se encontró una cuenta asociada a este correo electrónico.",
                     "Usuario no encontrado", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (org.springframework.web.client.HttpClientErrorException e) {
-            // Error del servidor (400, 404, etc.)
-            String mensaje = "Error al restablecer la contraseña";
-            try {
-                String body = e.getResponseBodyAsString();
-                if (body != null && !body.isEmpty()) {
-                    if (body.startsWith("\"") && body.endsWith("\"")) {
-                        mensaje = body.substring(1, body.length() - 1);
-                    } else {
-                        mensaje = body;
-                    }
-                }
-            } catch (Exception ex) {
-                mensaje = e.getMessage();
-            }
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(pnl,
-                mensaje,
+                "Error al restablecer la contraseña: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(pnl,
-                "Error de conexión. Asegúrese que el servidor esté corriendo.\n" + ex.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            e.printStackTrace();
         }
     }
     
@@ -136,8 +255,8 @@ public class AuthController implements ActionListener {
      * Ejecuta el proceso de login validando credenciales.
      */
     private void login() {
-        String email = pnl.getPnlLogin().getTxtEmail().getText().trim();
-        String password = new String(pnl.getPnlLogin().getTxtPass().getPassword()).trim();
+        String email = pnl.getPnlLogin().getTxtEmailLogin().getText().trim();
+        String password = new String(pnl.getPnlLogin().getTxtPassLogin().getPassword()).trim();
         
         if (email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(pnl, 
@@ -166,7 +285,7 @@ public class AuthController implements ActionListener {
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(pnl, 
-                "Error de conexion. Asegurese que el servidor este corriendo.\n" + ex.getMessage(), 
+                "Error de conexión. Asegúrese que el servidor esté corriendo.\n" + ex.getMessage(), 
                 "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
@@ -176,9 +295,21 @@ public class AuthController implements ActionListener {
      * Registra los listeners para los componentes del panel de login.
      */
     private void addListeners() {
-        this.pnl.getPnlLogin().getTxtEmail().addActionListener(this);
-        this.pnl.getPnlLogin().getTxtPass().addActionListener(this);
-        this.pnl.getPnlLogin().getCmdForget().addActionListener(this);
-        this.pnl.getPnlLogin().getCmdLogin().addActionListener(this);
+        var pnlLogin = pnl.getPnlLogin();
+        
+        // Login
+        pnlLogin.getTxtEmailLogin().addActionListener(this);
+        pnlLogin.getTxtPassLogin().addActionListener(this);
+        pnlLogin.getCmdForget().addActionListener(this);
+        pnlLogin.getCmdLogin().addActionListener(this);
+        
+        // Registro
+        pnlLogin.getCmdRegistrar().addActionListener(this);
+        pnlLogin.getTxtCedula().addActionListener(this);
+        pnlLogin.getTxtNombre().addActionListener(this);
+        pnlLogin.getTxtApellido().addActionListener(this);
+        pnlLogin.getTxtTelefono().addActionListener(this);
+        pnlLogin.getTxtEmailRegistro().addActionListener(this);
+        pnlLogin.getTxtPassRegistro().addActionListener(this);
     }
 }
